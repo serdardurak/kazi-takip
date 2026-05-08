@@ -35,6 +35,7 @@
       margin: 0 auto;
     }
 
+    /* HEADER */
     .header {
       background: var(--card);
       border-bottom: 2px solid var(--yellow);
@@ -56,9 +57,13 @@
       font-size: 11px; color: var(--yellow-light);
       max-width: 140px;
     }
-    .active-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+    .active-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--green); flex-shrink: 0;
+    }
     .active-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
+    /* BOTTOM NAV */
     .bottom-nav {
       position: fixed; bottom: 0; left: 0; right: 0;
       max-width: 480px; margin: 0 auto;
@@ -79,17 +84,21 @@
     .nav-btn.active { color: var(--yellow); border-top-color: var(--yellow); }
     .nav-btn .icon { font-size: 22px; }
 
+    /* MAIN */
     main { padding: 14px 14px 80px; }
 
+    /* VIEWS */
     .view { display: none; }
     .view.active { display: block; }
 
+    /* CARDS */
     .card {
       background: var(--card); border: 1px solid var(--border);
       border-radius: 10px; padding: 16px; margin-bottom: 12px;
     }
     .card-title { font-size: 15px; font-weight: 800; color: var(--yellow); margin-bottom: 12px; letter-spacing: 1px; }
 
+    /* STAT CARDS */
     .stats-row { display: flex; gap: 8px; margin-bottom: 14px; }
     .stat-card {
       flex: 1; background: var(--card); border: 1px solid var(--border);
@@ -100,6 +109,7 @@
     .stat-value { font-size: 18px; font-weight: 900; margin: 4px 0 2px; }
     .stat-label { font-size: 10px; color: var(--muted); }
 
+    /* FORM */
     label.field-label {
       display: block; font-size: 11px; color: var(--sub);
       font-weight: 700; letter-spacing: 1px; margin: 12px 0 4px;
@@ -117,6 +127,7 @@
     .form-row { display: flex; gap: 8px; }
     .form-row > * { flex: 1; }
 
+    /* BUTTONS */
     .btn-primary {
       width: 100%; background: var(--yellow); color: #0f172a;
       border: none; border-radius: 8px; padding: 14px;
@@ -145,6 +156,7 @@
       font-size: 12px; cursor: pointer; font-family: inherit;
     }
 
+    /* CHIPS */
     .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
     .chip {
       display: flex; align-items: center; gap: 6px;
@@ -157,6 +169,7 @@
       border-radius: 20px; padding: 5px 10px; font-size: 12px; color: var(--sub);
     }
 
+    /* ENTRY CARDS */
     .entry-card {
       background: var(--card); border: 1px solid var(--border);
       border-radius: 8px; margin-bottom: 8px; overflow: hidden;
@@ -176,6 +189,7 @@
     .entry-detail { font-size: 13px; color: var(--sub); margin-bottom: 6px; }
     .entry-actions { display: flex; gap: 8px; margin-top: 10px; }
 
+    /* PROJECT LIST */
     .project-row {
       display: flex; align-items: center; justify-content: space-between;
       padding: 12px; border-radius: 8px; margin-bottom: 8px;
@@ -191,15 +205,18 @@
     .proj-meta { font-size: 11px; color: var(--sub); margin-top: 2px; }
     .proj-del { background: none; border: none; font-size: 20px; cursor: pointer; padding: 4px; }
 
+    /* TABLE */
     .tbl { width: 100%; border-collapse: collapse; }
     .tbl th { text-align: left; font-size: 10px; color: var(--muted); font-weight: 700; letter-spacing: 1px; padding: 6px 10px; border-bottom: 1px solid var(--border); }
     .tbl td { padding: 10px; font-size: 13px; color: var(--text); }
     .tbl tr:nth-child(even) td { background: var(--bg); }
 
+    /* EMPTY */
     .empty { text-align: center; padding: 50px 16px; }
     .empty-icon { font-size: 48px; margin-bottom: 12px; }
     .empty-text { color: var(--muted); font-size: 15px; margin-bottom: 16px; }
 
+    /* TOAST */
     .toast {
       position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
       background: #16a34a; color: #fff; padding: 12px 20px;
@@ -212,6 +229,7 @@
     .toast.error { background: var(--red); }
     .toast.show { opacity: 1; }
 
+    /* PROJECT SELECTOR BAR */
     .proj-selector {
       background: var(--card); border: 1px solid var(--border);
       border-radius: 8px; padding: 10px 12px; margin-bottom: 12px;
@@ -222,12 +240,15 @@
 
     .section-title { font-size: 11px; color: var(--sub); letter-spacing: 2px; font-weight: 700; margin-bottom: 10px; text-transform: uppercase; }
 
+    /* HATA KAYDI */
     .hata-toggle-row {
       display: flex; align-items: center; justify-content: space-between;
       margin-top: 18px; margin-bottom: 8px;
     }
     .hata-toggle-label { font-size: 11px; color: var(--sub); font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
-    .toggle-switch { position: relative; width: 44px; height: 24px; }
+    .toggle-switch {
+      position: relative; width: 44px; height: 24px;
+    }
     .toggle-switch input { opacity: 0; width: 0; height: 0; }
     .toggle-slider {
       position: absolute; inset: 0; background: var(--border);
@@ -258,6 +279,7 @@
 </head>
 <body>
 
+<!-- HEADER -->
 <div class="header">
   <div class="header-left">
     <span style="font-size:26px">⛏</span>
@@ -272,7 +294,10 @@
   </div>
 </div>
 
+<!-- MAIN -->
 <main>
+
+  <!-- PROJECT SELECTOR (shown on dashboard/addEntry/reports) -->
   <div class="proj-selector" id="projSelector" style="display:none">
     <label>Proje:</label>
     <select id="projSelect" onchange="switchProject(this.value)">
@@ -280,6 +305,7 @@
     </select>
   </div>
 
+  <!-- VIEW: DASHBOARD -->
   <div class="view active" id="view-dashboard">
     <div id="dashEmpty" class="empty" style="display:none">
       <div class="empty-icon">🏗</div>
@@ -309,13 +335,17 @@
     </div>
   </div>
 
+  <!-- VIEW: KAYIT EKLE -->
   <div class="view" id="view-kayit">
     <div class="card">
       <div class="card-title" id="formTitle">➕ Günlük Kazı Kaydı</div>
+
       <label class="field-label">TARİH *</label>
       <input type="date" id="fTarih" />
+
       <label class="field-label">KAZI MİKTARI (m) *</label>
       <input type="number" id="fMetre" placeholder="örn: 25" inputmode="decimal" />
+
       <label class="field-label" style="margin-top:18px">KULLANILAN MALZEMELER</label>
       <div class="form-row" style="margin-bottom:6px">
         <select id="fMalzemeSelect">
@@ -340,8 +370,11 @@
       </div>
       <button class="btn-blue" style="width:100%" onclick="addMalzeme()">+ Malzeme Ekle</button>
       <div class="chips" id="malzemeChips"></div>
+
       <label class="field-label">NOTLAR</label>
       <textarea id="fNotlar" placeholder="Günlük notlar, özel durumlar..."></textarea>
+
+      <!-- HATA / EKSİK İŞLEM -->
       <div class="hata-toggle-row">
         <span class="hata-toggle-label">⚠️ Eksik / Hatalı İşlem Var mı?</span>
         <label class="toggle-switch">
@@ -350,7 +383,7 @@
         </label>
       </div>
       <div class="hata-wrap" id="hataWrap">
-        <label class="field-label" style="margin-top:0">HATA TÜRÜ</label>
+        <label class="field-label" style="margin-top:0">HATA TÜRÜ (birden fazla seçilebilir)</label>
         <div class="hata-type-grid">
           <button class="hata-type-btn" onclick="toggleHataTur(this, 'Eksik Malzeme')">Eksik Malzeme</button>
           <button class="hata-type-btn" onclick="toggleHataTur(this, 'Yanlış Ölçü')">Yanlış Ölçü</button>
@@ -362,11 +395,13 @@
         <label class="field-label">AÇIKLAMA</label>
         <textarea id="fHataAciklama" placeholder="Hatayı veya eksikliği açıklayın..." style="height:70px"></textarea>
       </div>
+
       <button class="btn-primary" id="saveBtn" onclick="handleSave()">💾 Kaydı Kaydet</button>
       <button class="btn-secondary" id="cancelBtn" style="display:none" onclick="cancelEdit()">İptal</button>
     </div>
   </div>
 
+  <!-- VIEW: RAPOR -->
   <div class="view" id="view-rapor">
     <div id="raporEmpty" class="empty" style="display:none">
       <div class="empty-text">Rapor için bir proje seçin.</div>
@@ -416,6 +451,7 @@
     </div>
   </div>
 
+  <!-- VIEW: PROJELER -->
   <div class="view" id="view-projeler">
     <div class="card">
       <div class="card-title">🏗 Yeni Proje Oluştur</div>
@@ -430,8 +466,10 @@
       <div id="projList"></div>
     </div>
   </div>
+
 </main>
 
+<!-- BOTTOM NAV -->
 <nav class="bottom-nav">
   <button class="nav-btn active" id="nav-dashboard" onclick="showView('dashboard')">
     <span class="icon">📋</span><span>Özet</span>
@@ -447,9 +485,11 @@
   </button>
 </nav>
 
+<!-- TOAST -->
 <div class="toast" id="toast"></div>
 
 <script>
+// ─── DATA ────────────────────────────────────────────────
 const KEY = 'kazi_takip_v2';
 let data = { projects: [], activeProjectId: null };
 let editingId = null;
@@ -459,9 +499,14 @@ let tempHataTurler = [];
 function load() {
   try { const s = localStorage.getItem(KEY); if (s) data = JSON.parse(s); } catch {}
 }
-function persist() { localStorage.setItem(KEY, JSON.stringify(data)); }
-function activeProject() { return data.projects.find(p => p.id === data.activeProjectId) || null; }
+function persist() {
+  localStorage.setItem(KEY, JSON.stringify(data));
+}
+function activeProject() {
+  return data.projects.find(p => p.id === data.activeProjectId) || null;
+}
 
+// ─── TOAST ───────────────────────────────────────────────
 function toast(msg, isError = false) {
   const el = document.getElementById('toast');
   el.textContent = msg;
@@ -469,24 +514,32 @@ function toast(msg, isError = false) {
   setTimeout(() => el.className = 'toast', 2200);
 }
 
+// ─── NAVIGATION ──────────────────────────────────────────
 function showView(name) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('view-' + name).classList.add('active');
   document.getElementById('nav-' + name).classList.add('active');
+
   const hasProjSelector = ['dashboard', 'kayit', 'rapor'].includes(name);
   document.getElementById('projSelector').style.display = hasProjSelector && data.projects.length > 0 ? 'flex' : 'none';
+
   if (name === 'dashboard') renderDashboard();
   if (name === 'rapor') renderRapor();
   if (name === 'projeler') renderProjeler();
   if (name === 'kayit' && !editingId) resetForm();
 }
 
+// ─── HEADER ──────────────────────────────────────────────
 function updateHeader() {
   const p = activeProject();
   const badge = document.getElementById('activeBadge');
-  if (p) { badge.style.display = 'flex'; document.getElementById('activeName').textContent = p.name; }
-  else badge.style.display = 'none';
+  if (p) {
+    badge.style.display = 'flex';
+    document.getElementById('activeName').textContent = p.name;
+  } else {
+    badge.style.display = 'none';
+  }
 }
 
 function updateProjSelector() {
@@ -502,9 +555,14 @@ function updateProjSelector() {
 }
 
 function switchProject(id) {
-  data.activeProjectId = id; persist(); updateHeader(); renderDashboard(); renderRapor();
+  data.activeProjectId = id;
+  persist();
+  updateHeader();
+  renderDashboard();
+  renderRapor();
 }
 
+// ─── PROJECTS ────────────────────────────────────────────
 function createProject() {
   const name = document.getElementById('pName').value.trim();
   const loc = document.getElementById('pLoc').value.trim();
@@ -515,7 +573,9 @@ function createProject() {
   persist();
   document.getElementById('pName').value = '';
   document.getElementById('pLoc').value = '';
-  updateHeader(); updateProjSelector(); renderProjeler();
+  updateHeader();
+  updateProjSelector();
+  renderProjeler();
   toast('Proje oluşturuldu!');
 }
 
@@ -526,29 +586,39 @@ function renderProjeler() {
   card.style.display = 'block';
   list.innerHTML = data.projects.map(p => {
     const isActive = p.id === data.activeProjectId;
-    return `<div class="project-row ${isActive ? 'active-proj' : ''}" onclick="switchProject('${p.id}'); renderProjeler();">
-      <div class="proj-info">
-        ${isActive ? '<div class="proj-dot"></div>' : ''}
-        <div>
-          <div class="proj-name ${isActive ? 'active-text' : ''}">${p.name}</div>
-          ${p.location ? `<div class="proj-loc">📍 ${p.location}</div>` : ''}
-          <div class="proj-meta">${p.entries.length} kayıt</div>
+    return `
+      <div class="project-row ${isActive ? 'active-proj' : ''}" onclick="switchProject('${p.id}'); renderProjeler();">
+        <div class="proj-info">
+          ${isActive ? '<div class="proj-dot"></div>' : ''}
+          <div>
+            <div class="proj-name ${isActive ? 'active-text' : ''}">${p.name}</div>
+            ${p.location ? `<div class="proj-loc">📍 ${p.location}</div>` : ''}
+            <div class="proj-meta">${p.entries.length} kayıt</div>
+          </div>
         </div>
-      </div>
-      <button class="proj-del" onclick="event.stopPropagation(); deleteProject('${p.id}')">🗑</button>
-    </div>`;
+        <button class="proj-del" onclick="event.stopPropagation(); deleteProject('${p.id}')">🗑</button>
+      </div>`;
   }).join('');
 }
 
 function deleteProject(id) {
   if (!confirm('Bu projeyi ve tüm kayıtlarını silmek istiyor musun?')) return;
   data.projects = data.projects.filter(p => p.id !== id);
-  if (data.activeProjectId === id) data.activeProjectId = data.projects.length > 0 ? data.projects[0].id : null;
-  persist(); updateHeader(); updateProjSelector(); renderProjeler(); renderDashboard();
+  if (data.activeProjectId === id) {
+    data.activeProjectId = data.projects.length > 0 ? data.projects[0].id : null;
+  }
+  persist();
+  updateHeader();
+  updateProjSelector();
+  renderProjeler();
+  renderDashboard();
   toast('Proje silindi.');
 }
 
-function handleSave() { if (editingId) updateEntry(); else saveEntry(); }
+// ─── ENTRIES ─────────────────────────────────────────────
+function handleSave() {
+  if (editingId) updateEntry(); else saveEntry();
+}
 
 function saveEntry() {
   const proj = activeProject();
@@ -560,9 +630,11 @@ function saveEntry() {
   const hataAciklama = document.getElementById('fHataAciklama').value.trim();
   if (!tarih || isNaN(metre)) { toast('Tarih ve kazı miktarı zorunlu!', true); return; }
   const hata = hataVar ? { var: true, turler: [...tempHataTurler], aciklama: hataAciklama } : { var: false };
-  const entry = { id: Date.now().toString(), tarih, kaziMetre: metre, malzemeler: [...tempMalzemeler], notlar, hata };
+  const entry = { id: Date.now().toString(), tarih, kaziMetre: metre, malzemeler: [...tempMalzemeler], notlar, hata, createdAt: new Date().toISOString() };
   proj.entries.push(entry);
-  persist(); resetForm(); renderDashboard();
+  persist();
+  resetForm();
+  renderDashboard();
   toast('Kayıt eklendi!');
   showView('dashboard');
 }
@@ -578,20 +650,30 @@ function updateEntry() {
   if (!tarih || isNaN(metre)) { toast('Tarih ve kazı miktarı zorunlu!', true); return; }
   const hata = hataVar ? { var: true, turler: [...tempHataTurler], aciklama: hataAciklama } : { var: false };
   const idx = proj.entries.findIndex(e => e.id === editingId);
-  if (idx !== -1) proj.entries[idx] = { ...proj.entries[idx], tarih, kaziMetre: metre, malzemeler: [...tempMalzemeler], notlar, hata };
-  persist(); editingId = null; resetForm(); renderDashboard();
+  if (idx !== -1) {
+    proj.entries[idx] = { ...proj.entries[idx], tarih, kaziMetre: metre, malzemeler: [...tempMalzemeler], notlar, hata };
+  }
+  persist();
+  editingId = null;
+  resetForm();
+  renderDashboard();
   toast('Kayıt güncellendi!');
   showView('dashboard');
 }
 
-function cancelEdit() { editingId = null; resetForm(); showView('dashboard'); }
+function cancelEdit() {
+  editingId = null;
+  resetForm();
+  showView('dashboard');
+}
 
 function deleteEntry(id) {
   const proj = activeProject();
   if (!proj) return;
   if (!confirm('Bu kaydı silmek istiyor musun?')) return;
   proj.entries = proj.entries.filter(e => e.id !== id);
-  persist(); renderDashboard();
+  persist();
+  renderDashboard();
   toast('Kayıt silindi.');
 }
 
@@ -606,10 +688,12 @@ function startEdit(id) {
   document.getElementById('fTarih').value = entry.tarih;
   document.getElementById('fMetre').value = entry.kaziMetre;
   document.getElementById('fNotlar').value = entry.notlar || '';
+  // Hata alanları
   const hataVar = entry.hata?.var || false;
   document.getElementById('fHataToggle').checked = hataVar;
   document.getElementById('hataWrap').className = 'hata-wrap' + (hataVar ? ' open' : '');
   document.getElementById('fHataAciklama').value = entry.hata?.aciklama || '';
+  // Hata tür butonlarını sıfırla
   document.querySelectorAll('.hata-type-btn').forEach(btn => {
     btn.className = 'hata-type-btn' + (tempHataTurler.includes(btn.textContent) ? ' selected' : '');
   });
@@ -621,7 +705,8 @@ function startEdit(id) {
 }
 
 function resetForm() {
-  tempMalzemeler = []; tempHataTurler = [];
+  tempMalzemeler = [];
+  tempHataTurler = [];
   document.getElementById('fTarih').value = new Date().toISOString().split('T')[0];
   document.getElementById('fMetre').value = '';
   document.getElementById('fNotlar').value = '';
@@ -640,16 +725,23 @@ function resetForm() {
   renderMalzemeChips();
 }
 
+// ─── HATA ────────────────────────────────────────────────
 function toggleHataWrap() {
   const open = document.getElementById('fHataToggle').checked;
   document.getElementById('hataWrap').className = 'hata-wrap' + (open ? ' open' : '');
 }
 
 function toggleHataTur(btn, tur) {
-  if (tempHataTurler.includes(tur)) { tempHataTurler = tempHataTurler.filter(t => t !== tur); btn.className = 'hata-type-btn'; }
-  else { tempHataTurler.push(tur); btn.className = 'hata-type-btn selected'; }
+  if (tempHataTurler.includes(tur)) {
+    tempHataTurler = tempHataTurler.filter(t => t !== tur);
+    btn.className = 'hata-type-btn';
+  } else {
+    tempHataTurler.push(tur);
+    btn.className = 'hata-type-btn selected';
+  }
 }
 
+// ─── MALZEME ─────────────────────────────────────────────
 document.getElementById('fMalzemeSelect').addEventListener('change', function() {
   document.getElementById('malzemeOzelWrap').style.display = this.value === 'Diğer' ? 'block' : 'none';
 });
@@ -668,7 +760,10 @@ function addMalzeme() {
   renderMalzemeChips();
 }
 
-function removeMalzeme(idx) { tempMalzemeler.splice(idx, 1); renderMalzemeChips(); }
+function removeMalzeme(idx) {
+  tempMalzemeler.splice(idx, 1);
+  renderMalzemeChips();
+}
 
 function renderMalzemeChips() {
   document.getElementById('malzemeChips').innerHTML = tempMalzemeler.map((m, i) =>
@@ -676,20 +771,28 @@ function renderMalzemeChips() {
   ).join('');
 }
 
+// ─── DASHBOARD ───────────────────────────────────────────
 function renderDashboard() {
   const proj = activeProject();
   const empty = document.getElementById('dashEmpty');
   const content = document.getElementById('dashContent');
   if (!proj) { empty.style.display = 'block'; content.style.display = 'none'; return; }
   empty.style.display = 'none'; content.style.display = 'block';
+
   const total = proj.entries.reduce((s, e) => s + e.kaziMetre, 0);
   const avg = proj.entries.length ? (total / proj.entries.length).toFixed(1) : '-';
   document.getElementById('statMetre').textContent = total.toFixed(1) + ' m';
   document.getElementById('statKayit').textContent = proj.entries.length;
   document.getElementById('statOrt').textContent = avg !== '-' ? avg + ' m' : '-';
+
   const sorted = [...proj.entries].sort((a, b) => new Date(b.tarih) - new Date(a.tarih));
   const list = document.getElementById('entryList');
-  if (sorted.length === 0) { list.innerHTML = `<div class="empty"><div class="empty-text">Henüz kayıt yok.</div></div>`; return; }
+
+  if (sorted.length === 0) {
+    list.innerHTML = `<div class="empty"><div class="empty-text">Henüz kayıt yok.</div></div>`;
+    return;
+  }
+
   list.innerHTML = sorted.map(e => `
     <div class="entry-card" style="${e.hata?.var ? 'border-color:rgba(239,68,68,0.4)' : ''}">
       <div class="entry-header" onclick="toggleEntry('${e.id}')">
@@ -701,13 +804,18 @@ function renderDashboard() {
         <div class="entry-toggle" id="tog-${e.id}">▼</div>
       </div>
       <div class="entry-body" id="body-${e.id}">
-        ${e.malzemeler.length > 0 ? `<div class="entry-detail">🧱 Malzemeler:</div><div class="chips">${e.malzemeler.map(m => `<span class="chip-readonly">${m.name} — ${m.miktar} ${m.birim}</span>`).join('')}</div>` : ''}
+        ${e.malzemeler.length > 0 ? `
+          <div class="entry-detail">🧱 Malzemeler:</div>
+          <div class="chips">
+            ${e.malzemeler.map(m => `<span class="chip-readonly">${m.name} — ${m.miktar} ${m.birim}</span>`).join('')}
+          </div>` : ''}
         ${e.notlar ? `<div class="entry-detail" style="margin-top:8px">📝 ${e.notlar}</div>` : ''}
-        ${e.hata?.var ? `<div style="margin-top:10px;padding:10px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);border-radius:8px">
-          <div style="color:#fca5a5;font-size:12px;font-weight:700;margin-bottom:6px">⚠️ EKSİK / HATALI İŞLEM</div>
-          ${e.hata.turler?.length > 0 ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px">${e.hata.turler.map(t => `<span style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.4);color:#fca5a5;border-radius:20px;padding:3px 10px;font-size:11px">${t}</span>`).join('')}</div>` : ''}
-          ${e.hata.aciklama ? `<div style="color:#fca5a5;font-size:13px">📋 ${e.hata.aciklama}</div>` : ''}
-        </div>` : ''}
+        ${e.hata?.var ? `
+          <div style="margin-top:10px;padding:10px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);border-radius:8px">
+            <div style="color:#fca5a5;font-size:12px;font-weight:700;margin-bottom:6px">⚠️ EKSİK / HATALI İŞLEM</div>
+            ${e.hata.turler?.length > 0 ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px">${e.hata.turler.map(t => `<span style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.4);color:#fca5a5;border-radius:20px;padding:3px 10px;font-size:11px">${t}</span>`).join('')}</div>` : ''}
+            ${e.hata.aciklama ? `<div style="color:#fca5a5;font-size:13px">📋 ${e.hata.aciklama}</div>` : ''}
+          </div>` : ''}
         <div class="entry-actions">
           <button class="btn-icon-edit" onclick="startEdit('${e.id}')">✏️ Düzenle</button>
           <button class="btn-icon-del" onclick="deleteEntry('${e.id}')">🗑 Sil</button>
@@ -723,26 +831,37 @@ function toggleEntry(id) {
   tog.textContent = open ? '▲' : '▼';
 }
 
+// ─── RAPOR ───────────────────────────────────────────────
 function renderRapor() {
   const proj = activeProject();
   const empty = document.getElementById('raporEmpty');
   const content = document.getElementById('raporContent');
   if (!proj) { empty.style.display = 'block'; content.style.display = 'none'; return; }
   empty.style.display = 'none'; content.style.display = 'block';
+
   const total = proj.entries.reduce((s, e) => s + e.kaziMetre, 0);
   const avg = proj.entries.length ? (total / proj.entries.length).toFixed(1) : '-';
+  const hataCount = proj.entries.filter(e => e.hata?.var).length;
   document.getElementById('raporTitle').textContent = '📊 ' + proj.name;
   document.getElementById('rStatMetre').textContent = total.toFixed(1) + ' m';
   document.getElementById('rStatGun').textContent = proj.entries.length;
   document.getElementById('rStatOrt').textContent = avg !== '-' ? avg + ' m' : '-';
+
+  // Hata özeti
   const hataCard = document.getElementById('hataOzetCard');
-  const hataEntries = proj.entries.filter(e => e.hata?.var);
-  if (hataEntries.length > 0) {
+  if (hataCount > 0) {
     hataCard.style.display = 'block';
-    document.getElementById('hataOzetBody').innerHTML = hataEntries.sort((a,b) => new Date(b.tarih)-new Date(a.tarih)).map(e =>
-      `<tr><td>${new Date(e.tarih).toLocaleDateString('tr-TR')}</td><td>${e.hata.turler?.join(', ') || '-'}</td><td style="color:#fca5a5">${e.hata.aciklama || '-'}</td></tr>`
+    const hataEntries = proj.entries.filter(e => e.hata?.var).sort((a,b) => new Date(b.tarih)-new Date(a.tarih));
+    document.getElementById('hataOzetBody').innerHTML = hataEntries.map(e =>
+      `<tr>
+        <td>${new Date(e.tarih).toLocaleDateString('tr-TR')}</td>
+        <td>${e.hata.turler?.join(', ') || '-'}</td>
+        <td style="color:#fca5a5">${e.hata.aciklama || '-'}</td>
+      </tr>`
     ).join('');
   } else hataCard.style.display = 'none';
+
+  // Malzeme özeti
   const map = {};
   proj.entries.forEach(e => e.malzemeler.forEach(m => {
     const k = m.name + '||' + m.birim;
@@ -752,25 +871,31 @@ function renderRapor() {
   const ozCard = document.getElementById('malzemeOzetCard');
   if (ozet.length > 0) {
     ozCard.style.display = 'block';
-    document.getElementById('malzemeOzetBody').innerHTML = ozet.map(m =>
+    document.getElementById('malzemeOzetBody').innerHTML = ozet.map((m, i) =>
       `<tr><td>${m.n}</td><td style="color:var(--yellow);font-weight:700">${m.t}</td><td>${m.b}</td></tr>`
     ).join('');
   } else ozCard.style.display = 'none';
+
   const sorted = [...proj.entries].sort((a, b) => new Date(b.tarih) - new Date(a.tarih));
-  document.getElementById('raporEntryBody').innerHTML = sorted.map(e =>
+  document.getElementById('raporEntryBody').innerHTML = sorted.map((e, i) =>
     `<tr><td>${new Date(e.tarih).toLocaleDateString('tr-TR')}</td><td style="color:var(--yellow);font-weight:700">${e.kaziMetre}</td><td>${e.malzemeler.length} çeşit</td></tr>`
   ).join('');
 }
 
+// ─── HELPERS ─────────────────────────────────────────────
 function formatDate(d) {
   return new Date(d).toLocaleDateString('tr-TR', { weekday: 'short', day: 'numeric', month: 'long' });
 }
 
+// ─── INIT ────────────────────────────────────────────────
 load();
 updateHeader();
 updateProjSelector();
 renderDashboard();
+
+// Set default date
 document.getElementById('fTarih').value = new Date().toISOString().split('T')[0];
 </script>
+
 </body>
 </html>
