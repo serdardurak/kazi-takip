@@ -1827,13 +1827,8 @@ function paylas(metin, baslik) {
 function raporOnizlemePaylas() {
   document.getElementById('raporOnizlemeModal').style.display = 'none';
   const metin = window._raporOnizlemeMevcutMetin || _bekleyenRaporMetni;
-  if (navigator.share) {
-    navigator.share({ text: metin, title: 'Rapor' });
-  } else {
-    navigator.clipboard?.writeText(metin)
-      .then(() => toast('✅ Rapor panoya kopyalandı!'))
-      .catch(() => prompt('Raporu kopyalayın:', metin));
-  }
+  const waUrl = `https://wa.me/?text=${encodeURIComponent(metin)}`;
+  window.open(waUrl, '_blank');
 }
 
 let _giderRaporAy = null; // {yil, ay} formatında
