@@ -105,12 +105,12 @@
     .stats-row { display: flex; gap: 8px; margin-bottom: 14px; }
     .stat-card {
       flex: 1; background: var(--card); border: 1px solid var(--border);
-      border-radius: 8px; padding: 12px; text-align: center;
+      border-radius: 8px; padding: 10px 6px; text-align: center;
       border-top-width: 3px; border-top-style: solid;
     }
-    .stat-icon { font-size: 20px; }
-    .stat-value { font-size: 18px; font-weight: 900; margin: 4px 0 2px; }
-    .stat-label { font-size: 10px; color: var(--muted); }
+    .stat-icon { font-size: 18px; }
+    .stat-value { font-size: 16px; font-weight: 900; margin: 4px 0 2px; }
+    .stat-label { font-size: 9px; color: var(--muted); }
 
     /* FORM */
     label.field-label {
@@ -375,6 +375,11 @@
           <div class="stat-value" id="statMetre" style="color:#f59e0b">0 m</div>
           <div class="stat-label">Toplam Kazı</div>
         </div>
+        <div class="stat-card" style="border-top-color:#3b82f6">
+          <div class="stat-icon">📅</div>
+          <div class="stat-value" id="statGun" style="color:#3b82f6">0</div>
+          <div class="stat-label">Toplam Gün</div>
+        </div>
         <div class="stat-card" style="border-top-color:#10b981">
           <div class="stat-icon">📈</div>
           <div class="stat-value" id="statOrt" style="color:#10b981">-</div>
@@ -617,7 +622,8 @@
         </table>
       </div>
       <div style="margin-top:4px;display:flex;gap:8px;margin-bottom:8px">
-        <button class="btn-primary" style="background:#16a34a;flex:1" onclick="exportExcel()">📥 Excel İndir</button>
+        <button class="btn-primary" style="background:#16a34a;flex:1" onclick="exportExcel()">📥 Excel</button>
+        <button class="btn-primary" style="background:#ef4444;flex:1" onclick="projeRaporPdf()">📄 PDF</button>
         <button class="btn-primary" style="background:#10b981;flex:1" onclick="projeRaporPaylas()">📤 Paylaş</button>
       </div>
 
@@ -1784,6 +1790,104 @@ function gunlukRaporPaylas(entryId) {
   const notStr = entry.notlar ? `\n📝 Not: ${entry.notlar}` : '';
   const metin = `📋 *GÜNLÜK KAZI RAPORU*\n📅 ${tarih}\n🏗 Proje: ${proj.name}${proj.location ? ' - ' + proj.location : ''}\n\n⛏ Günlük Kazı: *${entry.kaziMetre} m*${notStr}\n\n🧱 Malzeme:\n${malzStr}\n\n⚠️ Hata/Eksik:\n${hataStr}`;
   paylas(metin, 'Günlük Kazı Raporu');
+}
+
+function projeRaporPdf() {
+  const proj = activeProject();
+  if (!proj || proj.entries.length === 0) { toast('⚠️ Proje veya kayıt yok', true); return; }
+
+  const toplam = proj.entries.reduce((s, e) => s + e.kaziMetre, 0);
+  const gun = proj.entries.length;
+  const ort = (toplam / gun).toFixed(1);
+  const hataCount = proj.entries.filter(e => e.hatalar?.length > 0 || e.hata?.var).length;
+  const tarihler = proj.entries.map(e => new Date(e.tarih));
+  const ilk = new Date(Math.min(...tarihler)).toLocaleDateString('tr-TR');
+  const son = new Date(Math.max(...tarihler)).toLocaleDateString('tr-TR');
+  const tarihStr = new Date().toLocaleDateString('tr-TR');
+
+  // Malzeme özeti
+  const malzMap = {};
+  proj.entries.forEach(e => (e.malzemeler || []).forEach(m => {
+    malzMap[m.name] = (malzMap[m.name] || 0) + parseFloat(m.miktar || 0);
+  }));
+  const malzRows = Object.entries(malzMap).map(([n, t]) =>
+    `<tr><td>${n}</td><td>${t}</td></tr>`
+  ).join('') || '<tr><td colspan="2" style="color:#999">Malzeme kaydı yok</td></tr>';
+
+  // Günlük kazı geçmişi
+  const sortedEntries = [...proj.entries].sort((a, b) => new Date(a.tarih) - new Date(b.tarih));
+  const entryRows = sortedEntries.map(e => {
+    const hataVar = e.hatalar?.length > 0 || e.hata?.var;
+    const malzStr = (e.malzemeler || []).map(m => `${m.name} ${m.miktar} ${m.birim}`).join(', ') || '-';
+    return `<tr${hataVar ? ' style="background:#fff5f5"' : ''}>
+      <td>${new Date(e.tarih).toLocaleDateString('tr-TR')}</td>
+      <td style="font-weight:700">${e.kaziMetre} m</td>
+      <td>${malzStr}</td>
+      <td>${hataVar ? '⚠️' : ''} ${(e.notlar || '').substring(0, 60)}</td>
+    </tr>`;
+  }).join('');
+
+  // Hedef satırı
+  const hedefHtml = proj.hedefMetre > 0 ? `
+    <div class="stat-box">
+      <div class="stat-val">${((toplam / proj.hedefMetre) * 100).toFixed(0)}%</div>
+      <div class="stat-lbl">Hedef İlerlemesi</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-val">${Math.max(0, proj.hedefMetre - toplam).toLocaleString('tr-TR')} m</div>
+      <div class="stat-lbl">Kalan Metraj</div>
+    </div>` : '';
+
+  const html = `<!DOCTYPE html><html lang="tr"><head><meta charset="utf-8">
+  <title>${proj.name} - Proje Raporu</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 24px; color: #1a1a1a; font-size: 12px; max-width: 900px; margin: 0 auto; }
+    h1 { font-size: 20px; color: #92400e; border-bottom: 3px solid #f59e0b; padding-bottom: 8px; margin-bottom: 4px; }
+    .meta { font-size: 11px; color: #666; margin-bottom: 18px; }
+    .stats { display: flex; gap: 12px; margin: 16px 0; flex-wrap: wrap; }
+    .stat-box { background: #fffbeb; border: 1px solid #fcd34d; border-radius: 8px; padding: 10px 16px; text-align: center; min-width: 100px; }
+    .stat-val { font-size: 20px; font-weight: bold; color: #b45309; }
+    .stat-lbl { font-size: 10px; color: #78716c; margin-top: 2px; }
+    h2 { font-size: 13px; background: #f3f4f6; padding: 6px 10px; border-radius: 4px; margin: 20px 0 8px; border-left: 4px solid #f59e0b; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+    th { background: #f59e0b; color: #fff; padding: 6px 8px; text-align: left; font-size: 11px; }
+    td { border: 1px solid #e5e7eb; padding: 5px 8px; font-size: 11px; }
+    tr:nth-child(even) td { background: #f9fafb; }
+    .footer { margin-top: 24px; font-size: 10px; color: #999; border-top: 1px solid #e5e7eb; padding-top: 8px; }
+    @media print { body { padding: 10px; } }
+  </style></head><body>
+  <h1>⛏ ${proj.name}${proj.location ? ' — ' + proj.location : ''}</h1>
+  <div class="meta">📄 Proje Raporu &nbsp;|&nbsp; Oluşturma: ${tarihStr} &nbsp;|&nbsp; Dönem: ${ilk} → ${son}</div>
+
+  <div class="stats">
+    <div class="stat-box"><div class="stat-val">${toplam.toLocaleString('tr-TR')} m</div><div class="stat-lbl">Toplam Kazı</div></div>
+    <div class="stat-box"><div class="stat-val">${gun}</div><div class="stat-lbl">Toplam Gün</div></div>
+    <div class="stat-box"><div class="stat-val">${ort} m</div><div class="stat-lbl">Günlük Ort.</div></div>
+    <div class="stat-box"><div class="stat-val">${hataCount}</div><div class="stat-lbl">Hatalı Gün</div></div>
+    ${proj.hedefMetre > 0 ? `<div class="stat-box"><div class="stat-val">${proj.hedefMetre.toLocaleString('tr-TR')} m</div><div class="stat-lbl">Hedef Metraj</div></div>` : ''}
+    ${hedefHtml}
+  </div>
+
+  <h2>🧱 Malzeme Özeti</h2>
+  <table>
+    <tr><th>Malzeme</th><th>Toplam Miktar</th></tr>
+    ${malzRows}
+  </table>
+
+  <h2>📅 Günlük Kazı Geçmişi</h2>
+  <table>
+    <tr><th>Tarih</th><th>Kazı (m)</th><th>Malzeme</th><th>Not / Durum</th></tr>
+    ${entryRows}
+  </table>
+
+  <div class="footer">Kazı Takip Uygulaması &nbsp;|&nbsp; ${tarihStr} tarihinde oluşturulmuştur</div>
+  </body></html>`;
+
+  const win = window.open('', '_blank');
+  win.document.write(html);
+  win.document.close();
+  setTimeout(() => win.print(), 400);
+  toast('✅ PDF için yazdırma ekranı açıldı! "PDF olarak kaydet" seçin.');
 }
 
 function projeRaporPaylas() {
@@ -3173,6 +3277,8 @@ function updateStats() {
   const so = document.getElementById('statOrt');
   const sh = document.getElementById('statHata');
   if (sm) sm.textContent = total.toLocaleString('tr-TR', {maximumFractionDigits:0}) + ' m';
+  const statGunEl = document.getElementById('statGun');
+  if (statGunEl) statGunEl.textContent = proj.entries.length;
   if (so) so.textContent = avg + ' m';
   if (sh) sh.textContent = toplamHata;
 }
@@ -3190,6 +3296,8 @@ function renderDashboard() {
   document.getElementById('statMetre').textContent = total.toLocaleString('tr-TR', {maximumFractionDigits:0}) + ' m';
   const statKayit = document.getElementById('statKayit');
   if (statKayit) statKayit.textContent = proj.entries.length;
+  const statGunEl = document.getElementById('statGun');
+  if (statGunEl) statGunEl.textContent = proj.entries.length;
   document.getElementById('statOrt').textContent = avg !== '-' ? avg + ' m' : '-';
   const toplamHata = proj.entries.reduce((s, e) => s + (e.hatalar?.length || (e.hata?.var ? 1 : 0)), 0);
   document.getElementById('statHata').textContent = toplamHata;
@@ -3815,6 +3923,22 @@ function renderGiderList() {
   let liste = [...giderler].sort((a, b) => new Date(b.tarih) - new Date(a.tarih));
   if (ayFiltre) liste = liste.filter(g => g.tarih.startsWith(ayFiltre));
   if (katFiltre) liste = liste.filter(g => g.kategori === katFiltre);
+
+  // Filtre aktifse özet kartını güncelle
+  if (ayFiltre || katFiltre) {
+    const filtreGunSayisi = new Set(liste.map(g => g.tarih)).size;
+    const filtreToplam = liste.reduce((s, g) => s + parseFloat(g.tutar), 0);
+    const gAdetEl = document.getElementById('gAdetAy');
+    const gToplamAyEl = document.getElementById('gToplamAy');
+    if (gAdetEl) gAdetEl.textContent = filtreGunSayisi;
+    if (gToplamAyEl) gToplamAyEl.textContent = filtreToplam.toLocaleString('tr-TR') + ' ₺';
+    const cardTitle = document.querySelector('#giderOzetCard .card-title');
+    if (cardTitle) cardTitle.textContent = ayFiltre ? '📊 ' + ayFiltre.slice(0,4) + '/' + ayFiltre.slice(5,7) + ' Özet' : '📊 Filtre Özeti';
+  } else {
+    renderGiderOzet();
+    const cardTitle = document.querySelector('#giderOzetCard .card-title');
+    if (cardTitle) cardTitle.textContent = '📊 Bu Ay Özet';
+  }
 
   const container = document.getElementById('giderList');
   if (liste.length === 0) {
