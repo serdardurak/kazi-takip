@@ -228,9 +228,17 @@
       box-shadow: 0 4px 20px rgba(0,0,0,0.4);
       opacity: 0; transition: opacity 0.2s;
       pointer-events: none;
+      display: flex; align-items: center; gap: 12px;
     }
     .toast.error { background: var(--red); }
-    .toast.show { opacity: 1; }
+    .toast.show { opacity: 1; pointer-events: auto; }
+    .toast-undo-btn {
+      background: rgba(255,255,255,0.25); border: 1px solid rgba(255,255,255,0.5);
+      color: #fff; border-radius: 6px; padding: 4px 10px;
+      font-size: 12px; font-weight: 900; cursor: pointer;
+      font-family: inherit; letter-spacing: 0.5px; white-space: nowrap;
+    }
+    .toast-undo-btn:hover { background: rgba(255,255,255,0.4); }
 
     /* PROJECT SELECTOR BAR */
     .proj-selector {
@@ -312,7 +320,7 @@
 <body>
 
 <!-- TOAST -->
-<div id="toast" class="toast"></div>
+<div id="toast" class="toast"><span id="toastMsg"></span></div>
 
 <!-- OFFLINE BANNER -->
 <div id="offlineBanner" style="display:none;background:#ef4444;color:white;text-align:center;padding:8px;font-size:12px;font-weight:700">
@@ -723,7 +731,7 @@
 
     <!-- Yeni Proje Formu (gizli) -->
     <div id="projeForm" style="display:none" class="card">
-      <div class="card-title">🏗 Yeni Proje Oluştur</div>
+      <div id="projeFormBaslik" class="card-title">🏗 Yeni Proje Oluştur</div>
       <label class="field-label">PROJE ADI *</label>
       <input type="text" id="pName" placeholder="örn: Kadıköy İçme Suyu Hattı" />
       <label class="field-label">KONUM / BÖLGE</label>
@@ -732,7 +740,7 @@
       <input type="number" id="pHedef" placeholder="örn: 5000" inputmode="numeric" />
       <div style="display:flex;gap:8px;margin-top:4px">
         <button onclick="projeFormKapat()" style="flex:1;background:none;border:1px solid var(--border);color:var(--sub);border-radius:8px;padding:12px;font-size:14px;cursor:pointer;font-family:inherit">İptal</button>
-        <button class="btn-primary" style="flex:2" onclick="createProject()">Projeyi Oluştur</button>
+        <button class="btn-primary" id="projeFormBtn" style="flex:2" onclick="projeFormKaydet()">Projeyi Oluştur</button>
       </div>
     </div>
 
@@ -746,6 +754,18 @@
     <div class="card" id="projListCard" style="display:none">
       <div class="card-title">📋 Projeler</div>
       <div id="projList"></div>
+    </div>
+
+    <!-- Silinenler -->
+    <div class="card" id="silinenlerCard" style="display:none;margin-bottom:12px;border-color:rgba(239,68,68,0.3)">
+      <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';this.querySelector('.sil-chevron').textContent=this.nextElementSibling.style.display==='none'?'▼':'▲'">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:15px;font-weight:800;color:var(--red);letter-spacing:1px">🗑 SİLİNENLER</span>
+          <span id="silinenlerSayi" style="background:rgba(239,68,68,0.15);border:1px solid var(--red);color:#fca5a5;border-radius:20px;padding:2px 8px;font-size:11px;font-weight:700"></span>
+        </div>
+        <span class="sil-chevron" style="color:var(--muted);font-size:12px">▼</span>
+      </div>
+      <div id="silinenlerList" style="display:none;margin-top:10px"></div>
     </div>
 
     <!-- Veri Yedekleme -->
@@ -943,7 +963,7 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ─── DATA ────────────────────────────────────────────────
-let data = { projects: [], activeProjectId: localStorage.getItem('aktifProje') || null };
+let data = { projects: [], deletedProjects: [], activeProjectId: localStorage.getItem('aktifProje') || null };
 let editingId = null;
 let tempMalzemeler = [];
 let tempHataTurler = [];
@@ -1205,9 +1225,13 @@ let _oncekiSayfa = 'dashboard';
 
 function islemBildir(mesaj, hedef, hata = false) {
   const el = document.getElementById('toast');
-  el.textContent = (hata ? '❌ ' : '✅ ') + mesaj;
+  const msgEl = document.getElementById('toastMsg');
+  if (el._toastTimer) clearTimeout(el._toastTimer);
+  const old = el.querySelector('.toast-undo-btn');
+  if (old) old.remove();
+  msgEl.textContent = (hata ? '❌ ' : '✅ ') + mesaj;
   el.className = 'toast show' + (hata ? ' error' : '');
-  setTimeout(() => {
+  el._toastTimer = setTimeout(() => {
     el.className = 'toast';
     if (!hata) showView(hedef || _oncekiSayfa || 'dashboard');
   }, 1800);
@@ -1612,16 +1636,30 @@ async function hizliDetay(entryId, tip, hataIdx = null) {
   if (hedefPanel) { hedefPanel.classList.add('open'); setTimeout(() => hedefPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100); }
 }
 
+let _duzenlemeProjId = null;
+
 function projeFormAc() {
-  document.getElementById('projeForm').style.display = 'block';
+  _duzenlemeProjId = null;
+  document.getElementById('projeFormBaslik').textContent = '🏗 Yeni Proje Oluştur';
+  document.getElementById('projeFormBtn').textContent = 'Projeyi Oluştur';
   document.getElementById('pName').value = '';
   document.getElementById('pLoc').value = '';
   document.getElementById('pHedef').value = '';
+  document.getElementById('projeForm').style.display = 'block';
   setTimeout(() => document.getElementById('pName').focus(), 100);
 }
 
 function projeFormKapat() {
   document.getElementById('projeForm').style.display = 'none';
+  _duzenlemeProjId = null;
+}
+
+async function projeFormKaydet() {
+  if (_duzenlemeProjId) {
+    await updateProject(_duzenlemeProjId);
+  } else {
+    await createProject();
+  }
 }
 
 function renderProjeToplamRapor(toplamMap) {
@@ -1667,17 +1705,14 @@ async function createProject() {
   const name = document.getElementById('pName').value.trim();
   const loc = document.getElementById('pLoc').value.trim();
   const hedef = parseFloat(document.getElementById('pHedef').value) || 0;
-  if (!name) { islemBildir('Proje adı boş olamaz!', null, true); return; }
+  if (!name) { toast('⚠️ Proje adı boş olamaz!', true); return; }
   showLoading('Proje oluşturuluyor...');
   try {
     const { data: inserted, error } = await sb.from('projeler').insert({ ad: name, konum: loc, hedef_metre: hedef || null }).select().single();
-    if (error) { hideLoading(); islemBildir('Proje oluşturulamadı!', null, true); return; }
+    if (error) { hideLoading(); toast('⚠️ Proje oluşturulamadı!', true); return; }
     const proj = { id: inserted.id, name: inserted.ad, location: inserted.konum || '', hedefMetre: inserted.hedef_metre || 0, bitti: false, entries: [] };
     data.projects.push(proj);
     setActiveProject(proj.id);
-    document.getElementById('pName').value = '';
-    document.getElementById('pLoc').value = '';
-    document.getElementById('pHedef').value = '';
     projeFormKapat();
     updateHeader();
     updateProjSelector();
@@ -1687,6 +1722,41 @@ async function createProject() {
     renderDashboard();
     toast('✅ Proje oluşturuldu!');
   } catch(err) { hideLoading(); toast('⚠️ ' + (err.message||'Bağlantı hatası'), true); }
+}
+
+async function updateProject(id) {
+  const name = document.getElementById('pName').value.trim();
+  const loc = document.getElementById('pLoc').value.trim();
+  const hedef = parseFloat(document.getElementById('pHedef').value) || 0;
+  if (!name) { toast('⚠️ Proje adı boş olamaz!', true); return; }
+  showLoading('Güncelleniyor...');
+  try {
+    const { error } = await sb.from('projeler').update({ ad: name, konum: loc || null, hedef_metre: hedef || null }).eq('id', id);
+    if (error) throw error;
+    const proj = data.projects.find(p => p.id === id);
+    if (proj) { proj.name = name; proj.location = loc; proj.hedefMetre = hedef; }
+    projeFormKapat();
+    hideLoading();
+    updateHeader();
+    updateProjSelector();
+    renderProjeler();
+    renderDashboard();
+    toast('✅ Proje güncellendi!');
+  } catch(err) { hideLoading(); toast('⚠️ ' + (err.message||'Hata'), true); }
+}
+
+function renameProject(id) {
+  const proj = data.projects.find(p => p.id === id);
+  if (!proj) return;
+  _duzenlemeProjId = id;
+  document.getElementById('projeFormBaslik').textContent = '✏️ Projeyi Düzenle';
+  document.getElementById('projeFormBtn').textContent = 'Güncelle';
+  document.getElementById('pName').value = proj.name;
+  document.getElementById('pLoc').value = proj.location || '';
+  document.getElementById('pHedef').value = proj.hedefMetre || '';
+  document.getElementById('projeForm').style.display = 'block';
+  document.getElementById('projeForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  setTimeout(() => document.getElementById('pName').focus(), 300);
 }
 
 async function mevcutFotoSil(entryId, idx) {
@@ -1772,12 +1842,37 @@ function hideLoading() {
 }
 
 // ─── TOAST ───────────────────────────────────────────────
-function toast(msg, isError = false) {
+function toast(msg, isError = false, undoFn = null, undoDuration = 5000) {
   const el = document.getElementById('toast');
-  el.textContent = msg;
+  const msgEl = document.getElementById('toastMsg');
+  // Önceki timer'ı temizle
+  if (el._toastTimer) clearTimeout(el._toastTimer);
+  // Önceki undo butonunu kaldır
+  const old = el.querySelector('.toast-undo-btn');
+  if (old) old.remove();
+  msgEl.textContent = msg;
   el.className = 'toast show' + (isError ? ' error' : '');
-  setTimeout(() => el.className = 'toast', 2200);
+  const dur = undoFn ? undoDuration : 2200;
+  if (undoFn) {
+    const btn = document.createElement('button');
+    btn.className = 'toast-undo-btn';
+    btn.textContent = '↩ Geri Al';
+    btn.onclick = () => {
+      clearTimeout(el._toastTimer);
+      el.className = 'toast';
+      undoFn();
+    };
+    el.appendChild(btn);
+  }
+  if (dur !== Infinity) {
+    el._toastTimer = setTimeout(() => {
+      el.className = 'toast';
+      const b = el.querySelector('.toast-undo-btn');
+      if (b) b.remove();
+    }, dur);
+  }
 }
+
 
 // ─── GÜNLÜK RAPOR PAYLAŞMA ────────────────────────────────
 function gunlukRaporPaylas(entryId) {
@@ -2710,33 +2805,20 @@ window.addEventListener('online', () => { onlineKontrol(); toast('✅ İnternet 
 window.addEventListener('offline', () => { onlineKontrol(); toast('⚠️ İnternet bağlantısı kesildi!', true); });
 
 // ─── PROJE RENAME ────────────────────────────────────────
-async function renameProject(id) {
-  const proj = data.projects.find(p => p.id === id);
-  if (!proj) return;
-  const yeniAd = prompt('Yeni proje adı:', proj.name);
-  if (!yeniAd || !yeniAd.trim()) return;
-  const yeniHedef = prompt('Hedef metre (boş bırakabilirsiniz):', proj.hedefMetre || '');
-  const hedef = parseFloat(yeniHedef) || 0;
-  showLoading('Güncelleniyor...');
-  try {
-    const { error } = await sb.from('projeler').update({ ad: yeniAd.trim(), hedef_metre: hedef || null }).eq('id', id);
-    hideLoading();
-    if (error) { toast('⚠️ Güncellenemedi: ' + error.message, true); return; }
-    proj.name = yeniAd.trim();
-    proj.hedefMetre = hedef;
-    updateHeader(); updateProjSelector(); renderProjeler(); renderDashboard();
-    toast('✅ Proje güncellendi!');
-  } catch(err) { hideLoading(); toast('⚠️ ' + (err.message||'Hata'), true); }
-}
-
 // ─── LOAD PROJECTS FROM SUPABASE ─────────────────────────
 async function loadProjects() {
   showLoading('Projeler yükleniyor...');
   try {
-  const { data: projeler, error } = await sb.from('projeler').select('id, ad, konum, hedef_metre, bitti, olusturma_tarihi').order('olusturma_tarihi', { ascending: true });
+  const { data: projeler, error } = await sb.from('projeler').select('id, ad, konum, hedef_metre, bitti, silindi, olusturma_tarihi').order('olusturma_tarihi', { ascending: true });
   hideLoading();
   if (error) { hideLoading(); toast('⚠️ Bağlantı hatası: ' + error.message, true); return; }
-  data.projects = projeler.map(p => ({
+  data.projects = projeler.filter(p => !p.silindi).map(p => ({
+    id: p.id, name: p.ad, location: p.konum || '',
+    hedefMetre: p.hedef_metre ? parseFloat(p.hedef_metre) : 0,
+    bitti: p.bitti === true,
+    entries: []
+  }));
+  data.deletedProjects = projeler.filter(p => p.silindi === true).map(p => ({
     id: p.id, name: p.ad, location: p.konum || '',
     hedefMetre: p.hedef_metre ? parseFloat(p.hedef_metre) : 0,
     bitti: p.bitti === true,
@@ -4180,8 +4262,7 @@ function renderProjeler() {
   const list = document.getElementById('projList');
   const card = document.getElementById('projListCard');
   if (!list || !card) return;
-  if (data.projects.length === 0) { card.style.display = 'none'; return; }
-  card.style.display = 'block';
+  if (data.projects.length === 0) { card.style.display = 'none'; } else { card.style.display = 'block'; }
 
   // Tüm projelerin toplam metrajını çek
   sb.from('kayitlar').select('proje_id, kazi_metre').then(({ data: kayitlar }) => {
@@ -4224,7 +4305,29 @@ function renderProjeler() {
         </div>`;
       }).join('');
     }
+    // Silinenler bölümünü güncelle
+    renderSilinenler();
   });
+}
+
+function renderSilinenler() {
+  const wrap = document.getElementById('silinenlerCard');
+  if (!wrap) return;
+  const deleted = data.deletedProjects || [];
+  if (deleted.length === 0) { wrap.style.display = 'none'; return; }
+  wrap.style.display = 'block';
+  document.getElementById('silinenlerSayi').textContent = deleted.length;
+  const list = document.getElementById('silinenlerList');
+  list.innerHTML = deleted.map(p => `
+    <div style="display:flex;align-items:center;padding:12px 14px;border-bottom:1px solid var(--border);gap:10px;opacity:0.75">
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:600;color:var(--muted)">🗑 ${p.name}</div>
+        ${p.location ? `<div style="font-size:11px;color:var(--muted)">${p.location}</div>` : ''}
+      </div>
+      <button onclick="projeyiGeriGetir('${p.id}')" style="background:none;border:1px solid #10b981;color:#10b981;border-radius:6px;padding:5px 8px;font-size:12px;cursor:pointer" title="Geri Getir">↩ Geri Al</button>
+      <button onclick="projeyiKaliciSil('${p.id}')" style="background:none;border:1px solid var(--red);color:var(--red);border-radius:6px;padding:5px 8px;font-size:12px;cursor:pointer" title="Kalıcı Sil">🗑</button>
+    </div>
+  `).join('');
 }
 
 async function projeKapat(id) {
@@ -4264,24 +4367,64 @@ async function projeAc(id) {
 
 async function deleteProject(id) {
   showLoading('Siliniyor...');
-  let delError;
   try {
-    const res = await sb.from('projeler').delete().eq('id', id);
-    delError = res.error;
-  } catch(e) { delError = e; }
-  hideLoading();
-  if (delError) { islemBildir('Silinemedi!', null, true); return; }
-  data.projects = data.projects.filter(p => p.id !== id);
-  if (data.activeProjectId === id) {
-    const newId = data.projects.length > 0 ? data.projects[0].id : null;
-    setActiveProject(newId);
-    if (newId) await loadEntries(newId);
-  }
-  updateHeader();
-  updateProjSelector();
-  renderProjeler();
-  renderDashboard();
-  islemBildir('Proje silindi.', 'projeler');
+    const { error } = await sb.from('projeler').update({ silindi: true }).eq('id', id);
+    if (error) throw error;
+    const proj = data.projects.find(p => p.id === id);
+    if (proj) {
+      data.deletedProjects = data.deletedProjects || [];
+      data.deletedProjects.push(proj);
+      data.projects = data.projects.filter(p => p.id !== id);
+    }
+    if (data.activeProjectId === id) {
+      const newId = data.projects.length > 0 ? data.projects[0].id : null;
+      setActiveProject(newId);
+      if (newId) await loadEntries(newId);
+    }
+    hideLoading();
+    updateHeader();
+    updateProjSelector();
+    renderProjeler();
+    renderDashboard();
+    toast('🗑 Proje "Silinenler" bölümüne taşındı.');
+  } catch(err) { hideLoading(); toast('⚠️ ' + (err.message || 'Hata'), true); }
+}
+
+async function projeyiGeriGetir(id) {
+  showLoading('Geri getiriliyor...');
+  try {
+    const { error } = await sb.from('projeler').update({ silindi: false }).eq('id', id);
+    if (error) throw error;
+    const proj = (data.deletedProjects || []).find(p => p.id === id);
+    if (proj) {
+      data.deletedProjects = data.deletedProjects.filter(p => p.id !== id);
+      data.projects.push(proj);
+    }
+    hideLoading();
+    updateHeader();
+    updateProjSelector();
+    renderProjeler();
+    renderDashboard();
+    toast('✅ Proje geri getirildi: ' + (proj?.name || ''));
+  } catch(err) { hideLoading(); toast('⚠️ ' + (err.message || 'Hata'), true); }
+}
+
+async function projeyiKaliciSil(id) {
+  silOnayla(
+    'Bu proje ve tüm kayıtları kalıcı olarak silinecek. Geri alınamaz!',
+    async () => {
+      showLoading('Kalıcı siliniyor...');
+      try {
+        const { error } = await sb.from('projeler').delete().eq('id', id);
+        if (error) throw error;
+        data.deletedProjects = (data.deletedProjects || []).filter(p => p.id !== id);
+        hideLoading();
+        renderProjeler();
+        toast('🗑 Proje kalıcı olarak silindi.');
+      } catch(err) { hideLoading(); toast('⚠️ ' + (err.message || 'Hata'), true); }
+    },
+    '⚠️', 'Kalıcı Sil', 'var(--red)'
+  );
 }
 
 // ─── INIT ────────────────────────────────────────────────
