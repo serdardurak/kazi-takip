@@ -4177,9 +4177,9 @@ function renderGiderOzet() {
   const buAy = giderler.filter(g => g.tarih.startsWith(ayStr));
   const toplamAy = buAy.reduce((s, g) => s + parseFloat(g.tutar), 0);
   const toplamTum = giderler.reduce((s, g) => s + parseFloat(g.tutar), 0);
+  const tumGunSayisi = new Set(giderler.map(g => g.tarih)).size;
   document.getElementById('gToplamAy').textContent = toplamAy.toLocaleString('tr-TR') + ' ₺';
-  const gunSayisi = new Set(buAy.map(g => g.tarih)).size;
-  document.getElementById('gAdetAy').textContent = gunSayisi;
+  document.getElementById('gAdetAy').textContent = tumGunSayisi;
   document.getElementById('gToplamTum').textContent = toplamTum.toLocaleString('tr-TR') + ' ₺';
 }
 
@@ -4199,11 +4199,36 @@ function renderGiderList() {
     if (gAdetEl) gAdetEl.textContent = filtreGunSayisi;
     if (gToplamAyEl) gToplamAyEl.textContent = filtreToplam.toLocaleString('tr-TR') + ' ₺';
     const cardTitle = document.querySelector('#giderOzetCard .card-title');
-    if (cardTitle) cardTitle.textContent = ayFiltre ? '📊 ' + ayFiltre.slice(0,4) + '/' + ayFiltre.slice(5,7) + ' Özet' : '📊 Filtre Özeti';
+    if (cardTitle) {
+      if (ayFiltre && liste.length > 0) {
+        const [yil, ay] = ayFiltre.split('-');
+        const ayAdi = new Date(yil, ay - 1).toLocaleDateString('tr-TR', { month: 'long' });
+        const baslik = `${ayAdi} / ${yil}`;
+        const tarihler = liste.map(g => g.tarih).sort();
+        const ilk = tarihler[0].split('-').reverse().join('.');
+        const son = tarihler[tarihler.length - 1].split('-').reverse().join('.');
+        cardTitle.innerHTML = `📊 ${ayAdi} / ${yil}<br><span style="font-size:11px;font-weight:500;color:var(--muted)">${ilk} ile ${son} arası</span>`;
+      } else {
+        cardTitle.textContent = '📊 Filtre Özeti';
+      }
+    }
   } else {
-    renderGiderOzet();
+    // Tüm zamanlar — her kartı doğru değerle doldur
+    const simdi = new Date();
+    const ayStr = `${simdi.getFullYear()}-${String(simdi.getMonth()+1).padStart(2,'0')}`;
+    const buAyListe = giderler.filter(g => g.tarih.startsWith(ayStr));
+    const buAyToplam = buAyListe.reduce((s, g) => s + parseFloat(g.tutar), 0);
+    const tumGunSayisi = new Set(giderler.map(g => g.tarih)).size;
+    const tumToplam = giderler.reduce((s, g) => s + parseFloat(g.tutar), 0);
+
+    const gAdetEl     = document.getElementById('gAdetAy');
+    const gToplamAyEl = document.getElementById('gToplamAy');
+    const gToplamTumEl= document.getElementById('gToplamTum');
+    if (gToplamAyEl)  gToplamAyEl.textContent  = buAyToplam.toLocaleString('tr-TR') + ' ₺';
+    if (gAdetEl)      gAdetEl.textContent       = tumGunSayisi;
+    if (gToplamTumEl) gToplamTumEl.textContent  = tumToplam.toLocaleString('tr-TR') + ' ₺';
     const cardTitle = document.querySelector('#giderOzetCard .card-title');
-    if (cardTitle) cardTitle.textContent = '📊 Bu Ay Özet';
+    if (cardTitle) cardTitle.textContent = '📊 Tüm Zamanlar Özet';
   }
 
   const container = document.getElementById('giderList');
