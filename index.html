@@ -2660,28 +2660,19 @@ async function verileriYedekle() {
       ajanda:   ajandaRes.data || []
     };
     const json = JSON.stringify(yedek, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url  = URL.createObjectURL(blob);
     const tarihStr = new Date().toISOString().split('T')[0];
-    const ozet = `${yedek.projeler.length} proje, ${yedek.kayitlar.length} kayıt, ${yedek.giderler.length} gider, ${yedek.ajanda.length} görev`;
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `kazi-takip-yedek_${tarihStr}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
     hideLoading();
-
-    // Android content:// uyumlu indirme
-    try {
-      // Yöntem 1: data URI (Android WebView uyumlu)
-      const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(json);
-      const a = document.createElement('a');
-      a.href = dataUri;
-      a.download = `kazi-takip-yedek_${tarihStr}.json`;
-      a.style.display = 'none';
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(() => document.body.removeChild(a), 100);
-      toast(`✅ Yedek indirildi! (${ozet})`);
-    } catch(e) {
-      // Yöntem 2: yeni sekmede aç — kullanıcı uzun basıp kaydedebilir
-      const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(json);
-      window.open(dataUri, '_blank');
-      toast('📋 Yedek açıldı — uzun basıp "Kaydet" seçin.');
-    }
+    const ozet = `${yedek.projeler.length} proje, ${yedek.kayitlar.length} kayıt, ${yedek.giderler.length} gider, ${yedek.ajanda.length} görev`;
+    toast(`✅ Yedek indirildi! (${ozet})`);
   } catch(err) {
     hideLoading();
     toast('⚠️ Yedekleme hatası: ' + (err.message||'Bağlantı hatası'), true);
