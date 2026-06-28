@@ -319,6 +319,27 @@
 </head>
 <body>
 
+<!-- LOGIN EKRANI -->
+<div id="loginEkrani" style="display:none;position:fixed;inset:0;background:#0f172a;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px">
+  <div style="text-align:center;margin-bottom:32px">
+    <div style="font-size:40px;margin-bottom:8px">⛏</div>
+    <div style="font-size:22px;font-weight:900;color:#f59e0b;letter-spacing:2px">KAZI TAKİP</div>
+    <div style="font-size:12px;color:#64748b;margin-top:4px">Alt Yapı Çalışmaları</div>
+  </div>
+  <div style="width:100%;max-width:320px;background:#1e293b;border:1px solid #334155;border-radius:14px;padding:24px">
+    <div style="font-size:14px;font-weight:700;color:#e2e8f0;margin-bottom:16px;text-align:center">Giriş Yap</div>
+    <label style="font-size:11px;color:#64748b;font-weight:700;letter-spacing:1px;display:block;margin-bottom:4px">E-POSTA</label>
+    <input id="loginMail" type="email" placeholder="ornek@gmail.com" style="width:100%;background:#0f172a;border:1px solid #334155;border-radius:8px;padding:12px;color:#e2e8f0;font-size:14px;margin-bottom:12px;font-family:inherit;box-sizing:border-box">
+    <label style="font-size:11px;color:#64748b;font-weight:700;letter-spacing:1px;display:block;margin-bottom:4px">ŞİFRE</label>
+    <div style="position:relative">
+      <input id="loginSifre" type="password" placeholder="••••••••" style="width:100%;background:#0f172a;border:1px solid #334155;border-radius:8px;padding:12px 40px 12px 12px;color:#e2e8f0;font-size:14px;margin-bottom:16px;font-family:inherit;box-sizing:border-box">
+      <button type="button" onclick="const i=document.getElementById('loginSifre');i.type=i.type==='password'?'text':'password';this.textContent=i.type==='password'?'👁':'🙈'" style="position:absolute;right:10px;top:12px;background:none;border:none;cursor:pointer;font-size:16px;color:#64748b">👁</button>
+    </div>
+    <div id="loginHata" style="display:none;color:#ef4444;font-size:12px;margin-bottom:12px;text-align:center"></div>
+    <button onclick="girisYap()" id="loginBtn" style="width:100%;background:#f59e0b;color:#0f172a;border:none;border-radius:8px;padding:14px;font-size:15px;font-weight:900;cursor:pointer;font-family:inherit">Giriş Yap</button>
+  </div>
+</div>
+
 <!-- TOAST -->
 <div id="toast" class="toast"><span id="toastMsg"></span></div>
 
@@ -328,7 +349,7 @@
 </div>
 
 <!-- HEADER -->
-<div class="header">
+<div class="header" id="appHeader" style="display:none">
   <div class="header-left">
     <button id="geriBtn" onclick="geriGit()" style="display:none;background:none;border:none;color:var(--yellow);font-size:22px;cursor:pointer;padding:0 8px 0 0;line-height:1">←</button>
     <span style="font-size:26px">⛏</span>
@@ -337,15 +358,20 @@
       <div class="app-sub">Alt Yapı Çalışmaları</div>
     </div>
   </div>
-  <div class="active-badge" id="activeBadge" style="display:none" onclick="toggleProjModal()">
-    <div class="active-dot"></div>
-    <span class="active-name" id="activeName"></span>
-    <span style="font-size:10px;color:var(--muted)">▼</span>
+  <div style="display:flex;align-items:center;gap:6px">
+    <div class="active-badge" id="activeBadge" style="display:none" onclick="toggleProjModal()">
+      <div class="active-dot"></div>
+      <span class="active-name" id="activeName"></span>
+      <span style="font-size:10px;color:var(--muted)">▼</span>
+    </div>
+    <button onclick="cikisYap()" title="Çıkış Yap" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#f87171;border-radius:8px;padding:7px 9px;font-size:13px;cursor:pointer;display:flex;align-items:center">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    </button>
   </div>
 </div>
 
 <!-- MAIN -->
-<main>
+<main id="appMain" style="display:none">
 
   <!-- PROJECT SELECTOR (shown on dashboard/addEntry/reports) -->
   <div class="proj-selector" id="projSelector" style="display:none">
@@ -860,7 +886,7 @@
 </main>
 
 <!-- BOTTOM NAV -->
-<nav class="bottom-nav">
+<nav class="bottom-nav" id="appNav" style="display:none">
   <button class="nav-btn active" id="nav-dashboard" onclick="showView('dashboard')">
     <span class="icon">📋</span><span>Özet</span>
   </button>
@@ -990,6 +1016,63 @@
 const SUPABASE_URL = 'https://hxfzidndvqoortcsknyw.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh4ZnppZG5kdnFvb3J0Y3Nrbnl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwNTkyMzMsImV4cCI6MjA5MzYzNTIzM30.Tr70mVn-ESwFneTVOkE1hICbAt-mEcf0_1B9eM-39pc';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ─── AUTH ─────────────────────────────────────────────────
+async function girisYap() {
+  const mail = document.getElementById('loginMail').value.trim();
+  const sifre = document.getElementById('loginSifre').value;
+  const hataEl = document.getElementById('loginHata');
+  const btn = document.getElementById('loginBtn');
+  if (!mail || !sifre) { hataEl.textContent = 'E-posta ve şifre gerekli.'; hataEl.style.display = 'block'; return; }
+  btn.textContent = 'Giriş yapılıyor...'; btn.disabled = true;
+  hataEl.style.display = 'none';
+  const { error } = await sb.auth.signInWithPassword({ email: mail, password: sifre });
+  if (error) {
+    hataEl.textContent = 'Hatalı e-posta veya şifre.';
+    hataEl.style.display = 'block';
+    btn.textContent = 'Giriş Yap'; btn.disabled = false;
+  }
+  // Başarılıysa onAuthStateChange tetikler, uygulama açılır
+}
+
+async function cikisYap() {
+  await sb.auth.signOut();
+}
+
+// Enter ile giriş
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('loginSifre')?.addEventListener('keydown', e => { if (e.key === 'Enter') girisYap(); });
+  document.getElementById('loginMail')?.addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('loginSifre')?.focus(); });
+});
+
+sb.auth.onAuthStateChange((event, session) => {
+  const loginEl = document.getElementById('loginEkrani');
+  const headerEl = document.getElementById('appHeader');
+  const mainEl   = document.getElementById('appMain');
+  const navEl    = document.getElementById('appNav');
+  if (session) {
+    if (loginEl) loginEl.style.display = 'none';
+    if (headerEl) headerEl.style.display = 'flex';
+    if (mainEl)   mainEl.style.display   = 'block';
+    if (navEl)    navEl.style.display    = 'flex';
+    if (event === 'SIGNED_IN') {
+      loadProjects().then(async () => {
+        const ids = data.projects.map(p => p.id);
+        if (!data.activeProjectId || !ids.includes(data.activeProjectId)) {
+          if (data.projects.length > 0) { setActiveProject(data.projects[0].id); updateHeader(); updateProjSelector(); }
+        }
+        if (data.activeProjectId) await loadEntries(data.activeProjectId);
+        document.getElementById('gTarih').value = new Date().toISOString().split('T')[0];
+        loadAjanda();
+      });
+    }
+  } else {
+    if (loginEl) loginEl.style.display = 'flex';
+    if (headerEl) headerEl.style.display = 'none';
+    if (mainEl)   mainEl.style.display   = 'none';
+    if (navEl)    navEl.style.display    = 'none';
+  }
+});
 
 // ─── DATA ────────────────────────────────────────────────
 let data = { projects: [], deletedProjects: [], activeProjectId: localStorage.getItem('aktifProje') || null };
@@ -2169,9 +2252,9 @@ function _giderRaporGoster() {
   const bitD = new Date(bitStr + 'T12:00:00');
   const fmt = d => `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`;
   const tarihAralikStr = `${fmt(basD)} - ${fmt(bitD)}`;
-  const gunSayisi = Math.max(1, Math.round((bitD - basD) / (1000*60*60*24)) + 1);
+  const gunSayisi = new Set(donemGiderler.map(g => g.tarih)).size;
   const haftaSayisi = (gunSayisi / 7).toFixed(1);
-  const haftaStr = `${haftaSayisi} hafta (${gunSayisi} gün)`;
+  const haftaStr = gunSayisi > 0 ? `${haftaSayisi} hafta (${gunSayisi} gün)` : '';
 
   const satirlar = katSatirlar.map(([k,t])=>`${k}: ${t.toLocaleString('tr-TR')} ₺`);
   const maxLen = Math.max(20, ...satirlar.map(s => s.length), `TOPLAM: ${toplam.toLocaleString('tr-TR')} ₺`.length);
@@ -2660,19 +2743,32 @@ async function verileriYedekle() {
       ajanda:   ajandaRes.data || []
     };
     const json = JSON.stringify(yedek, null, 2);
-    const blob = new Blob([json], { type: 'application/json' });
-    const url  = URL.createObjectURL(blob);
-    const tarihStr = new Date().toISOString().split('T')[0];
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `kazi-takip-yedek_${tarihStr}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    hideLoading();
+    const tarihStr = new Date().toLocaleString('tr-TR');
+    const dosyaAdi = `kazi-takip-yedek_${new Date().toISOString().split('T')[0]}.json`;
     const ozet = `${yedek.projeler.length} proje, ${yedek.kayitlar.length} kayıt, ${yedek.giderler.length} gider, ${yedek.ajanda.length} görev`;
-    toast(`✅ Yedek indirildi! (${ozet})`);
+    hideLoading();
+
+    const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(json);
+    const html = `<!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kazı Takip Yedek</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#0f172a;color:#e2e8f0;font-family:system-ui,sans-serif;padding:20px;min-height:100vh}
+  h2{color:#f59e0b;font-size:18px;margin-bottom:6px}
+  p{color:#94a3b8;font-size:13px;margin-bottom:16px}
+  a.btn{display:block;width:100%;background:#f59e0b;color:#0f172a;border:none;border-radius:10px;padding:15px;font-size:15px;font-weight:900;cursor:pointer;text-align:center;text-decoration:none;margin-bottom:10px}
+  .info{background:#1e293b;border:1px solid #334155;border-radius:8px;padding:12px;font-size:12px;color:#64748b;line-height:1.6}
+</style></head><body>
+<h2>💾 Kazı Takip Yedek</h2>
+<p>📅 ${tarihStr}<br>📊 ${ozet}</p>
+<a class="btn" href="${dataUri}" download="${dosyaAdi}">📥 ${dosyaAdi}</a>
+<div class="info">Dosya indirilmezse uzun basıp "Bağlantıyı indir" seçeneğini deneyin.</div>
+</body></html>`;
+
+    const blob = new Blob([html], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
   } catch(err) {
     hideLoading();
     toast('⚠️ Yedekleme hatası: ' + (err.message||'Bağlantı hatası'), true);
@@ -4637,21 +4733,23 @@ async function projeyiKaliciSil(id) {
 }
 
 // ─── INIT ────────────────────────────────────────────────
-loadProjects().then(async () => {
-  const ids = data.projects.map(p => p.id);
-  if (!data.activeProjectId || !ids.includes(data.activeProjectId)) {
-    if (data.projects.length > 0) {
-      setActiveProject(data.projects[0].id);
-      updateHeader();
-      updateProjSelector();
-    }
+// Mevcut oturumu kontrol et (sayfa yenilenince otomatik giriş)
+sb.auth.getSession().then(({ data: { session } }) => {
+  if (session) {
+    document.getElementById('loginEkrani').style.display = 'none';
+    document.getElementById('appHeader').style.display = 'flex';
+    document.getElementById('appMain').style.display = 'block';
+    document.getElementById('appNav').style.display = 'flex';
+    loadProjects().then(async () => {
+      const ids = data.projects.map(p => p.id);
+      if (!data.activeProjectId || !ids.includes(data.activeProjectId)) {
+        if (data.projects.length > 0) { setActiveProject(data.projects[0].id); updateHeader(); updateProjSelector(); }
+      }
+      if (data.activeProjectId) await loadEntries(data.activeProjectId);
+      document.getElementById('gTarih').value = new Date().toISOString().split('T')[0];
+      loadAjanda();
+    });
   }
-  if (data.activeProjectId) {
-    await loadEntries(data.activeProjectId);
-  }
-  document.getElementById('gTarih').value = new Date().toISOString().split('T')[0];
-  // Ajanda yükle ve bildirimleri başlat
-  loadAjanda();
 });
 </script>
 
