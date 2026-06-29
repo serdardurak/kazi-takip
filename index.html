@@ -2834,16 +2834,22 @@ async function verileriYedekle() {
 <title>Kazı Takip Yedek</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
-  body{background:#0f172a;color:#e2e8f0;font-family:system-ui,sans-serif;padding:20px;min-height:100vh}
-  h2{color:#f59e0b;font-size:18px;margin-bottom:6px}
-  p{color:#94a3b8;font-size:13px;margin-bottom:16px}
-  a.btn{display:block;width:100%;background:#f59e0b;color:#0f172a;border:none;border-radius:10px;padding:15px;font-size:15px;font-weight:900;cursor:pointer;text-align:center;text-decoration:none;margin-bottom:10px}
-  .info{background:#1e293b;border:1px solid #334155;border-radius:8px;padding:12px;font-size:12px;color:#64748b;line-height:1.6}
+  body{background:#0f172a;color:#e2e8f0;font-family:system-ui,sans-serif;padding:24px;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+  h2{color:#f59e0b;font-size:18px}
+  p{color:#94a3b8;font-size:13px;text-align:center;line-height:1.6}
+  a.btn{display:block;width:100%;max-width:320px;background:#f59e0b;color:#0f172a;border:none;border-radius:10px;padding:15px;font-size:15px;font-weight:900;cursor:pointer;text-align:center;text-decoration:none}
+  .info{background:#1e293b;border:1px solid #334155;border-radius:8px;padding:12px;font-size:12px;color:#64748b;line-height:1.6;max-width:320px;text-align:center}
 </style></head><body>
 <h2>💾 Kazı Takip Yedek</h2>
 <p>📅 ${tarihStr}<br>📊 ${ozet}</p>
-<a class="btn" href="${dataUri}" download="${dosyaAdi}">📥 ${dosyaAdi}</a>
-<div class="info">Dosya indirilmezse uzun basıp "Bağlantıyı indir" seçeneğini deneyin.</div>
+<a class="btn" id="dlBtn" href="${dataUri}" download="${dosyaAdi}">📥 İndir: ${dosyaAdi}</a>
+<div class="info">İndirme başlamazsa butona uzun basıp<br>"Bağlantıyı indir" seçeneğini deneyin.</div>
+<script>
+  // Sayfa açılınca otomatik indir
+  window.addEventListener('load', function() {
+    document.getElementById('dlBtn').click();
+  });
+<\/script>
 </body></html>`;
 
     const blob = new Blob([html], { type: 'text/html' });
