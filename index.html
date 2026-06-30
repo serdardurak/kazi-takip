@@ -364,7 +364,6 @@
       <circle cx="68" cy="64" r="1" fill="white"/>
     </svg>
     <div style="font-size:22px;font-weight:900;color:#f59e0b;letter-spacing:2px">KAZI TAKİP</div>
-    <div style="font-size:12px;color:#64748b;margin-top:4px">Fiber Alt Yapı Yönetimi</div>
   </div>
   <div style="width:100%;max-width:320px;background:#1e293b;border:1px solid #334155;border-radius:14px;padding:24px">
     <div style="font-size:14px;font-weight:700;color:#e2e8f0;margin-bottom:16px;text-align:center">Giriş Yap</div>
@@ -435,7 +434,6 @@
     </svg>
     <div>
       <div class="app-title">KAZI TAKİP</div>
-      <div class="app-sub">Fiber Alt Yapı Yönetimi</div>
     </div>
   </div>
   <div style="display:flex;align-items:center;gap:6px">
@@ -2256,6 +2254,10 @@ function giderRaporAyDegis(yon) {
   _giderRaporGoster();
 }
 
+function _ymd(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
 function giderOzelTarihAc() {
   const form = document.getElementById('giderOzelTarihForm');
   if (!form) return;
@@ -2269,8 +2271,14 @@ function giderOzelTarihAc() {
     document.getElementById('giderOzelBit').value = _giderRaporAy?.bit || son?.tarih || new Date().toISOString().split('T')[0];
   } else {
     const { yil, ay } = _giderRaporAy;
-    document.getElementById('giderOzelBas').value = new Date(yil, ay-1, 1).toISOString().split('T')[0];
-    document.getElementById('giderOzelBit').value = new Date(yil, ay, 0).toISOString().split('T')[0];
+    let basVarsayilan = _ymd(new Date(yil, ay-1, 1));
+    const bitVarsayilan = _ymd(new Date(yil, ay, 0));
+    if (giderler.length > 0) {
+      const ilkKayit = [...giderler].sort((a,b) => a.tarih.localeCompare(b.tarih))[0].tarih;
+      if (ilkKayit > basVarsayilan && ilkKayit <= bitVarsayilan) basVarsayilan = ilkKayit;
+    }
+    document.getElementById('giderOzelBas').value = basVarsayilan;
+    document.getElementById('giderOzelBit').value = bitVarsayilan;
   }
   form.style.display = 'block';
 }
@@ -2307,8 +2315,12 @@ function _giderRaporGoster() {
     const { yil, ay } = _giderRaporAy;
     const ayBas = new Date(yil, ay - 1, 1);
     const ayBit = new Date(yil, ay, 0);
-    basStr = ayBas.toISOString().split('T')[0];
-    bitStr = ayBit.toISOString().split('T')[0];
+    basStr = _ymd(ayBas);
+    bitStr = _ymd(ayBit);
+    if (giderler.length > 0) {
+      const ilkKayit = [...giderler].sort((a,b) => a.tarih.localeCompare(b.tarih))[0].tarih;
+      if (ilkKayit > basStr && ilkKayit <= bitStr) basStr = ilkKayit;
+    }
     ayAdi = ayBas.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
     ikon = '📅';
   }
@@ -2339,7 +2351,7 @@ function _giderRaporGoster() {
   const satirlar = katSatirlar.map(([k,t])=>`${k}: ${t.toLocaleString('tr-TR')} ₺`);
   const maxLen = Math.max(20, ...satirlar.map(s => s.length), `TOPLAM: ${toplam.toLocaleString('tr-TR')} ₺`.length);
   const cizgi = '─'.repeat(maxLen);
-  const metin = `💸 GİDER RAPORU\n\n${ikon} ${ayAdi}${tarihAralikStr ? `\n📆 ${tarihAralikStr}` : ''}${haftaStr ? `\n🗓 ${haftaStr}` : ''}\n${cizgi}\n${satirlar.join('\n') || 'Kayıt yok'}\n${cizgi}\nTOPLAM: ${toplam.toLocaleString('tr-TR')} ₺`;
+  const metin = `💸 GİDER RAPORU\n\n${ikon} ${ayAdi}${tarihAralikStr ? `\n📆 ${tarihAralikStr}` : ''}\n${cizgi}\n${satirlar.join('\n') || 'Kayıt yok'}\n${cizgi}\nTOPLAM: ${toplam.toLocaleString('tr-TR')} ₺`;
 
   const icerik = document.getElementById('raporOnizlemeIcerik');
   if (icerik) {
@@ -2348,8 +2360,7 @@ function _giderRaporGoster() {
     icerik.innerHTML = `
       <div style="font-size:15px;font-weight:900;margin-bottom:8px">💸 GİDER RAPORU</div>
       <div style="font-size:12px;color:var(--muted);margin-bottom:2px">${ikon} ${ayAdi}</div>
-      ${tarihAralikStr ? `<div style="font-size:11px;color:var(--muted);margin-bottom:2px">📆 ${tarihAralikStr}</div>` : ''}
-      ${haftaStr ? `<div style="font-size:11px;color:var(--muted);margin-bottom:8px">🗓 ${haftaStr}</div>` : '<div style="margin-bottom:8px"></div>'}
+      ${tarihAralikStr ? `<div style="font-size:11px;color:var(--muted);margin-bottom:8px">📆 ${tarihAralikStr}</div>` : '<div style="margin-bottom:8px"></div>'}
       ${katSatirlar.length > 0 ? katHTML : '<div style="color:var(--muted);text-align:center;padding:12px">Kayıt yok</div>'}
       <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;margin-top:2px;border-top:2px solid var(--border)">
         <span style="font-weight:900;font-size:13px">TOPLAM</span>
