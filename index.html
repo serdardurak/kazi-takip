@@ -672,6 +672,12 @@
 
   <!-- VIEW: RAPOR -->
   <div class="view" id="view-rapor">
+    <div style="display:flex;gap:6px;margin-bottom:12px">
+      <button id="raporTabBtnProje" onclick="raporTabDegis('proje')" style="flex:1;padding:10px;border:1.5px solid var(--yellow);background:var(--yellow);color:#0f172a;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">📊 Proje Raporu</button>
+      <button id="raporTabBtnAylik" onclick="raporTabDegis('aylik')" style="flex:1;padding:10px;border:1.5px solid var(--border);background:none;color:var(--muted);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">🗓️ Aylık Rapor</button>
+    </div>
+
+    <div id="raporProjeTab">
     <div id="raporEmpty" class="empty" style="display:none">
       <div class="empty-text">Rapor için bir proje seçin.</div>
     </div>
@@ -748,6 +754,58 @@
         </div>
         <canvas id="grafikCanvas" style="width:100%;max-height:220px"></canvas>
         <div id="grafikLegend" style="margin-top:10px;font-size:11px;color:var(--muted);text-align:center"></div>
+      </div>
+    </div>
+    </div>
+
+    <!-- AYLIK RAPOR TAB (Tüm projeler, seçilen aya göre) -->
+    <div id="raporAylikTab" style="display:none">
+      <div class="card">
+        <div class="card-title">🗓️ Aylık Kazı Raporu</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <button onclick="aylikRaporAyDegis(-1)" style="background:none;border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px 14px;font-size:18px;cursor:pointer;font-family:inherit">‹</button>
+          <input type="month" id="aylikRaporAyInput" onchange="aylikRaporAyInputDegis()" style="flex:1;text-align:center" />
+          <button onclick="aylikRaporAyDegis(1)" style="background:none;border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px 14px;font-size:18px;cursor:pointer;font-family:inherit">›</button>
+        </div>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-card" style="border-top-color:#f59e0b">
+          <div class="stat-icon">📏</div>
+          <div class="stat-value" id="aStatMetre" style="color:#f59e0b">0 m</div>
+          <div class="stat-label">Toplam Kazı</div>
+        </div>
+        <div class="stat-card" style="border-top-color:#3b82f6">
+          <div class="stat-icon">📅</div>
+          <div class="stat-value" id="aStatKayit" style="color:#3b82f6">0</div>
+          <div class="stat-label">Kayıt Sayısı</div>
+        </div>
+        <div class="stat-card" style="border-top-color:#10b981">
+          <div class="stat-icon">🏗</div>
+          <div class="stat-value" id="aStatProje" style="color:#10b981">0</div>
+          <div class="stat-label">Aktif Proje</div>
+        </div>
+      </div>
+
+      <div class="card" id="aylikProjeOzetCard" style="display:none">
+        <div class="card-title">🏗 Projelere Göre Toplam</div>
+        <table class="tbl">
+          <thead><tr><th>Proje</th><th>Toplam</th><th>Kayıt</th></tr></thead>
+          <tbody id="aylikProjeOzetBody"></tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📋 Kazı Detayları</div>
+        <table class="tbl">
+          <thead><tr><th>Tarih</th><th>Proje</th><th>Kazı (m)</th></tr></thead>
+          <tbody id="aylikRaporBody"></tbody>
+        </table>
+        <div id="aylikRaporBos" style="display:none;padding:20px 0;text-align:center;color:var(--muted);font-size:13px">Bu ayda kayıt bulunamadı.</div>
+      </div>
+
+      <div style="margin-top:4px;margin-bottom:8px">
+        <button class="btn-primary" style="background:#10b981" onclick="aylikRaporPaylas()">📤 Paylaş</button>
       </div>
     </div>
   </div>
@@ -1521,7 +1579,7 @@ function showView(name) {
   if (projSel) projSel.style.display = hasProjSelector && data.projects.length > 0 ? 'flex' : 'none';
   if (name === 'dashboard') { renderDashboard(); if (data.activeProjectId) yenile(); }
   if (name === 'ajanda') { loadAjanda(); }
-  if (name === 'rapor') renderRapor();
+  if (name === 'rapor') { if (_raporTab === 'aylik') renderAylikRapor(); else renderRapor(); }
   if (name === 'projeler') renderProjeler();
   if (name === 'kayit' && !editingId && !window._lastSavedEntryId) {
     resetForm();
@@ -4068,6 +4126,129 @@ function renderRapor() {
   document.getElementById('raporEntryBody').innerHTML = sorted.map(e =>
     `<tr><td>${new Date(e.tarih).toLocaleDateString('tr-TR')}</td><td style="color:var(--yellow);font-weight:700">${Number(e.kaziMetre).toLocaleString('tr-TR', {maximumFractionDigits:0})} m</td><td>${e.malzemeler.length} çeşit</td></tr>`
   ).join('');
+}
+
+// ─── AYLIK RAPOR (Tüm projeler, seçilen aya göre) ─────────
+let _raporTab = 'proje';
+let _aylikRaporAy = null; // {yil, ay}
+
+function raporTabDegis(tab) {
+  _raporTab = tab;
+  const btnProje = document.getElementById('raporTabBtnProje');
+  const btnAylik = document.getElementById('raporTabBtnAylik');
+  const tabProje = document.getElementById('raporProjeTab');
+  const tabAylik = document.getElementById('raporAylikTab');
+  const aktifStil = 'flex:1;padding:10px;border:1.5px solid var(--yellow);background:var(--yellow);color:#0f172a;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit';
+  const pasifStil = 'flex:1;padding:10px;border:1.5px solid var(--border);background:none;color:var(--muted);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit';
+  if (tab === 'aylik') {
+    if (btnProje) btnProje.style.cssText = pasifStil;
+    if (btnAylik) btnAylik.style.cssText = aktifStil;
+    if (tabProje) tabProje.style.display = 'none';
+    if (tabAylik) tabAylik.style.display = 'block';
+    renderAylikRapor();
+  } else {
+    if (btnAylik) btnAylik.style.cssText = pasifStil;
+    if (btnProje) btnProje.style.cssText = aktifStil;
+    if (tabAylik) tabAylik.style.display = 'none';
+    if (tabProje) tabProje.style.display = 'block';
+    renderRapor();
+  }
+}
+
+function aylikRaporAyDegis(yon) {
+  if (!_aylikRaporAy) { const now = new Date(); _aylikRaporAy = { yil: now.getFullYear(), ay: now.getMonth() + 1 }; }
+  let { yil, ay } = _aylikRaporAy;
+  ay += yon;
+  if (ay > 12) { ay = 1; yil++; }
+  if (ay < 1) { ay = 12; yil--; }
+  _aylikRaporAy = { yil, ay };
+  renderAylikRapor();
+}
+
+function aylikRaporAyInputDegis() {
+  const val = document.getElementById('aylikRaporAyInput')?.value; // "YYYY-MM"
+  if (!val) return;
+  const [yil, ay] = val.split('-').map(Number);
+  _aylikRaporAy = { yil, ay };
+  renderAylikRapor();
+}
+
+async function renderAylikRapor() {
+  if (!_aylikRaporAy) {
+    const now = new Date();
+    _aylikRaporAy = { yil: now.getFullYear(), ay: now.getMonth() + 1 };
+  }
+  const { yil, ay } = _aylikRaporAy;
+  const input = document.getElementById('aylikRaporAyInput');
+  if (input) input.value = `${yil}-${String(ay).padStart(2, '0')}`;
+
+  const basStr = `${yil}-${String(ay).padStart(2, '0')}-01`;
+  const bitStr = _ymd(new Date(yil, ay, 0));
+
+  showLoading('Yükleniyor...');
+  let kayitlar = [];
+  try {
+    const { data: sonuc, error } = await sb.from('kayitlar')
+      .select('proje_id, tarih, kazi_metre')
+      .gte('tarih', basStr).lte('tarih', bitStr)
+      .order('tarih', { ascending: false });
+    if (error) throw error;
+    kayitlar = sonuc || [];
+  } catch (err) {
+    hideLoading();
+    toast('⚠️ ' + (err.message || 'Kayıtlar alınamadı'), true);
+    return;
+  }
+  hideLoading();
+
+  const tumProjeler = {};
+  data.projects.forEach(p => tumProjeler[p.id] = p.name);
+  (data.deletedProjects || []).forEach(p => tumProjeler[p.id] = p.name + ' (silindi)');
+
+  const toplamMetre = kayitlar.reduce((s, k) => s + parseFloat(k.kazi_metre || 0), 0);
+  const projeSet = new Set(kayitlar.map(k => k.proje_id));
+
+  document.getElementById('aStatMetre').textContent = toplamMetre.toLocaleString('tr-TR', { maximumFractionDigits: 0 }) + ' m';
+  document.getElementById('aStatKayit').textContent = kayitlar.length;
+  document.getElementById('aStatProje').textContent = projeSet.size;
+
+  const projeMap = {};
+  kayitlar.forEach(k => {
+    if (!projeMap[k.proje_id]) projeMap[k.proje_id] = { toplam: 0, sayi: 0 };
+    projeMap[k.proje_id].toplam += parseFloat(k.kazi_metre || 0);
+    projeMap[k.proje_id].sayi += 1;
+  });
+  const ozetGiris = Object.entries(projeMap).sort((a, b) => b[1].toplam - a[1].toplam);
+  const ozetCard = document.getElementById('aylikProjeOzetCard');
+  if (ozetGiris.length > 0) {
+    ozetCard.style.display = 'block';
+    document.getElementById('aylikProjeOzetBody').innerHTML = ozetGiris.map(([pid, v]) =>
+      `<tr><td>${tumProjeler[pid] || 'Bilinmeyen Proje'}</td><td style="color:var(--yellow);font-weight:700">${v.toplam.toLocaleString('tr-TR', { maximumFractionDigits: 0 })} m</td><td>${v.sayi}</td></tr>`
+    ).join('');
+  } else { ozetCard.style.display = 'none'; }
+
+  const body = document.getElementById('aylikRaporBody');
+  const bos = document.getElementById('aylikRaporBos');
+  if (kayitlar.length === 0) {
+    body.innerHTML = '';
+    bos.style.display = 'block';
+  } else {
+    bos.style.display = 'none';
+    body.innerHTML = kayitlar.map(k =>
+      `<tr><td>${new Date(k.tarih).toLocaleDateString('tr-TR')}</td><td>${tumProjeler[k.proje_id] || 'Bilinmeyen Proje'}</td><td style="color:var(--yellow);font-weight:700">${Number(k.kazi_metre).toLocaleString('tr-TR', { maximumFractionDigits: 0 })} m</td></tr>`
+    ).join('');
+  }
+
+  window._aylikRaporVeri = { yil, ay, kayitlar, tumProjeler, toplamMetre, ozetGiris };
+}
+
+function aylikRaporPaylas() {
+  const veri = window._aylikRaporVeri;
+  if (!veri || veri.kayitlar.length === 0) { toast('⚠️ Bu ayda kayıt yok', true); return; }
+  const ayAdi = new Date(veri.yil, veri.ay - 1, 1).toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
+  const satirlar = veri.ozetGiris.map(([pid, v]) => `${veri.tumProjeler[pid] || 'Bilinmeyen Proje'}: ${v.toplam.toLocaleString('tr-TR', { maximumFractionDigits: 0 })} m (${v.sayi} kayıt)`);
+  const metin = `🗓️ *AYLIK KAZI RAPORU*\n📅 ${ayAdi}\n\n${satirlar.join('\n')}\n\nTOPLAM: ${veri.toplamMetre.toLocaleString('tr-TR', { maximumFractionDigits: 0 })} m (${veri.kayitlar.length} kayıt)`;
+  paylas(metin, 'Aylık Kazı Raporu');
 }
 
 // ─── EXCEL EXPORT ────────────────────────────────────────
