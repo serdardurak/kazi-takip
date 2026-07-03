@@ -826,6 +826,12 @@
         <div id="aylikRaporBos" style="display:none;padding:20px 0;text-align:center;color:var(--muted);font-size:13px">Bu ayda kayıt bulunamadı.</div>
       </div>
 
+      <div class="card" id="aylikAjandaCard" style="display:none">
+        <div class="card-title" style="color:#3b82f6">📅 Ajanda</div>
+        <div id="aylikAjandaOzet" style="font-size:12px;color:var(--muted);margin-bottom:10px"></div>
+        <div id="aylikAjandaListesi"></div>
+      </div>
+
       <div style="display:flex;gap:8px;margin-top:4px;margin-bottom:8px">
         <button class="btn-primary" style="flex:1;background:#10b981" onclick="aylikRaporPaylas()">📤 Paylaş</button>
         <button class="btn-primary" style="flex:1;background:var(--red)" onclick="aylikRaporPdf()">📄 PDF</button>
@@ -2250,6 +2256,10 @@ function projeRaporPdf() {
     td { border: 1px solid #e5e7eb; padding: 5px 8px; font-size: 11px; }
     tr:nth-child(even) td { background: #f9fafb; }
     .footer { margin-top: 24px; font-size: 10px; color: #999; border-top: 1px solid #e5e7eb; padding-top: 8px; }
+    thead { display: table-header-group; }
+    h2 { page-break-after: avoid; break-after: avoid-page; }
+    tr { page-break-inside: avoid; break-inside: avoid-page; }
+    table { page-break-inside: auto; }
     @media print { body { padding: 10px; } }
   </style></head><body>
   <h1>⛏ ${proj.name}${proj.location ? ' — ' + proj.location : ''}</h1>
@@ -3190,15 +3200,17 @@ async function verileriExcelYedekle() {
 async function verileriPdfYedekle() {
   showLoading('PDF hazırlanıyor...');
   try {
-    const [projelerRes, kayitlarRes, giderlerRes, ajandaRes] = await Promise.all([
+    const [projelerRes, kayitlarRes, giderlerRes, ekiplerRes] = await Promise.all([
       sb.from('projeler').select('*'),
       sb.from('kayitlar').select('*'),
       sb.from('giderler').select('*'),
-      sb.from('ajanda').select('*')
+      sb.from('ekipler').select('*')
     ]);
 
     const projMap = {};
     (projelerRes.data||[]).forEach(p => projMap[p.id] = p.ad);
+    const ekipMap = {};
+    (ekiplerRes.data||[]).forEach(t => ekipMap[t.id] = t.ad);
 
     const tarihStr = new Date().toLocaleDateString('tr-TR');
     let html = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>
@@ -3212,7 +3224,10 @@ async function verileriPdfYedekle() {
       .ozet{display:flex;gap:16px;margin:12px 0}
       .ozet div{background:#f3f4f6;padding:10px 16px;border-radius:8px;text-align:center}
       .ozet .v{font-size:18px;font-weight:bold;color:#f59e0b}
-      @media print{ h2{page-break-before:auto} table{page-break-inside:avoid} }
+      thead{display:table-header-group}
+      h2{page-break-after:avoid;break-after:avoid-page}
+      tr{page-break-inside:avoid;break-inside:avoid-page}
+      table{page-break-inside:auto}
     </style></head><body>`;
 
     html += `<h1>🏗 Kazı Takip - Genel Yedek Raporu</h1><p>Oluşturma Tarihi: ${tarihStr}</p>`;
@@ -3224,6 +3239,7 @@ async function verileriPdfYedekle() {
       <div><div class="v">${(projelerRes.data||[]).length}</div>Proje</div>
       <div><div class="v">${(kayitlarRes.data||[]).length}</div>Kayıt</div>
       <div><div class="v">${Math.round(toplamKazi).toLocaleString('tr-TR')} m</div>Toplam Kazı</div>
+      <div><div class="v">${(ekiplerRes.data||[]).length}</div>Ekip</div>
       <div><div class="v">${Math.round(toplamGider).toLocaleString('tr-TR')} ₺</div>Toplam Gider</div>
     </div>`;
 
@@ -3235,11 +3251,45 @@ async function verileriPdfYedekle() {
     html += `</table>`;
 
     // Kayıtlar
-    html += `<h2>📋 Kayıtlar (${(kayitlarRes.data||[]).length})</h2><table><tr><th>Proje</th><th>Tarih</th><th>Metre</th><th>Notlar</th></tr>`;
+    html += `<h2>📋 Kayıtlar (${(kayitlarRes.data||[]).length})</h2><table><tr><th>Proje</th><th>Tarih</th><th>Ekip</th><th>Metre</th><th>Notlar</th></tr>`;
     (kayitlarRes.data||[]).sort((a,b)=>a.tarih.localeCompare(b.tarih)).forEach(k => {
-      html += `<tr><td>${projMap[k.proje_id]||'-'}</td><td>${new Date(k.tarih).toLocaleDateString('tr-TR')}</td><td>${k.kazi_metre} m</td><td>${(k.notlar||'').substring(0,60)}</td></tr>`;
+      html += `<tr><td>${projMap[k.proje_id]||'-'}</td><td>${new Date(k.tarih).toLocaleDateString('tr-TR')}</td><td>${k.ekip_id ? (ekipMap[k.ekip_id]||'-') : '-'}</td><td>${k.kazi_metre} m</td><td>${(k.notlar||'').substring(0,60)}</td></tr>`;
     });
     html += `</table>`;
+
+    // Ekipler (detaylı)
+    const ekipStats = {};
+    (kayitlarRes.data||[]).forEach(k => {
+      const key = k.ekip_id || '__bos__';
+      if (!ekipStats[key]) ekipStats[key] = { toplam: 0, sayi: 0, projeler: new Set(), ilk: null, son: null };
+      const s = ekipStats[key];
+      s.toplam += parseFloat(k.kazi_metre || 0);
+      s.sayi += 1;
+      s.projeler.add(projMap[k.proje_id] || 'Bilinmeyen Proje');
+      if (!s.ilk || k.tarih < s.ilk) s.ilk = k.tarih;
+      if (!s.son || k.tarih > s.son) s.son = k.tarih;
+    });
+    html += `<h2>👷 Ekipler (${(ekiplerRes.data||[]).length})</h2>`;
+    if ((ekiplerRes.data||[]).length === 0) {
+      html += `<p style="color:#999">Henüz ekip tanımlanmamış.</p>`;
+    } else {
+      html += `<table><tr><th>Ekip</th><th>Toplam Kazı</th><th>Kayıt Sayısı</th><th>Çalıştığı Projeler</th><th>İlk / Son Kazı</th></tr>`;
+      ekiplerRes.data.slice().sort((a,b)=>(ekipStats[b.id]?.toplam||0)-(ekipStats[a.id]?.toplam||0)).forEach(t => {
+        const s = ekipStats[t.id];
+        if (s) {
+          html += `<tr><td>👷 ${t.ad}</td><td style="font-weight:700">${Math.round(s.toplam).toLocaleString('tr-TR')} m</td><td>${s.sayi}</td><td>${[...s.projeler].join(', ')}</td><td>${new Date(s.ilk).toLocaleDateString('tr-TR')} → ${new Date(s.son).toLocaleDateString('tr-TR')}</td></tr>`;
+        } else {
+          html += `<tr><td>👷 ${t.ad}</td><td colspan="4" style="color:#999">Henüz kayıt yok</td></tr>`;
+        }
+      });
+      html += `</table>`;
+    }
+    if (ekipStats['__bos__']) {
+      const s = ekipStats['__bos__'];
+      html += `<h2 style="background:#fff3f3">⚠️ Ekip Atanmamış Kayıtlar</h2>
+        <table><tr><th>Toplam Kazı</th><th>Kayıt Sayısı</th><th>Çalışılan Projeler</th><th>İlk / Son Kazı</th></tr>
+        <tr><td style="font-weight:700">${Math.round(s.toplam).toLocaleString('tr-TR')} m</td><td>${s.sayi}</td><td>${[...s.projeler].join(', ')}</td><td>${new Date(s.ilk).toLocaleDateString('tr-TR')} → ${new Date(s.son).toLocaleDateString('tr-TR')}</td></tr></table>`;
+    }
 
     // Giderler
     html += `<h2>💸 Giderler (${(giderlerRes.data||[]).length})</h2><table><tr><th>Tarih</th><th>Kategori</th><th>Açıklama</th><th>Tutar</th></tr>`;
@@ -3247,15 +3297,6 @@ async function verileriPdfYedekle() {
       html += `<tr><td>${new Date(g.tarih).toLocaleDateString('tr-TR')}</td><td>${g.kategori}</td><td>${g.aciklama||'-'}</td><td>${parseFloat(g.tutar).toLocaleString('tr-TR')} ₺</td></tr>`;
     });
     html += `</table>`;
-
-    // Ajanda
-    if ((ajandaRes.data||[]).length > 0) {
-      html += `<h2>📅 Ajanda (${ajandaRes.data.length})</h2><table><tr><th>Başlık</th><th>Tarih</th><th>Saat</th><th>Durum</th></tr>`;
-      ajandaRes.data.sort((a,b)=>a.tarih.localeCompare(b.tarih)).forEach(a => {
-        html += `<tr><td>${a.baslik}</td><td>${new Date(a.tarih).toLocaleDateString('tr-TR')}</td><td>${a.saat?a.saat.substring(0,5):'-'}</td><td>${a.tamamlandi?'Tamamlandı':'Bekliyor'}</td></tr>`;
-      });
-      html += `</table>`;
-    }
 
     html += `</body></html>`;
 
@@ -4325,12 +4366,17 @@ async function renderAylikRapor() {
 
   showLoading('Yükleniyor...');
   let kayitlar = [];
+  let ajandaKayitlari = [];
   try {
     let sorgu = sb.from('kayitlar').select('proje_id, tarih, kazi_metre, ekip_id').order('tarih', { ascending: false });
     if (!tumZamanlar) sorgu = sorgu.gte('tarih', basStr).lte('tarih', bitStr);
-    const { data: sonuc, error } = await sorgu;
-    if (error) throw error;
-    kayitlar = sonuc || [];
+    let ajandaSorgu = sb.from('ajanda').select('id,baslik,notlar,tarih,saat,tamamlandi').order('tarih', { ascending: true }).order('saat', { ascending: true });
+    if (!tumZamanlar) ajandaSorgu = ajandaSorgu.gte('tarih', basStr).lte('tarih', bitStr);
+    const [kayitRes, ajandaRes] = await Promise.all([sorgu, ajandaSorgu]);
+    if (kayitRes.error) throw kayitRes.error;
+    if (ajandaRes.error) throw ajandaRes.error;
+    kayitlar = kayitRes.data || [];
+    ajandaKayitlari = ajandaRes.data || [];
   } catch (err) {
     hideLoading();
     toast('⚠️ ' + (err.message || 'Kayıtlar alınamadı'), true);
@@ -4402,7 +4448,26 @@ async function renderAylikRapor() {
     ).join('');
   }
 
-  window._aylikRaporVeri = { yil, ay, tumZamanlar, kayitlar: filtreli, tumProjeler, tumEkipler, toplamMetre, ozetGiris, ekipOzetGiris, ekipFiltreAd: ekipFiltre === '__bos__' ? 'Ekip Atanmamış' : (ekipFiltre ? (tumEkipler[ekipFiltre] || '') : '') };
+  const ajandaCard = document.getElementById('aylikAjandaCard');
+  const ajandaOzet = document.getElementById('aylikAjandaOzet');
+  const ajandaListesi = document.getElementById('aylikAjandaListesi');
+  if (ajandaKayitlari.length > 0) {
+    ajandaCard.style.display = 'block';
+    const tamamlanan = ajandaKayitlari.filter(a => a.tamamlandi).length;
+    ajandaOzet.textContent = `${ajandaKayitlari.length} görev — ${tamamlanan} tamamlandı, ${ajandaKayitlari.length - tamamlanan} bekliyor`;
+    ajandaListesi.innerHTML = ajandaKayitlari.map(a => `
+      <div style="display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)">
+        <span style="font-size:16px">${a.tamamlandi ? '✅' : '⏳'}</span>
+        <div style="flex:1">
+          <div style="font-size:13px;color:var(--text);font-weight:600${a.tamamlandi ? ';text-decoration:line-through;color:var(--muted)' : ''}">${a.baslik}</div>
+          <div style="font-size:11px;color:var(--muted)">${new Date(a.tarih).toLocaleDateString('tr-TR')}${a.saat ? ' · ' + a.saat.substring(0, 5) : ''}</div>
+        </div>
+      </div>`).join('');
+  } else {
+    ajandaCard.style.display = 'none';
+  }
+
+  window._aylikRaporVeri = { yil, ay, tumZamanlar, kayitlar: filtreli, tumProjeler, tumEkipler, toplamMetre, ozetGiris, ekipOzetGiris, ajanda: ajandaKayitlari, ekipFiltreAd: ekipFiltre === '__bos__' ? 'Ekip Atanmamış' : (ekipFiltre ? (tumEkipler[ekipFiltre] || '') : '') };
 }
 
 function aylikRaporPaylas() {
@@ -4450,6 +4515,10 @@ function aylikRaporPdf() {
     td { border: 1px solid #e5e7eb; padding: 5px 8px; font-size: 11px; }
     tr:nth-child(even) td { background: #f9fafb; }
     .footer { margin-top: 24px; font-size: 10px; color: #999; border-top: 1px solid #e5e7eb; padding-top: 8px; }
+    thead { display: table-header-group; }
+    h2 { page-break-after: avoid; break-after: avoid-page; }
+    tr { page-break-inside: avoid; break-inside: avoid-page; }
+    table { page-break-inside: auto; }
     @media print { body { padding: 10px; } }
   </style></head><body>
   <h1>${veri.tumZamanlar ? '♾️ Tüm Zamanlar Kazı Raporu' : '🗓️ Aylık Kazı Raporu'}</h1>
