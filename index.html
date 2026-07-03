@@ -298,6 +298,7 @@
       border-radius: 6px; padding: 3px 8px; font-size: 11px; margin-left: 6px;
     }
   
+  
     /* PERFORMANCE: Extracted inline styles */
     .panel-header { display:flex;align-items:center;justify-content:space-between;margin-bottom:10px; }
     .foto-indir-btn { position:absolute;bottom:2px;right:2px;background:rgba(0,0,0,0.7);border-radius:4px;padding:2px 4px;font-size:10px;color:white;text-decoration:none; }
@@ -391,6 +392,7 @@
 <div class="header" id="appHeader" style="display:none">
   <div class="header-left">
     <button id="geriBtn" onclick="geriGit()" style="display:none;background:none;border:none;color:var(--yellow);font-size:22px;cursor:pointer;padding:0 8px 0 0;line-height:1">←</button>
+    <div onclick="showView('dashboard')" style="display:flex;align-items:center;gap:10px;cursor:pointer">
     <svg width="40" height="40" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
       <circle cx="50" cy="50" r="49" fill="#b45309"/>
       <circle cx="50" cy="50" r="46" fill="#1e3a6e"/>
@@ -435,6 +437,7 @@
     <div>
       <div class="app-title">KAZI TAKİP</div>
     </div>
+    </div>
   </div>
   <div style="display:flex;align-items:center;gap:6px">
     <div class="active-badge" id="activeBadge" style="display:none" onclick="toggleProjModal()">
@@ -450,14 +453,6 @@
 
 <!-- MAIN -->
 <main id="appMain" style="display:none">
-
-  <!-- PROJECT SELECTOR (shown on dashboard/addEntry/reports) -->
-  <div class="proj-selector" id="projSelector" style="display:none">
-    <label>Proje:</label>
-    <select id="projSelect">
-      <option value="">-- Seçin --</option>
-    </select>
-  </div>
 
   <!-- VIEW: DASHBOARD -->
   <div class="view active" id="view-dashboard">
@@ -503,15 +498,17 @@
           <div class="stat-label">Hata Sayısı</div>
         </div>
       </div>
-      <div class="section-title">SON KAYITLAR</div>
-      <div style="margin-bottom:10px;position:relative">
-        <input type="text" id="kayitArama" placeholder="🔍 Tarih, metre veya not ara..." 
-          oninput="aramaYap(this.value)"
-          style="width:100%;padding:10px 36px 10px 12px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;box-sizing:border-box"/>
-        <button onclick="document.getElementById('kayitArama').value='';aramaYap('')" 
-          style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px">✕</button>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <div class="section-title" style="margin-bottom:0;white-space:nowrap">SON KAYITLAR</div>
+        <div style="flex:1;position:relative">
+          <input type="text" id="kayitArama" placeholder="🔍 Ara..." 
+            oninput="aramaYap(this.value)"
+            style="width:100%;padding:8px 30px 8px 10px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12.5px;font-family:inherit;box-sizing:border-box"/>
+          <button onclick="document.getElementById('kayitArama').value='';aramaYap('')" 
+            style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px">✕</button>
+        </div>
       </div>
-      <div id="entryList"></div>
+      <div id="entryList" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start"></div>
       <div id="dahaFazlaBtn" style="display:none;padding:8px 0 16px">
         <button onclick="dahaFazlaYukle()" style="width:100%;background:rgba(245,158,11,0.1);border:1.5px solid var(--yellow);color:var(--yellow);border-radius:10px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">⬇ Daha Fazla Yükle</button>
       </div>
@@ -1432,7 +1429,6 @@ async function saveEntry() {
   document.getElementById('view-dashboard').classList.add('active');
   document.getElementById('nav-dashboard').classList.add('active');
   document.getElementById('geriBtn').style.display = 'none';
-  if (data.projects.length > 0) document.getElementById('projSelector').style.display = 'flex';
   const fTarih = document.getElementById('fTarih');
   if (fTarih) fTarih.value = new Date().toISOString().split('T')[0];
   const fMetre = document.getElementById('fMetre');
@@ -1472,7 +1468,6 @@ async function updateEntry() {
   document.getElementById('view-dashboard').classList.add('active');
   document.getElementById('nav-dashboard').classList.add('active');
   document.getElementById('geriBtn').style.display = 'none';
-  if (data.projects.length > 0) document.getElementById('projSelector').style.display = 'flex';
   toast('✅ Kayıt güncellendi!');
   } catch(err) { hideLoading(); islemBildir('Güncellenemedi: ' + (err.message || 'Bağlantı hatası'), null, true); }
 }
@@ -1821,7 +1816,6 @@ async function hizliDetay(entryId, tip, hataIdx = null) {
   document.getElementById('nav-kayit').classList.add('active');
   const geriBtn = document.getElementById('geriBtn');
   if (geriBtn) geriBtn.style.display = 'block';
-  document.getElementById('projSelector').style.display = 'none';
   document.getElementById('kaziFormWrap').style.display = 'none';
   document.getElementById('detayEkleWrap').style.display = 'block';
   // Tamamlandı bannerını her zaman gizle - detay sayfasında gereksiz
@@ -4017,23 +4011,40 @@ function renderDashboard() {
 
   if (sorted.length === 0) {
     list.innerHTML = aramaKelime
-      ? `<div class="empty"><div class="empty-text">🔍 "${aramaKelime}" için sonuç yok.</div></div>`
-      : `<div class="empty"><div class="empty-text">Henüz kayıt yok.</div><button onclick="showView('kayit')" style="margin-top:16px;background:var(--yellow);color:#0f172a;border:none;border-radius:10px;padding:14px 32px;font-size:15px;font-weight:900;cursor:pointer;font-family:inherit">➕ Kayıt Ekle</button></div>`;
+      ? `<div class="empty" style="grid-column:1/-1"><div class="empty-text">🔍 "${aramaKelime}" için sonuç yok.</div></div>`
+      : `<div class="empty" style="grid-column:1/-1"><div class="empty-text">Henüz kayıt yok.</div><button onclick="showView('kayit')" style="margin-top:16px;background:var(--yellow);color:#0f172a;border:none;border-radius:10px;padding:14px 32px;font-size:15px;font-weight:900;cursor:pointer;font-family:inherit">➕ Kayıt Ekle</button></div>`;
     return;
   }
 
   list.innerHTML = sorted.map(e => {
     const ekipAdi = e.ekipId ? (data.teams.find(t => t.id === e.ekipId)?.ad || '') : '';
+    const hataVar = e.hatalar?.length > 0 || e.hata?.var;
+    const tarihKisa = new Date(e.tarih).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
+    const gunKisa = new Date(e.tarih).toLocaleDateString('tr-TR', { weekday: 'short' });
+
+    const meta = [];
+    if (e.malzemeler?.length > 0) meta.push(`🧱 ${e.malzemeler.length}`);
+    if (e.fotograflar?.length > 0) meta.push(`📷 ${e.fotograflar.length}`);
+    if (e.kmz) meta.push(`📁 KMZ`);
+    if (e.notlar) meta.push(`📝`);
+    if (hataVar) meta.push(`⚠️ ${e.hatalar?.length > 0 ? e.hatalar.length : ''}`);
+    const cizgiRengi = hataVar ? 'var(--red)' : 'var(--border)';
+
     return `
-    <div style="background:var(--card);border:1px solid ${(e.hatalar?.length > 0 || e.hata?.var) ? 'rgba(239,68,68,0.5)' : 'var(--border)'};border-radius:12px;margin-bottom:14px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.3)">
+    <div id="card-${e.id}" style="background:var(--card);border:1px solid ${hataVar ? 'rgba(239,68,68,0.5)' : 'var(--border)'};border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.3)">
 
       <!-- Üst satır - tıklayınca menü açılır -->
-      <div onclick="toggleEntry('${e.id}')" style="display:flex;align-items:center;padding:13px 14px;cursor:pointer">
-        <div style="flex:1;font-size:14px;color:var(--text);font-weight:600">📅 ${formatDate(e.tarih)}${ekipAdi ? ` <span style="font-size:11px;color:var(--muted);font-weight:400;text-transform:lowercase">· ${ekipAdi}</span>` : ''}</div>
-        <div style="display:flex;align-items:center;gap:8px">
-          ${(e.hatalar?.length > 0 || e.hata?.var) ? `<span class="hata-badge">⚠️ ${e.hatalar?.length > 0 ? e.hatalar.length + ' Hata' : 'Hata'}</span>` : ''}
-          <span style="font-size:17px;font-weight:900;color:var(--yellow)">⛏ ${e.kaziMetre} m</span>
-          <span id="tog-${e.id}" style="color:var(--muted);font-size:12px">▼</span>
+      <div onclick="toggleEntry('${e.id}')" style="cursor:pointer">
+        <div style="height:4px;background:${cizgiRengi}"></div>
+        <div style="padding:10px 12px;position:relative">
+          <span id="tog-${e.id}" style="position:absolute;top:9px;right:10px;color:var(--muted);font-size:11px">▼</span>
+          <div style="font-size:12px;font-weight:700;color:var(--text);padding-right:16px">
+            ${gunKisa} ${tarihKisa}${ekipAdi ? ` <span style="font-size:10.5px;font-weight:600;color:var(--muted)">· ${ekipAdi}</span>` : ''}
+          </div>
+          <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:6px">
+            <span style="font-size:16px;font-weight:900;color:var(--yellow)">⛏ ${e.kaziMetre} m</span>
+            ${meta.length > 0 ? `<span style="font-size:10.5px;color:var(--muted)">${meta.join('&nbsp;&nbsp;')}</span>` : ''}
+          </div>
         </div>
       </div>
 
@@ -4122,6 +4133,7 @@ function aramaYap(val) {
 }
 
 function toggleEntry(id) {
+  const card = document.getElementById('card-' + id);
   const body = document.getElementById('body-' + id);
   const tog = document.getElementById('tog-' + id);
   const detay = document.getElementById('detay-' + id);
@@ -4129,11 +4141,13 @@ function toggleEntry(id) {
   if (detay && detay.style.display !== 'none') {
     detay.style.display = 'none';
     body.classList.remove('open');
+    if (card) card.style.gridColumn = '';
     if (tog) tog.textContent = '▼';
     return;
   }
   // Menüyü aç/kapat
   const open = body.classList.toggle('open');
+  if (card) card.style.gridColumn = open ? '1 / -1' : '';
   if (tog) tog.textContent = open ? '▲' : '▼';
 }
 
@@ -5097,6 +5111,7 @@ function updateHeader() {
 
 function updateProjSelector() {
   const sel = document.getElementById('projSelect');
+  if (!sel) return;
   sel.onchange = null;
   sel.innerHTML = '<option value="">-- Seçin --</option>';
   data.projects.forEach(p => {
