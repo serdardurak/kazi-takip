@@ -602,7 +602,14 @@
           <div class="stat-card" style="border-top-color:#10b981">
             <div class="stat-icon">📈</div>
             <div class="stat-value" id="rStatOrt" style="color:#10b981">-</div>
-            <div class="stat-label">Günlük Ort.</div>
+            <div class="stat-label">Günlük Ort. (çalışılan gün)</div>
+          </div>
+        </div>
+        <div class="stats-row">
+          <div class="stat-card" style="border-top-color:#ec4899;flex:1">
+            <div class="stat-icon">📊</div>
+            <div class="stat-value" id="rStatOrtTakvim" style="color:#ec4899">-</div>
+            <div class="stat-label">Günlük Ort. (takvim günü)</div>
           </div>
         </div>
         <!-- Hedef İlerleme -->
@@ -667,12 +674,23 @@
         <div class="card-title" id="aylikRaporBaslik">🗓️ Aylık Kazı Raporu</div>
         <div style="display:flex;gap:6px;margin-bottom:12px">
           <button id="aylikPeriyotBtnAy" onclick="aylikRaporPeriyotDegis('ay')" style="flex:1;padding:9px;border:1.5px solid var(--yellow);background:var(--yellow);color:#0f172a;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">🗓️ Aylık</button>
+          <button id="aylikPeriyotBtnAralik" onclick="aylikRaporPeriyotDegis('aralik')" style="flex:1;padding:9px;border:1.5px solid var(--border);background:none;color:var(--muted);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">📆 Tarih Seç</button>
           <button id="aylikPeriyotBtnTum" onclick="aylikRaporPeriyotDegis('tum')" style="flex:1;padding:9px;border:1.5px solid var(--border);background:none;color:var(--muted);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">♾️ Tüm Zamanlar</button>
         </div>
         <div id="aylikAySeciciWrap" style="display:flex;align-items:center;gap:8px">
           <button onclick="aylikRaporAyDegis(-1)" style="background:none;border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px 14px;font-size:18px;cursor:pointer;font-family:inherit">‹</button>
           <input type="month" id="aylikRaporAyInput" onchange="aylikRaporAyInputDegis()" style="flex:1;text-align:center" />
           <button onclick="aylikRaporAyDegis(1)" style="background:none;border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px 14px;font-size:18px;cursor:pointer;font-family:inherit">›</button>
+        </div>
+        <div id="aylikAralikSeciciWrap" style="display:none;gap:8px">
+          <div style="flex:1">
+            <label class="field-label">BAŞLANGIÇ</label>
+            <input type="date" id="aylikRaporAralikBas" onchange="aylikRaporAralikDegis()" />
+          </div>
+          <div style="flex:1">
+            <label class="field-label">BİTİŞ</label>
+            <input type="date" id="aylikRaporAralikBit" onchange="aylikRaporAralikDegis()" />
+          </div>
         </div>
         <label class="field-label">👷 EKİBE GÖRE FİLTRELE</label>
         <select id="aylikRaporEkipFiltre" onchange="renderAylikRapor()">
@@ -700,6 +718,19 @@
         </div>
       </div>
 
+      <div class="stats-row">
+        <div class="stat-card" style="border-top-color:#8b5cf6;flex:1">
+          <div class="stat-icon">📈</div>
+          <div class="stat-value" id="aStatGunlukOrt" style="color:#8b5cf6">-</div>
+          <div class="stat-label" id="aStatGunlukOrtLabel">Günlük Ort. (çalışılan gün)</div>
+        </div>
+        <div class="stat-card" style="border-top-color:#ec4899;flex:1">
+          <div class="stat-icon">📊</div>
+          <div class="stat-value" id="aStatGunlukOrtTakvim" style="color:#ec4899">-</div>
+          <div class="stat-label">Günlük Ort. (takvim günü)</div>
+        </div>
+      </div>
+
       <div class="card" id="aylikProjeOzetCard" style="display:none">
         <div class="card-title">🏗 Projelere Göre Toplam</div>
         <table class="tbl">
@@ -723,12 +754,6 @@
           <tbody id="aylikRaporBody"></tbody>
         </table>
         <div id="aylikRaporBos" style="display:none;padding:20px 0;text-align:center;color:var(--muted);font-size:13px">Bu ayda kayıt bulunamadı.</div>
-      </div>
-
-      <div class="card" id="aylikAjandaCard" style="display:none">
-        <div class="card-title" style="color:#3b82f6">📅 Ajanda</div>
-        <div id="aylikAjandaOzet" style="font-size:12px;color:var(--muted);margin-bottom:10px"></div>
-        <div id="aylikAjandaListesi"></div>
       </div>
 
       <div style="display:flex;gap:8px;margin-top:4px;margin-bottom:8px">
@@ -764,52 +789,40 @@
   </div>
 
   <!-- VIEW: PROJELER -->
-  <!-- VIEW: AJANDA -->
-  <div class="view" id="view-ajanda">
-    <!-- Yeni Görev Ekle Butonu -->
-    <button onclick="ajandaFormAc()" style="width:100%;background:var(--yellow);color:#0f172a;border:none;border-radius:10px;padding:14px;font-size:15px;font-weight:900;cursor:pointer;font-family:inherit;margin-bottom:12px">
-      ➕ Yeni Görev Ekle
-    </button>
-
-    <!-- Görev Ekleme Formu -->
-    <div id="ajandaForm" style="display:none;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px">
-      <div class="card-title">📝 Görev Ekle</div>
-      <label class="field-label">BAŞLIK *</label>
-      <input type="text" id="aBaslik" placeholder="Görev başlığı..." />
-      <label class="field-label">AÇIKLAMA</label>
-      <textarea id="aNotlar" placeholder="Açıklama..." rows="3" style="width:100%;padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;font-family:inherit;resize:none;box-sizing:border-box"></textarea>
-      <div style="display:flex;gap:8px">
-        <div style="flex:1">
-          <label class="field-label">TARİH *</label>
-          <input type="date" id="aTarih" />
-        </div>
-        <div style="flex:1">
-          <label class="field-label">SAAT</label>
-          <input type="time" id="aSaat" />
-        </div>
+  <!-- VIEW: QR KOD -->
+  <div class="view" id="view-qrkod">
+    <div class="card">
+      <div class="card-title">🔗 QR Kod Oluştur</div>
+      <div style="display:flex;gap:6px;margin-bottom:14px">
+        <button id="qrTabBtnLink" onclick="qrTabDegis('link')" style="flex:1;padding:10px;border:1.5px solid var(--yellow);background:var(--yellow);color:#0f172a;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">🔗 Link / Metin</button>
+        <button id="qrTabBtnDosya" onclick="qrTabDegis('dosya')" style="flex:1;padding:10px;border:1.5px solid var(--border);background:none;color:var(--muted);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">📎 PDF / Görsel</button>
       </div>
-      <label class="field-label">HATIRLATMA</label>
-      <select id="aHatirlatma" style="width:100%;padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;font-family:inherit">
-        <option value="0">Hatırlatma yok</option>
-        <option value="1">1 dakika önce</option>
-        <option value="15">15 dakika önce</option>
-        <option value="30" selected>30 dakika önce</option>
-        <option value="60">1 saat önce</option>
-        <option value="120">2 saat önce</option>
-        <option value="1440">1 gün önce</option>
-      </select>
-      <div style="display:flex;gap:8px;margin-top:12px">
-        <button onclick="ajandaFormKapat()" style="flex:1;background:none;border:1px solid var(--border);color:var(--sub);border-radius:8px;padding:12px;font-size:14px;cursor:pointer;font-family:inherit">İptal</button>
-        <button onclick="ajandaKaydet()" style="flex:2;background:var(--yellow);color:#0f172a;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:900;cursor:pointer;font-family:inherit">💾 Kaydet</button>
+
+      <div id="qrTabLink">
+        <label class="field-label">LİNK VEYA METİN *</label>
+        <input type="text" id="qrLinkInput" placeholder="örn: https://ornek.com" />
+        <button class="btn-primary" onclick="qrKodOlustur()" style="margin-top:12px">📱 QR Kod Oluştur</button>
+      </div>
+
+      <div id="qrTabDosya" style="display:none">
+        <label class="field-label">PDF VEYA GÖRSEL SEÇ *</label>
+        <input type="file" id="qrDosyaInput" accept=".pdf,image/*" onchange="qrDosyaSecildi()" />
+        <div id="qrDosyaOnizleme" style="display:none;margin-top:10px;padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--text)"></div>
+        <button class="btn-primary" onclick="qrDosyaYukleVeOlustur()" style="margin-top:12px">📱 Yükle ve QR Kod Oluştur</button>
       </div>
     </div>
 
-    <!-- Yaklaşan Görevler -->
-    <div id="ajandaYaklasan" style="margin-bottom:8px"></div>
-
-    <!-- Tüm Görevler -->
-    <div class="section-title">TÜM GÖREVLER</div>
-    <div id="ajandaList"></div>
+    <div class="card" id="qrSonucCard" style="display:none;text-align:center">
+      <div class="card-title">✅ QR Kodun Hazır</div>
+      <div style="background:#fff;border-radius:12px;padding:16px;display:inline-block;margin:8px 0">
+        <img id="qrSonucImg" src="" alt="QR Kod" style="display:block;width:220px;height:220px" />
+      </div>
+      <div id="qrSonucLink" style="font-size:12px;color:var(--muted);word-break:break-all;margin-bottom:12px"></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn-primary" style="flex:1;background:#10b981" onclick="qrKodIndir()">⬇️ İndir</button>
+        <button class="btn-secondary" style="flex:1" onclick="qrKodPaylas()">📤 Paylaş</button>
+      </div>
+    </div>
   </div>
 
   <div class="view" id="view-projeler">
@@ -873,7 +886,7 @@
     <div class="card" style="margin-top:12px;border-color:rgba(59,130,246,0.3)">
       <div class="card-title" style="color:var(--blue)">💾 VERİ YÖNETİMİ</div>
 
-      <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Tüm projeler, kazı kayıtları, giderler ve ajanda verilerini yedekler.</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Tüm projeler, kazı kayıtları ve giderleri yedekler.</div>
 
       <button onclick="verileriYedekle()" style="width:100%;background:rgba(59,130,246,0.12);border:1.5px solid var(--blue);color:var(--blue);border-radius:10px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:8px">
         📥 Supabase Yedeği Al (JSON)
@@ -1106,8 +1119,8 @@
   <button class="nav-btn" id="nav-giderler" onclick="showView('giderler')">
     <span class="icon">💸</span><span>Giderler</span>
   </button>
-  <button class="nav-btn" id="nav-ajanda" onclick="showView('ajanda')">
-    <span class="icon">📅</span><span>Ajanda</span>
+  <button class="nav-btn" id="nav-qrkod" onclick="showView('qrkod')">
+    <span class="icon">🔗</span><span>QR Kod</span>
   </button>
   <button class="nav-btn" id="nav-rapor" onclick="showView('rapor')">
     <span class="icon">📊</span><span>Rapor</span>
@@ -1117,16 +1130,6 @@
   </button>
   <button class="nav-btn" id="nav-gider-ekle" style="display:none"></button>
 </nav>
-
-<!-- ALARM MODALI -->
-<div id="alarmModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:9999;align-items:center;justify-content:center;animation:titreme 0.5s infinite alternate">
-  <div style="background:var(--card);border:2px solid var(--yellow);border-radius:16px;padding:28px 24px;margin:20px;max-width:340px;width:100%;text-align:center">
-    <div id="alarmIcerik"></div>
-  </div>
-</div>
-<style>
-@keyframes titreme { from { transform:scale(1); } to { transform:scale(1.02); } }
-</style>
 
 <!-- DETAY MODALI -->
 <div id="detayModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:500;overflow-y:auto">
@@ -1274,7 +1277,6 @@ sb.auth.onAuthStateChange((event, session) => {
         }
         if (data.activeProjectId) await loadEntries(data.activeProjectId);
         document.getElementById('gTarih').value = new Date().toISOString().split('T')[0];
-        loadAjanda();
       });
     }
   } else {
@@ -1671,7 +1673,6 @@ function showView(name) {
   const projSel = document.getElementById('projSelector');
   if (projSel) projSel.style.display = hasProjSelector && data.projects.length > 0 ? 'flex' : 'none';
   if (name === 'dashboard') { renderDashboard(); if (data.activeProjectId) yenile(); }
-  if (name === 'ajanda') { loadAjanda(); }
   if (name === 'rapor') { if (_raporTab === 'aylik') renderAylikRapor(); else renderRapor(); }
   if (name === 'projeler') renderProjeler();
   if (name === 'kayit' && !editingId && !window._lastSavedEntryId) {
@@ -2262,6 +2263,8 @@ function projeRaporPdf() {
   const tarihler = proj.entries.map(e => new Date(e.tarih));
   const ilk = new Date(Math.min(...tarihler)).toLocaleDateString('tr-TR');
   const son = new Date(Math.max(...tarihler)).toLocaleDateString('tr-TR');
+  const takvimGunSayisi = Math.round((Math.max(...tarihler) - Math.min(...tarihler)) / 86400000) + 1;
+  const ortTakvim = takvimGunSayisi > 0 ? (toplam / takvimGunSayisi).toFixed(1) : '0';
   const tarihStr = new Date().toLocaleDateString('tr-TR');
 
   // Malzeme özeti
@@ -2325,7 +2328,8 @@ function projeRaporPdf() {
   <div class="stats">
     <div class="stat-box"><div class="stat-val">${toplam.toLocaleString('tr-TR')} m</div><div class="stat-lbl">Toplam Kazı</div></div>
     <div class="stat-box"><div class="stat-val">${gun}</div><div class="stat-lbl">Toplam Gün</div></div>
-    <div class="stat-box"><div class="stat-val">${ort} m</div><div class="stat-lbl">Günlük Ort.</div></div>
+    <div class="stat-box"><div class="stat-val">${ort} m</div><div class="stat-lbl">Günlük Ort. (çalışılan gün)</div></div>
+    <div class="stat-box"><div class="stat-val">${ortTakvim} m</div><div class="stat-lbl">Günlük Ort. (takvim günü)</div></div>
     <div class="stat-box"><div class="stat-val">${hataCount}</div><div class="stat-lbl">Hatalı Gün</div></div>
     ${proj.hedefMetre > 0 ? `<div class="stat-box"><div class="stat-val">${proj.hedefMetre.toLocaleString('tr-TR')} m</div><div class="stat-lbl">Hedef Metraj</div></div>` : ''}
     ${hedefHtml}
@@ -2359,8 +2363,11 @@ function projeRaporPaylas() {
   const toplam = proj.entries.reduce((s, e) => s + e.kaziMetre, 0);
   const ort = (toplam / proj.entries.length).toFixed(1);
   const hataCount = proj.entries.filter(e => e.hatalar?.length > 0 || e.hata?.var).length;
-  const ilk = new Date(Math.min(...proj.entries.map(e => new Date(e.tarih)))).toLocaleDateString('tr-TR');
-  const son = new Date(Math.max(...proj.entries.map(e => new Date(e.tarih)))).toLocaleDateString('tr-TR');
+  const tarihlerMs = proj.entries.map(e => new Date(e.tarih).getTime());
+  const ilk = new Date(Math.min(...tarihlerMs)).toLocaleDateString('tr-TR');
+  const son = new Date(Math.max(...tarihlerMs)).toLocaleDateString('tr-TR');
+  const takvimGunSayisi = Math.round((Math.max(...tarihlerMs) - Math.min(...tarihlerMs)) / 86400000) + 1;
+  const ortTakvim = takvimGunSayisi > 0 ? (toplam / takvimGunSayisi).toFixed(1) : '0';
   const hedefStr = proj.hedefMetre > 0 ? `\n🎯 Hedef: ${proj.hedefMetre} m (%${((toplam/proj.hedefMetre)*100).toLocaleString("tr-TR",{maximumFractionDigits:0})} tamamlandı)` : '';
   const malzMap = {};
   proj.entries.forEach(e => (e.malzemeler || []).forEach(m => { malzMap[m.name] = (malzMap[m.name] || 0) + parseFloat(m.miktar || 0); }));
@@ -2373,7 +2380,7 @@ function projeRaporPaylas() {
       : `      - ${e.hata?.turler?.join(', ') || 'Belirtilmemiş'}${e.hata?.aciklama ? ': ' + e.hata.aciklama : ''}`;
     return `   📅 ${tarih}\n${hatalar}`;
   }).join('\n') : '   • Yok';
-  const metin = `📊 *PROJE RAPORU*\n🏗 ${proj.name}${proj.location ? ' - ' + proj.location : ''}\n\n📅 ${ilk} → ${son}\n⛏ Toplam Kazı: *${toplam.toLocaleString("tr-TR",{maximumFractionDigits:0})} m*\n📈 Günlük Ort.: ${ort} m\n📅 Kazı Günü: ${proj.entries.length} gün${hedefStr}\n⚠️ Hatalı Gün: ${hataCount}\n\n🧱 Toplam Malzeme:\n${malzStr}\n\n⚠️ Hata Detayları:\n${hataStr}`;
+  const metin = `📊 *PROJE RAPORU*\n🏗 ${proj.name}${proj.location ? ' - ' + proj.location : ''}\n\n📅 ${ilk} → ${son}\n⛏ Toplam Kazı: *${toplam.toLocaleString("tr-TR",{maximumFractionDigits:0})} m*\n📈 Günlük Ort. (çalışılan gün): ${ort} m\n📊 Günlük Ort. (takvim günü): ${ortTakvim} m\n📅 Kazı Günü: ${proj.entries.length} gün${hedefStr}\n⚠️ Hatalı Gün: ${hataCount}\n\n🧱 Toplam Malzeme:\n${malzStr}\n\n⚠️ Hata Detayları:\n${hataStr}`;
   paylas(metin, 'Proje Raporu');
 }
 
@@ -2565,287 +2572,116 @@ function kmzIndir(url, ad) {
   toast('📥 KMZ açılıyor...');
 }
 
-// ─── AJANDA ──────────────────────────────────────────────
-let ajandaGorevler = [];
-let _editingAjandaId = null;
+// ─── QR KOD ──────────────────────────────────────────────
+let _qrSonLink = '';
+let _qrSeciliDosya = null;
 
-function ajandaTakvimeEkle(id) {
-  const g = ajandaGorevler.find(x => x.id === id);
-  if (!g || !g.saat) return;
-  const gz = new Date(g.tarih + 'T' + g.saat);
-  const fmt = d => d.getFullYear() + String(d.getMonth()+1).padStart(2,'0') + String(d.getDate()).padStart(2,'0') + 'T' + String(d.getHours()).padStart(2,'0') + String(d.getMinutes()).padStart(2,'0') + '00';
-  const bit = new Date(gz.getTime() + 60*60000);
-  const detay = [
-    g.notlar ? `📋 Açıklama: ${g.notlar}` : '',
-    `📅 Tarih: ${new Date(g.tarih+'T'+g.saat).toLocaleDateString('tr-TR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}`,
-    `🕐 Saat: ${g.saat.substring(0,5)}`,
-    g.hatirlatma_dk > 0 ? `🔔 Hatırlatma: ${g.hatirlatma_dk < 60 ? g.hatirlatma_dk+' dakika' : g.hatirlatma_dk/60+' saat'} önce` : '',
-    `\n— Kazı Takip Uygulaması`
-  ].filter(Boolean).join('\n');
-  const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('📋 '+g.baslik)}&dates=${fmt(gz)}/${fmt(bit)}&details=${encodeURIComponent(detay)}`;
-  window.open(url, '_blank');
-}
-
-function ajandaFormAc() {
-  _editingAjandaId = null;
-  document.getElementById('aBaslik').value = '';
-  document.getElementById('aNotlar').value = '';
-  document.getElementById('aTarih').value = new Date().toISOString().split('T')[0];
-  document.getElementById('aSaat').value = '';
-  document.getElementById('aHatirlatma').value = '30';
-  document.getElementById('ajandaForm').style.display = 'block';
-}
-
-function ajandaFormKapat() {
-  document.getElementById('ajandaForm').style.display = 'none';
-  _editingAjandaId = null;
-}
-
-async function ajandaKaydet() {
-  const baslik = document.getElementById('aBaslik').value.trim();
-  const notlar = document.getElementById('aNotlar').value.trim();
-  const tarih = document.getElementById('aTarih').value;
-  const saat = document.getElementById('aSaat').value || null;
-  const hatirlatma_dk = parseInt(document.getElementById('aHatirlatma').value) || 0;
-  if (!baslik || !tarih) { toast('⚠️ Başlık ve tarih zorunlu!', true); return; }
-  showLoading('Kaydediliyor...');
-  try {
-    const duzenle = _editingAjandaId;
-    if (duzenle) {
-      const { error } = await sb.from('ajanda').update({ baslik, notlar, tarih, saat, hatirlatma_dk }).eq('id', duzenle);
-      if (error) throw error;
-    } else {
-      const { error } = await sb.from('ajanda').insert({ baslik, notlar, tarih, saat, hatirlatma_dk, tamamlandi: false });
-      if (error) throw error;
-    }
-    hideLoading();
-    // Formu kapat
-    _editingAjandaId = null;
-    document.getElementById('ajandaForm').style.display = 'none';
-    document.getElementById('aBaslik').value = '';
-    document.getElementById('aNotlar').value = '';
-    // Listeyi yenile
-    const { data: taze } = await sb.from('ajanda').select('id,baslik,notlar,tarih,saat,hatirlatma_dk,tamamlandi,olusturma_tarihi').order('tarih', { ascending: true }).order('saat', { ascending: true });
-    ajandaGorevler = taze || [];
-    renderAjanda();
-    toast(duzenle ? '✅ Görev güncellendi!' : '✅ Görev eklendi!');
-    // Saatli görevleri Google Takvim'e ekle
-    if (!duzenle && saat) {
-      const gz = new Date(tarih + 'T' + saat);
-      const fmt = d => d.getFullYear() + String(d.getMonth()+1).padStart(2,'0') + String(d.getDate()).padStart(2,'0') + 'T' + String(d.getHours()).padStart(2,'0') + String(d.getMinutes()).padStart(2,'0') + '00';
-      const bit = new Date(gz.getTime() + 60*60000);
-      const detay = [notlar, `🔔 ${hatirlatma_dk > 0 ? (hatirlatma_dk < 60 ? hatirlatma_dk+' dakika' : hatirlatma_dk/60+' saat') + ' önce hatırlatma' : 'Hatırlatma yok'}`, '— Kazı Takip'].filter(Boolean).join('\n');
-      const gcUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('📋 ' + baslik)}&dates=${fmt(gz)}/${fmt(bit)}&details=${encodeURIComponent(detay)}`;
-      setTimeout(() => {
-        if (confirm('Google Takvim\'e eklemek ister misin?')) window.open(gcUrl, '_blank');
-      }, 300);
-    }
-  } catch(err) { hideLoading(); toast('⚠️ ' + (err.message||'Hata'), true); }
-}
-
-async function loadAjanda() {
-  try {
-    const { data, error } = await sb.from('ajanda').select('id,baslik,notlar,tarih,saat,hatirlatma_dk,tamamlandi,olusturma_tarihi').order('tarih', { ascending: true }).order('saat', { ascending: true });
-    if (!error) { ajandaGorevler = data || []; renderAjanda(); ajandaBildirimAyarla(); }
-  } catch(e) {}
-}
-
-async function ajandaTamamla(id) {
-  const gorev = ajandaGorevler.find(g => g.id === id);
-  if (!gorev) return;
-  const yeni = !gorev.tamamlandi;
-  try {
-    await sb.from('ajanda').update({ tamamlandi: yeni }).eq('id', id);
-    gorev.tamamlandi = yeni;
-    renderAjanda();
-    toast(yeni ? '✅ Tamamlandı!' : '↩️ Geri alındı');
-  } catch(e) { toast('⚠️ Hata', true); }
-}
-
-async function ajandaSil(id) {
-  silOnayla('Bu görevi silmek istediğine emin misin?', async () => {
-    try {
-      await sb.from('ajanda').delete().eq('id', id);
-      ajandaGorevler = ajandaGorevler.filter(g => g.id !== id);
-      renderAjanda();
-      toast('✅ Görev silindi!');
-    } catch(e) { toast('⚠️ Hata', true); }
-  });
-}
-
-function ajandaDuzenle(id) {
-  const gorev = ajandaGorevler.find(g => g.id === id);
-  if (!gorev) return;
-  _editingAjandaId = id;
-  document.getElementById('aBaslik').value = gorev.baslik || '';
-  document.getElementById('aNotlar').value = gorev.notlar || '';
-  document.getElementById('aTarih').value = gorev.tarih || '';
-  document.getElementById('aSaat').value = gorev.saat || '';
-  document.getElementById('aHatirlatma').value = gorev.hatirlatma_dk || 30;
-  document.getElementById('ajandaForm').style.display = 'block';
-  document.getElementById('ajandaForm').scrollIntoView({ behavior: 'smooth' });
-}
-
-function renderAjanda() {
-  const list = document.getElementById('ajandaList');
-  const yaklasan = document.getElementById('ajandaYaklasan');
-  if (!list) return;
-
-  const simdi = new Date();
-  const bugun = simdi.toISOString().split('T')[0];
-
-  // Yaklaşan (bugün ve yarın)
-  const yarin = new Date(simdi); yarin.setDate(yarin.getDate() + 1);
-  const yarinStr = yarin.toISOString().split('T')[0];
-  const yaklaşanlar = ajandaGorevler.filter(g => !g.tamamlandi && (g.tarih === bugun || g.tarih === yarinStr));
-  
-  if (yaklasan) {
-    if (yaklaşanlar.length > 0) {
-      yaklasan.innerHTML = `
-        <div style="background:rgba(245,158,11,0.1);border:1.5px solid var(--yellow);border-radius:10px;padding:12px;margin-bottom:12px">
-          <div style="font-size:12px;font-weight:700;color:var(--yellow);margin-bottom:8px">⚡ YAKLAŞAN GÖREVLER (${yaklaşanlar.length})</div>
-          ${yaklaşanlar.map(g => `
-            <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(245,158,11,0.2)">
-              <span style="font-size:12px">${g.tarih === bugun ? '🔴 Bugün' : '🟡 Yarın'}</span>
-              <span style="font-size:13px;flex:1;font-weight:600">${g.baslik}</span>
-              ${g.saat ? `<span style="font-size:11px;color:var(--muted)">${g.saat.substring(0,5)}</span>` : ''}
-            </div>`).join('')}
-        </div>`;
-    } else {
-      yaklasan.innerHTML = '';
-    }
+function qrTabDegis(tab) {
+  const btnLink = document.getElementById('qrTabBtnLink');
+  const btnDosya = document.getElementById('qrTabBtnDosya');
+  const tabLink = document.getElementById('qrTabLink');
+  const tabDosya = document.getElementById('qrTabDosya');
+  const aktifStil = 'flex:1;padding:10px;border:1.5px solid var(--yellow);background:var(--yellow);color:#0f172a;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit';
+  const pasifStil = 'flex:1;padding:10px;border:1.5px solid var(--border);background:none;color:var(--muted);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit';
+  if (tab === 'dosya') {
+    btnDosya.style.cssText = aktifStil;
+    btnLink.style.cssText = pasifStil;
+    tabDosya.style.display = 'block';
+    tabLink.style.display = 'none';
+  } else {
+    btnLink.style.cssText = aktifStil;
+    btnDosya.style.cssText = pasifStil;
+    tabLink.style.display = 'block';
+    tabDosya.style.display = 'none';
   }
+}
 
-  if (ajandaGorevler.length === 0) {
-    list.innerHTML = '<div class="empty"><div class="empty-text">Henüz görev yok.</div></div>';
+function qrDosyaSecildi() {
+  const input = document.getElementById('qrDosyaInput');
+  const onizleme = document.getElementById('qrDosyaOnizleme');
+  const f = input.files?.[0];
+  if (!f) { _qrSeciliDosya = null; onizleme.style.display = 'none'; return; }
+  const maxBoyut = 15 * 1024 * 1024; // 15MB
+  if (f.size > maxBoyut) {
+    toast('⚠️ Dosya çok büyük! En fazla 15MB olmalı.', true);
+    input.value = '';
+    _qrSeciliDosya = null;
+    onizleme.style.display = 'none';
     return;
   }
-
-  // Tarihe göre grupla
-  const gruplar = {};
-  ajandaGorevler.forEach(g => {
-    if (!gruplar[g.tarih]) gruplar[g.tarih] = [];
-    gruplar[g.tarih].push(g);
-  });
-
-  list.innerHTML = Object.entries(gruplar).sort((a,b) => a[0].localeCompare(b[0])).map(([tarih, gorevler]) => {
-    const d = new Date(tarih + 'T12:00:00');
-    const tarihStr = d.toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long' });
-    const gecmis = tarih < bugun;
-    const bugunMu = tarih === bugun;
-    return `
-      <div style="margin-bottom:12px">
-        <div style="font-size:11px;font-weight:700;color:${bugunMu ? 'var(--yellow)' : gecmis ? 'var(--muted)' : 'var(--sub)'};letter-spacing:1px;margin-bottom:6px;text-transform:uppercase">
-          ${bugunMu ? '📍 ' : gecmis ? '⬅️ ' : '📅 '}${tarihStr}
-        </div>
-        ${gorevler.map(g => `
-          <div style="background:var(--card);border:1px solid ${g.tamamlandi ? 'var(--border)' : bugunMu ? 'var(--yellow)' : 'var(--border)'};border-radius:10px;padding:12px;margin-bottom:6px;opacity:${g.tamamlandi ? '0.6' : '1'}">
-            <div style="display:flex;align-items:flex-start;gap:10px">
-              <button onclick="ajandaTamamla('${g.id}')" style="background:none;border:2px solid ${g.tamamlandi ? '#10b981' : 'var(--border)'};border-radius:50%;width:22px;height:22px;flex-shrink:0;cursor:pointer;color:${g.tamamlandi ? '#10b981' : 'transparent'};font-size:12px;margin-top:1px">✓</button>
-              <div style="flex:1">
-                <div style="font-size:14px;font-weight:700;color:var(--text);text-decoration:${g.tamamlandi ? 'line-through' : 'none'}">${g.baslik}</div>
-                ${g.saat ? `<div style="font-size:11px;color:var(--yellow);margin-top:2px">🕐 ${g.saat.substring(0,5)}</div>` : ''}
-                ${g.notlar ? `<div style="font-size:15px;color:var(--text);margin-top:6px;white-space:pre-wrap;line-height:1.5">${g.notlar}</div>` : ''}
-                ${g.hatirlatma_dk > 0 ? `<div style="font-size:10px;color:var(--muted);margin-top:4px">🔔 ${g.hatirlatma_dk < 60 ? g.hatirlatma_dk + ' dk' : g.hatirlatma_dk/60 + ' saat'} önce hatırlat</div>` : ''}
-              </div>
-              <div style="display:flex;flex-direction:column;gap:4px">
-                <button onclick="ajandaDuzenle('${g.id}')" style="background:none;border:1px solid var(--blue);color:var(--blue);border-radius:6px;padding:3px 7px;font-size:11px;cursor:pointer">✏️</button>
-                ${g.saat ? `<button onclick="ajandaTakvimeEkle('${g.id}')" style="background:none;border:1px solid #10b981;color:#10b981;border-radius:6px;padding:3px 7px;font-size:11px;cursor:pointer">📅</button>` : ''}
-                <button onclick="ajandaSil('${g.id}')" style="background:none;border:1px solid var(--red);color:var(--red);border-radius:6px;padding:3px 7px;font-size:11px;cursor:pointer">🗑</button>
-              </div>
-            </div>
-          </div>`).join('')}
-      </div>`;
-  }).join('');
+  _qrSeciliDosya = f;
+  const boyutMb = (f.size / (1024 * 1024)).toFixed(2);
+  const ikon = f.type === 'application/pdf' ? '📄' : '🖼️';
+  onizleme.innerHTML = `${ikon} <strong>${f.name}</strong><br><span style="color:var(--muted)">${boyutMb} MB</span>`;
+  onizleme.style.display = 'block';
 }
 
-// Bildirim sistemi
-let _ajandaTimer = null;
-let _alarmInterval = null;
-
-function alarmKapat() {
-  if (_alarmInterval) { clearInterval(_alarmInterval); _alarmInterval = null; }
-  const modal = document.getElementById('alarmModal');
-  if (modal) modal.style.display = 'none';
-}
-
-function _sesCardir() {
+async function qrDosyaYukleVeOlustur() {
+  if (!_qrSeciliDosya) { toast('⚠️ Lütfen bir PDF veya görsel seç!', true); return; }
+  showLoading('Yükleniyor...');
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    [[880,0,0.15],[880,0.2,0.15],[1100,0.4,0.2],[880,0.7,0.15],[880,0.9,0.15],[1100,1.1,0.25]].forEach(([f,t,d]) => {
-      const o = ctx.createOscillator(), g = ctx.createGain();
-      o.connect(g); g.connect(ctx.destination);
-      o.frequency.value = f; o.type = 'square';
-      g.gain.setValueAtTime(0.4, ctx.currentTime+t);
-      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+t+d);
-      o.start(ctx.currentTime+t); o.stop(ctx.currentTime+t+d);
-    });
-  } catch(e) {}
-  if (navigator.vibrate) navigator.vibrate([300,100,300,100,500]);
-}
+    const path = `qr-dosyalar/${Date.now()}_${_qrSeciliDosya.name}`;
+    const { error } = await sb.storage.from('kazi-dosyalar').upload(path, _qrSeciliDosya);
+    hideLoading();
+    if (error) { toast('⚠️ Yükleme başarısız: ' + error.message, true); return; }
+    const { data } = sb.storage.from('kazi-dosyalar').getPublicUrl(path);
+    const link = data.publicUrl;
+    _qrSonLink = link;
 
-function alarmGoster(g, tip) {
-  if (_alarmInterval) clearInterval(_alarmInterval);
-  _sesCardir();
-  _alarmInterval = setInterval(_sesCardir, 2500);
-
-  const modal = document.getElementById('alarmModal');
-  const icerik = document.getElementById('alarmIcerik');
-  if (!modal || !icerik) return;
-
-  const renk = tip === 'tam' ? '#ef4444' : 'var(--yellow)';
-  const yazıRenk = tip === 'tam' ? 'white' : '#0f172a';
-  const ikon = tip === 'tam' ? '🚨' : '⏰';
-  const aciklama = tip === 'tam' ? 'Şimdi başlıyor!' :
-    (g.hatirlatma_dk < 60 ? g.hatirlatma_dk + ' dakika sonra başlayacak!' : (g.hatirlatma_dk/60) + ' saat sonra başlayacak!');
-
-  icerik.innerHTML = `
-    <div style="font-size:60px;margin-bottom:12px">${ikon}</div>
-    <div style="font-size:22px;font-weight:900;color:${renk};margin-bottom:8px">${g.baslik}</div>
-    <div style="font-size:15px;color:var(--muted);margin-bottom:8px">${aciklama}</div>
-    ${g.notlar ? `<div style="font-size:13px;color:var(--sub);margin-bottom:12px;white-space:pre-wrap">${g.notlar}</div>` : '<div style="margin-bottom:12px"></div>'}
-    <button onclick="alarmKapat()"
-      style="width:100%;background:${renk};color:${yazıRenk};border:none;border-radius:10px;padding:16px;font-size:18px;font-weight:900;cursor:pointer;font-family:inherit">
-      ✓ Tamam
-    </button>`;
-  modal.style.display = 'flex';
-
-  if ('Notification' in window && Notification.permission === 'granted') {
-    new Notification(ikon + ' ' + g.baslik, { body: aciklama, tag: g.id + '_' + tip });
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(link)}`;
+    document.getElementById('qrSonucImg').src = qrUrl;
+    document.getElementById('qrSonucLink').textContent = _qrSeciliDosya.name;
+    document.getElementById('qrSonucCard').style.display = 'block';
+    document.getElementById('qrSonucCard').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    toast('✅ Dosya yüklendi, QR kod oluşturuldu!');
+  } catch (e) {
+    hideLoading();
+    toast('⚠️ Bir hata oluştu', true);
   }
 }
 
-function ajandaBildirimAyarla() {
-  if (!window._ajandaTimeouts) window._ajandaTimeouts = [];
-  window._ajandaTimeouts.forEach(t => clearTimeout(t));
-  window._ajandaTimeouts = [];
-  if (!window._uyarilanGorevler) window._uyarilanGorevler = new Set();
-  if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission();
+function qrKodOlustur() {
+  const input = document.getElementById('qrLinkInput');
+  const deger = (input.value || '').trim();
+  if (!deger) { toast('⚠️ Lütfen bir link veya metin gir!', true); return; }
 
-  ajandaGorevler.forEach(g => {
-    if (g.tamamlandi || !g.saat) return;
-    const gorevZaman = new Date(g.tarih + 'T' + g.saat);
+  let link = deger;
+  if (/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(\/.*)?$/.test(deger) && !/^https?:\/\//i.test(deger)) {
+    link = 'https://' + deger;
+  }
+  _qrSonLink = link;
 
-    if (g.hatirlatma_dk > 0) {
-      const erkenKey = g.id + '_erken';
-      if (!window._uyarilanGorevler.has(erkenKey)) {
-        const ms = new Date(gorevZaman.getTime() - g.hatirlatma_dk * 60000) - new Date();
-        if (ms > 0) window._ajandaTimeouts.push(setTimeout(() => {
-          window._uyarilanGorevler.add(erkenKey);
-          alarmGoster(g, 'erken');
-        }, ms));
-      }
-    }
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(link)}`;
+  document.getElementById('qrSonucImg').src = qrUrl;
+  document.getElementById('qrSonucLink').textContent = link;
+  document.getElementById('qrSonucCard').style.display = 'block';
+  document.getElementById('qrSonucCard').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  toast('✅ QR kod oluşturuldu!');
+}
 
-    const tamKey = g.id + '_tam';
-    if (!window._uyarilanGorevler.has(tamKey)) {
-      const ms = gorevZaman - new Date();
-      if (ms > 0) window._ajandaTimeouts.push(setTimeout(() => {
-        window._uyarilanGorevler.add(tamKey);
-        alarmGoster(g, 'tam');
-      }, ms));
-    }
-  });
+async function qrKodIndir() {
+  if (!_qrSonLink) return;
+  try {
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(_qrSonLink)}`;
+    const resp = await fetch(qrUrl);
+    const blob = await resp.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `qr-kod_${new Date().toISOString().split('T')[0]}.png`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast('📥 QR kod indirildi!');
+  } catch (e) {
+    toast('⚠️ İndirme başarısız', true);
+  }
+}
+
+function qrKodPaylas() {
+  if (!_qrSonLink) return;
+  paylas(_qrSonLink, 'QR Kod Linki');
 }
 
 // ─── GRAFİKLER ───────────────────────────────────────────
@@ -2986,24 +2822,22 @@ function _grafBosBilgi(ctx, W, H, mesaj) {
 async function verileriYedekle() {
   showLoading('Yedek hazırlanıyor...');
   try {
-    const [projelerRes, kayitlarRes, giderlerRes, ajandaRes] = await Promise.all([
+    const [projelerRes, kayitlarRes, giderlerRes] = await Promise.all([
       sb.from('projeler').select('*'),
       sb.from('kayitlar').select('*'),
-      sb.from('giderler').select('*'),
-      sb.from('ajanda').select('*')
+      sb.from('giderler').select('*')
     ]);
     const yedek = {
       olusturma_tarihi: new Date().toISOString(),
       uygulama: 'Kazı Takip', versiyon: '1.0',
       projeler: projelerRes.data || [],
       kayitlar: kayitlarRes.data || [],
-      giderler: giderlerRes.data || [],
-      ajanda:   ajandaRes.data || []
+      giderler: giderlerRes.data || []
     };
     const json = JSON.stringify(yedek, null, 2);
     const tarihStr = new Date().toLocaleString('tr-TR');
     const dosyaAdi = `kazi-takip-yedek_${new Date().toISOString().split('T')[0]}.json`;
-    const ozet = `${yedek.projeler.length} proje, ${yedek.kayitlar.length} kayıt, ${yedek.giderler.length} gider, ${yedek.ajanda.length} görev`;
+    const ozet = `${yedek.projeler.length} proje, ${yedek.kayitlar.length} kayıt, ${yedek.giderler.length} gider`;
     hideLoading();
 
     const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(json);
@@ -3060,36 +2894,32 @@ async function verileriIceAktar(input) {
   // Mevcut ID'leri çek — ne ekleneceğini, ne atlanacağını önceden hesapla
   showLoading('Analiz ediliyor...');
   try {
-    const [mProjeler, mKayitlar, mGiderler, mAjanda] = await Promise.all([
+    const [mProjeler, mKayitlar, mGiderler] = await Promise.all([
       sb.from('projeler').select('id'),
       sb.from('kayitlar').select('id'),
-      sb.from('giderler').select('id'),
-      sb.from('ajanda').select('id')
+      sb.from('giderler').select('id')
     ]);
     hideLoading();
 
     const mevcutProjIds   = new Set((mProjeler.data||[]).map(r => r.id));
     const mevcutKayitIds  = new Set((mKayitlar.data||[]).map(r => r.id));
     const mevcutGiderIds  = new Set((mGiderler.data||[]).map(r => r.id));
-    const mevcutAjandaIds = new Set((mAjanda.data||[]).map(r => r.id));
 
     const yeniProjeler = (yedek.projeler||[]).filter(r => !mevcutProjIds.has(r.id));
     const yeniKayitlar = (yedek.kayitlar||[]).filter(r => !mevcutKayitIds.has(r.id));
     const yeniGiderler = (yedek.giderler||[]).filter(r => !mevcutGiderIds.has(r.id));
-    const yeniAjanda   = (yedek.ajanda||[]).filter(r => !mevcutAjandaIds.has(r.id));
 
     const atlalanTopla =
       ((yedek.projeler||[]).length - yeniProjeler.length) +
       ((yedek.kayitlar||[]).length - yeniKayitlar.length) +
-      ((yedek.giderler||[]).length - yeniGiderler.length) +
-      ((yedek.ajanda||[]).length   - yeniAjanda.length);
+      ((yedek.giderler||[]).length - yeniGiderler.length);
 
-    const toplamEklenecek = yeniProjeler.length + yeniKayitlar.length + yeniGiderler.length + yeniAjanda.length;
+    const toplamEklenecek = yeniProjeler.length + yeniKayitlar.length + yeniGiderler.length;
 
     if (toplamEklenecek === 0) {
       bilgiModalGoster(
         'Eklenecek Veri Yok',
-        `Yedekteki tüm kayıtlar zaten Supabase'de mevcut.\n\nAtlanan kayıtlar:\n  • ${(yedek.projeler||[]).length} proje\n  • ${(yedek.kayitlar||[]).length} kazı kaydı\n  • ${(yedek.giderler||[]).length} gider\n  • ${(yedek.ajanda||[]).length} ajanda görevi`,
+        `Yedekteki tüm kayıtlar zaten Supabase'de mevcut.\n\nAtlanan kayıtlar:\n  • ${(yedek.projeler||[]).length} proje\n  • ${(yedek.kayitlar||[]).length} kazı kaydı\n  • ${(yedek.giderler||[]).length} gider`,
         'ℹ️'
       );
       return;
@@ -3101,8 +2931,7 @@ async function verileriIceAktar(input) {
       `✅ EKLENECEK (yeni kayıtlar):\n` +
       `  • ${yeniProjeler.length} proje\n` +
       `  • ${yeniKayitlar.length} kazı kaydı\n` +
-      `  • ${yeniGiderler.length} gider\n` +
-      `  • ${yeniAjanda.length} ajanda görevi\n\n` +
+      `  • ${yeniGiderler.length} gider\n\n` +
       `⏭ ATLANACAK (zaten mevcut): ${atlalanTopla} kayıt\n\n` +
       `🔒 Mevcut hiçbir veriye dokunulmaz.\nİşlem öncesi otomatik güvenlik yedeği indirilir.`;
 
@@ -3111,11 +2940,10 @@ async function verileriIceAktar(input) {
       // AŞAMA 1: İşlem öncesi otomatik güvenlik yedeği indir
       showLoading('Güvenlik yedeği alınıyor...');
       try {
-        const [p2, k2, g2, a2] = await Promise.all([
+        const [p2, k2, g2] = await Promise.all([
           sb.from('projeler').select('*'),
           sb.from('kayitlar').select('*'),
-          sb.from('giderler').select('*'),
-          sb.from('ajanda').select('*')
+          sb.from('giderler').select('*')
         ]);
         const sigortaYedek = {
           olusturma_tarihi: new Date().toISOString(),
@@ -3123,7 +2951,7 @@ async function verileriIceAktar(input) {
           versiyon: '1.0',
           not: 'Import öncesi otomatik güvenlik yedeği',
           projeler: p2.data||[], kayitlar: k2.data||[],
-          giderler: g2.data||[], ajanda: a2.data||[]
+          giderler: g2.data||[]
         };
         const blob = new Blob([JSON.stringify(sigortaYedek, null, 2)], { type: 'application/json' });
         const url  = URL.createObjectURL(blob);
@@ -3155,11 +2983,6 @@ async function verileriIceAktar(input) {
         const { error } = await sb.from('giderler').insert(yeniGiderler);
         if (error) hatalar.push('giderler: ' + error.message);
       }
-      if (yeniAjanda.length) {
-        const { error } = await sb.from('ajanda').insert(yeniAjanda);
-        if (error) hatalar.push('ajanda: ' + error.message);
-      }
-
       hideLoading();
       if (hatalar.length) {
         bilgiModalGoster(
@@ -3170,7 +2993,7 @@ async function verileriIceAktar(input) {
       } else {
         bilgiModalGoster(
           'Geri Yükleme Tamamlandı ✅',
-          `${toplamEklenecek} kayıt başarıyla eklendi:\n\n  • ${yeniProjeler.length} proje\n  • ${yeniKayitlar.length} kazı kaydı\n  • ${yeniGiderler.length} gider\n  • ${yeniAjanda.length} ajanda görevi\n\nTamam'a basınca sayfa yenilenecek.`,
+          `${toplamEklenecek} kayıt başarıyla eklendi:\n\n  • ${yeniProjeler.length} proje\n  • ${yeniKayitlar.length} kazı kaydı\n  • ${yeniGiderler.length} gider\n\nTamam'a basınca sayfa yenilenecek.`,
           '✅'
         );
         document.getElementById('bilgiModal').querySelector('button').onclick = () => {
@@ -3201,11 +3024,10 @@ async function verileriExcelYedekle() {
 
   showLoading('Excel hazırlanıyor...');
   try {
-    const [projelerRes, kayitlarRes, giderlerRes, ajandaRes] = await Promise.all([
+    const [projelerRes, kayitlarRes, giderlerRes] = await Promise.all([
       sb.from('projeler').select('*'),
       sb.from('kayitlar').select('*'),
-      sb.from('giderler').select('*'),
-      sb.from('ajanda').select('*')
+      sb.from('giderler').select('*')
     ]);
 
     const wb = XLSX.utils.book_new();
@@ -3234,13 +3056,6 @@ async function verileriExcelYedekle() {
       'Tutar (₺)': g.tutar, 'Proje': projMap[g.proje_id]||''
     }));
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(giderData), '💸 Giderler');
-
-    // Ajanda sayfası
-    const ajandaData = (ajandaRes.data||[]).map(a => ({
-      'Başlık': a.baslik, 'Açıklama': a.notlar||'', 'Tarih': a.tarih, 'Saat': a.saat||'',
-      'Hatırlatma (dk)': a.hatirlatma_dk||0, 'Tamamlandı': a.tamamlandi ? 'Evet' : 'Hayır'
-    }));
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(ajandaData), '📅 Ajanda');
 
     const tarihStr = new Date().toISOString().split('T')[0];
     XLSX.writeFile(wb, `kazi-takip-yedek_${tarihStr}.xlsx`);
@@ -4576,6 +4391,18 @@ function renderRapor() {
   document.getElementById('rStatGun').textContent = proj.entries.length;
   document.getElementById('rStatOrt').textContent = avgStr;
 
+  const rStatOrtTakvimEl = document.getElementById('rStatOrtTakvim');
+  if (rStatOrtTakvimEl) {
+    if (proj.entries.length > 0) {
+      const tarihler = proj.entries.map(e => new Date(e.tarih).getTime());
+      const takvimGunSayisi = Math.round((Math.max(...tarihler) - Math.min(...tarihler)) / 86400000) + 1;
+      const avgTakvim = takvimGunSayisi > 0 ? (total / takvimGunSayisi) : 0;
+      rStatOrtTakvimEl.textContent = avgTakvim > 0 ? avgTakvim.toLocaleString('tr-TR', {maximumFractionDigits:1}) + ' m' : '-';
+    } else {
+      rStatOrtTakvimEl.textContent = '-';
+    }
+  }
+
   // Tahmini gün hesapla
   let tahminiGunSonuc = 0;
   const hedefCard = document.getElementById('raporHedefCard');
@@ -4675,24 +4502,41 @@ function raporTabDegis(tab) {
   }
 }
 
-let _aylikRaporPeriyot = 'ay'; // 'ay' | 'tum'
+let _aylikRaporPeriyot = 'ay'; // 'ay' | 'tum' | 'aralik'
+let _aylikRaporAralik = null; // { bas, bit }
 
 function aylikRaporPeriyotDegis(p) {
   _aylikRaporPeriyot = p;
   const btnAy = document.getElementById('aylikPeriyotBtnAy');
   const btnTum = document.getElementById('aylikPeriyotBtnTum');
+  const btnAralik = document.getElementById('aylikPeriyotBtnAralik');
   const aySeciciWrap = document.getElementById('aylikAySeciciWrap');
+  const aralikSeciciWrap = document.getElementById('aylikAralikSeciciWrap');
   const aktifStil = 'flex:1;padding:9px;border:1.5px solid var(--yellow);background:var(--yellow);color:#0f172a;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit';
   const pasifStil = 'flex:1;padding:9px;border:1.5px solid var(--border);background:none;color:var(--muted);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit';
-  if (p === 'tum') {
-    if (btnTum) btnTum.style.cssText = aktifStil;
-    if (btnAy) btnAy.style.cssText = pasifStil;
-    if (aySeciciWrap) aySeciciWrap.style.display = 'none';
-  } else {
-    if (btnAy) btnAy.style.cssText = aktifStil;
-    if (btnTum) btnTum.style.cssText = pasifStil;
-    if (aySeciciWrap) aySeciciWrap.style.display = 'flex';
+  if (btnAy) btnAy.style.cssText = p === 'ay' ? aktifStil : pasifStil;
+  if (btnTum) btnTum.style.cssText = p === 'tum' ? aktifStil : pasifStil;
+  if (btnAralik) btnAralik.style.cssText = p === 'aralik' ? aktifStil : pasifStil;
+  if (aySeciciWrap) aySeciciWrap.style.display = p === 'ay' ? 'flex' : 'none';
+  if (aralikSeciciWrap) aralikSeciciWrap.style.display = p === 'aralik' ? 'flex' : 'none';
+  if (p === 'aralik' && !_aylikRaporAralik) {
+    const now = new Date();
+    const ayBasi = new Date(now.getFullYear(), now.getMonth(), 1);
+    _aylikRaporAralik = { bas: _ymd(ayBasi), bit: _ymd(now) };
+    const basInput = document.getElementById('aylikRaporAralikBas');
+    const bitInput = document.getElementById('aylikRaporAralikBit');
+    if (basInput) basInput.value = _aylikRaporAralik.bas;
+    if (bitInput) bitInput.value = _aylikRaporAralik.bit;
   }
+  renderAylikRapor();
+}
+
+function aylikRaporAralikDegis() {
+  const bas = document.getElementById('aylikRaporAralikBas')?.value;
+  const bit = document.getElementById('aylikRaporAralikBit')?.value;
+  if (!bas || !bit) return;
+  if (bas > bit) { toast('⚠️ Başlangıç tarihi bitişten sonra olamaz', true); return; }
+  _aylikRaporAralik = { bas, bit };
   renderAylikRapor();
 }
 
@@ -4725,25 +4569,27 @@ async function renderAylikRapor() {
   renderEkipFiltre();
 
   const tumZamanlar = _aylikRaporPeriyot === 'tum';
+  const aralikMi = _aylikRaporPeriyot === 'aralik';
   const baslikEl = document.getElementById('aylikRaporBaslik');
-  if (baslikEl) baslikEl.textContent = tumZamanlar ? '♾️ Tüm Zamanlar Kazı Raporu' : '🗓️ Aylık Kazı Raporu';
+  if (baslikEl) baslikEl.textContent = tumZamanlar ? '♾️ Tüm Zamanlar Kazı Raporu' : (aralikMi ? '📆 Özel Tarih Aralığı Raporu' : '🗓️ Aylık Kazı Raporu');
 
-  const basStr = `${yil}-${String(ay).padStart(2, '0')}-01`;
-  const bitStr = _ymd(new Date(yil, ay, 0));
+  let basStr, bitStr;
+  if (aralikMi) {
+    basStr = _aylikRaporAralik?.bas || _ymd(new Date());
+    bitStr = _aylikRaporAralik?.bit || _ymd(new Date());
+  } else {
+    basStr = `${yil}-${String(ay).padStart(2, '0')}-01`;
+    bitStr = _ymd(new Date(yil, ay, 0));
+  }
 
   showLoading('Yükleniyor...');
   let kayitlar = [];
-  let ajandaKayitlari = [];
   try {
     let sorgu = sb.from('kayitlar').select('proje_id, tarih, kazi_metre, ekip_id').order('tarih', { ascending: false });
     if (!tumZamanlar) sorgu = sorgu.gte('tarih', basStr).lte('tarih', bitStr);
-    let ajandaSorgu = sb.from('ajanda').select('id,baslik,notlar,tarih,saat,tamamlandi').order('tarih', { ascending: true }).order('saat', { ascending: true });
-    if (!tumZamanlar) ajandaSorgu = ajandaSorgu.gte('tarih', basStr).lte('tarih', bitStr);
-    const [kayitRes, ajandaRes] = await Promise.all([sorgu, ajandaSorgu]);
+    const kayitRes = await sorgu;
     if (kayitRes.error) throw kayitRes.error;
-    if (ajandaRes.error) throw ajandaRes.error;
     kayitlar = kayitRes.data || [];
-    ajandaKayitlari = ajandaRes.data || [];
   } catch (err) {
     hideLoading();
     toast('⚠️ ' + (err.message || 'Kayıtlar alınamadı'), true);
@@ -4766,6 +4612,29 @@ async function renderAylikRapor() {
 
   const toplamMetre = filtreli.reduce((s, k) => s + parseFloat(k.kazi_metre || 0), 0);
   const projeSet = new Set(filtreli.map(k => k.proje_id));
+
+  // Günlük ortalama hesapları
+  const calisilanGunler = new Set(filtreli.map(k => k.tarih));
+  const calisilanGunSayisi = calisilanGunler.size;
+  const ortCalisilanGun = calisilanGunSayisi > 0 ? (toplamMetre / calisilanGunSayisi) : 0;
+
+  let takvimGunSayisi = 0;
+  if (tumZamanlar) {
+    if (filtreli.length > 0) {
+      const tarihler = filtreli.map(k => new Date(k.tarih).getTime());
+      const minT = Math.min(...tarihler), maxT = Math.max(...tarihler);
+      takvimGunSayisi = Math.round((maxT - minT) / 86400000) + 1;
+    }
+  } else {
+    const b = new Date(basStr), e = new Date(bitStr);
+    takvimGunSayisi = Math.round((e - b) / 86400000) + 1;
+  }
+  const ortTakvimGun = takvimGunSayisi > 0 ? (toplamMetre / takvimGunSayisi) : 0;
+
+  const gunlukOrtEl = document.getElementById('aStatGunlukOrt');
+  const gunlukOrtTakvimEl = document.getElementById('aStatGunlukOrtTakvim');
+  if (gunlukOrtEl) gunlukOrtEl.textContent = calisilanGunSayisi > 0 ? ortCalisilanGun.toLocaleString('tr-TR', { maximumFractionDigits: 1 }) + ' m' : '-';
+  if (gunlukOrtTakvimEl) gunlukOrtTakvimEl.textContent = takvimGunSayisi > 0 ? ortTakvimGun.toLocaleString('tr-TR', { maximumFractionDigits: 1 }) + ' m' : '-';
 
   document.getElementById('aStatMetre').textContent = toplamMetre.toLocaleString('tr-TR', { maximumFractionDigits: 0 }) + ' m';
   document.getElementById('aStatKayit').textContent = filtreli.length;
@@ -4806,7 +4675,7 @@ async function renderAylikRapor() {
   const bos = document.getElementById('aylikRaporBos');
   if (filtreli.length === 0) {
     body.innerHTML = '';
-    bos.textContent = tumZamanlar ? 'Kayıt bulunamadı.' : 'Bu ayda kayıt bulunamadı.';
+    bos.textContent = tumZamanlar ? 'Kayıt bulunamadı.' : (aralikMi ? 'Bu tarih aralığında kayıt bulunamadı.' : 'Bu ayda kayıt bulunamadı.');
     bos.style.display = 'block';
   } else {
     bos.style.display = 'none';
@@ -4815,42 +4684,25 @@ async function renderAylikRapor() {
     ).join('');
   }
 
-  const ajandaCard = document.getElementById('aylikAjandaCard');
-  const ajandaOzet = document.getElementById('aylikAjandaOzet');
-  const ajandaListesi = document.getElementById('aylikAjandaListesi');
-  if (ajandaKayitlari.length > 0) {
-    ajandaCard.style.display = 'block';
-    const tamamlanan = ajandaKayitlari.filter(a => a.tamamlandi).length;
-    ajandaOzet.textContent = `${ajandaKayitlari.length} görev — ${tamamlanan} tamamlandı, ${ajandaKayitlari.length - tamamlanan} bekliyor`;
-    ajandaListesi.innerHTML = ajandaKayitlari.map(a => `
-      <div style="display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)">
-        <span style="font-size:16px">${a.tamamlandi ? '✅' : '⏳'}</span>
-        <div style="flex:1">
-          <div style="font-size:13px;color:var(--text);font-weight:600${a.tamamlandi ? ';text-decoration:line-through;color:var(--muted)' : ''}">${a.baslik}</div>
-          <div style="font-size:11px;color:var(--muted)">${new Date(a.tarih).toLocaleDateString('tr-TR')}${a.saat ? ' · ' + a.saat.substring(0, 5) : ''}</div>
-        </div>
-      </div>`).join('');
-  } else {
-    ajandaCard.style.display = 'none';
-  }
-
-  window._aylikRaporVeri = { yil, ay, tumZamanlar, kayitlar: filtreli, tumProjeler, tumEkipler, toplamMetre, ozetGiris, ekipOzetGiris, ajanda: ajandaKayitlari, ekipFiltreAd: ekipFiltre === '__bos__' ? 'Ekip Atanmamış' : (ekipFiltre ? (tumEkipler[ekipFiltre] || '') : '') };
+  window._aylikRaporVeri = { yil, ay, tumZamanlar, aralikMi, basStr, bitStr, kayitlar: filtreli, tumProjeler, tumEkipler, toplamMetre, ozetGiris, ekipOzetGiris, calisilanGunSayisi, ortCalisilanGun, takvimGunSayisi, ortTakvimGun, ekipFiltreAd: ekipFiltre === '__bos__' ? 'Ekip Atanmamış' : (ekipFiltre ? (tumEkipler[ekipFiltre] || '') : '') };
 }
 
 function aylikRaporPaylas() {
   const veri = window._aylikRaporVeri;
   if (!veri || veri.kayitlar.length === 0) { toast('⚠️ Kayıt yok', true); return; }
-  const donemAdi = veri.tumZamanlar ? 'Tüm Zamanlar' : new Date(veri.yil, veri.ay - 1, 1).toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
+  const donemAdi = veri.tumZamanlar ? 'Tüm Zamanlar' : (veri.aralikMi ? `${new Date(veri.basStr).toLocaleDateString('tr-TR')} – ${new Date(veri.bitStr).toLocaleDateString('tr-TR')}` : new Date(veri.yil, veri.ay - 1, 1).toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' }));
+  const baslikMetin = veri.tumZamanlar ? 'TÜM ZAMANLAR KAZI RAPORU' : (veri.aralikMi ? 'ÖZEL TARİH ARALIĞI RAPORU' : 'AYLIK KAZI RAPORU');
   const filtreStr = veri.ekipFiltreAd ? `\n👷 Ekip: ${veri.ekipFiltreAd}` : '';
   const satirlar = veri.ozetGiris.map(([pid, v]) => `${veri.tumProjeler[pid] || 'Bilinmeyen Proje'}: ${v.toplam.toLocaleString('tr-TR', { maximumFractionDigits: 0 })} m (${v.sayi} kayıt)`);
-  const metin = `🗓️ *${veri.tumZamanlar ? 'TÜM ZAMANLAR KAZI RAPORU' : 'AYLIK KAZI RAPORU'}*\n📅 ${donemAdi}${filtreStr}\n\n${satirlar.join('\n')}\n\nTOPLAM: ${veri.toplamMetre.toLocaleString('tr-TR', { maximumFractionDigits: 0 })} m (${veri.kayitlar.length} kayıt)`;
-  paylas(metin, veri.tumZamanlar ? 'Tüm Zamanlar Kazı Raporu' : 'Aylık Kazı Raporu');
+  const ortStr = veri.calisilanGunSayisi > 0 ? `\n📈 Günlük Ort.: ${veri.ortCalisilanGun.toLocaleString('tr-TR', { maximumFractionDigits: 1 })} m (çalışılan gün) / ${veri.ortTakvimGun.toLocaleString('tr-TR', { maximumFractionDigits: 1 })} m (takvim günü)` : '';
+  const metin = `🗓️ *${baslikMetin}*\n📅 ${donemAdi}${filtreStr}${ortStr}\n\n${satirlar.join('\n')}\n\nTOPLAM: ${veri.toplamMetre.toLocaleString('tr-TR', { maximumFractionDigits: 0 })} m (${veri.kayitlar.length} kayıt)`;
+  paylas(metin, veri.tumZamanlar ? 'Tüm Zamanlar Kazı Raporu' : (veri.aralikMi ? 'Özel Tarih Aralığı Raporu' : 'Aylık Kazı Raporu'));
 }
 
 function aylikRaporPdf() {
   const veri = window._aylikRaporVeri;
   if (!veri || veri.kayitlar.length === 0) { toast('⚠️ Kayıt yok', true); return; }
-  const donemAdi = veri.tumZamanlar ? 'Tüm Zamanlar' : new Date(veri.yil, veri.ay - 1, 1).toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
+  const donemAdi = veri.tumZamanlar ? 'Tüm Zamanlar' : (veri.aralikMi ? `${new Date(veri.basStr).toLocaleDateString('tr-TR')} – ${new Date(veri.bitStr).toLocaleDateString('tr-TR')}` : new Date(veri.yil, veri.ay - 1, 1).toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' }));
   const tarihStr = new Date().toLocaleDateString('tr-TR');
 
   const projeRows = veri.ozetGiris.map(([pid, v]) =>
@@ -4867,7 +4719,7 @@ function aylikRaporPdf() {
   ).join('');
 
   const html = `<!DOCTYPE html><html lang="tr"><head><meta charset="utf-8">
-  <title>${veri.tumZamanlar ? 'Tüm Zamanlar' : 'Aylık'} Kazı Raporu - ${donemAdi}</title>
+  <title>${veri.tumZamanlar ? 'Tüm Zamanlar' : (veri.aralikMi ? 'Özel Tarih Aralığı' : 'Aylık')} Kazı Raporu - ${donemAdi}</title>
   <style>
     body { font-family: Arial, sans-serif; padding: 24px; color: #1a1a1a; font-size: 12px; max-width: 900px; margin: 0 auto; }
     h1 { font-size: 20px; color: #92400e; border-bottom: 3px solid #f59e0b; padding-bottom: 8px; margin-bottom: 4px; }
@@ -4888,13 +4740,15 @@ function aylikRaporPdf() {
     table { page-break-inside: auto; }
     @media print { body { padding: 10px; } }
   </style></head><body>
-  <h1>${veri.tumZamanlar ? '♾️ Tüm Zamanlar Kazı Raporu' : '🗓️ Aylık Kazı Raporu'}</h1>
+  <h1>${veri.tumZamanlar ? '♾️ Tüm Zamanlar Kazı Raporu' : (veri.aralikMi ? '📆 Özel Tarih Aralığı Raporu' : '🗓️ Aylık Kazı Raporu')}</h1>
   <div class="meta">📅 ${donemAdi} &nbsp;|&nbsp; Oluşturma: ${tarihStr}${veri.ekipFiltreAd ? ` &nbsp;|&nbsp; 👷 Ekip Filtresi: ${veri.ekipFiltreAd}` : ''}</div>
 
   <div class="stats">
     <div class="stat-box"><div class="stat-val">${veri.toplamMetre.toLocaleString('tr-TR', { maximumFractionDigits: 0 })} m</div><div class="stat-lbl">Toplam Kazı</div></div>
     <div class="stat-box"><div class="stat-val">${veri.kayitlar.length}</div><div class="stat-lbl">Kayıt Sayısı</div></div>
     <div class="stat-box"><div class="stat-val">${new Set(veri.kayitlar.map(k => k.proje_id)).size}</div><div class="stat-lbl">Aktif Proje</div></div>
+    <div class="stat-box"><div class="stat-val">${veri.calisilanGunSayisi > 0 ? veri.ortCalisilanGun.toLocaleString('tr-TR', { maximumFractionDigits: 1 }) + ' m' : '-'}</div><div class="stat-lbl">Günlük Ort. (çalışılan gün)</div></div>
+    <div class="stat-box"><div class="stat-val">${veri.takvimGunSayisi > 0 ? veri.ortTakvimGun.toLocaleString('tr-TR', { maximumFractionDigits: 1 }) + ' m' : '-'}</div><div class="stat-lbl">Günlük Ort. (takvim günü)</div></div>
   </div>
 
   <h2>🏗 Projelere Göre Toplam</h2>
@@ -4946,6 +4800,9 @@ function exportExcel(filtreliKayitlar, dosyaEki) {
   const bugun = new Date().toLocaleDateString('tr-TR');
   const toplam = proj.entries.reduce((s, e) => s + e.kaziMetre, 0);
   const ort = (toplam / proj.entries.length).toFixed(1);
+  const tarihlerMsXls = proj.entries.map(e => new Date(e.tarih).getTime());
+  const takvimGunSayisiXls = Math.round((Math.max(...tarihlerMsXls) - Math.min(...tarihlerMsXls)) / 86400000) + 1;
+  const ortTakvimXls = takvimGunSayisiXls > 0 ? (toplam / takvimGunSayisiXls).toFixed(1) : '0';
   const hataCount = proj.entries.filter(e => e.hatalar?.length > 0 || e.hata?.var).length;
 
   // ── YARDIMCI STİL FONKSİYONLARI ───────────────────────
@@ -5018,7 +4875,8 @@ function exportExcel(filtreliKayitlar, dosyaEki) {
   const istatistikler = [
     ['📏 Toplam Kazı', `${toplam.toLocaleString("tr-TR",{maximumFractionDigits:0})} m`, 'F59E0B', '1C1917'],
     ['📅 Toplam Gün', `${proj.entries.length} gün`, '3B82F6', '0C1A2E'],
-    ['📈 Günlük Ortalama', `${ort} m`, '10B981', '052E16'],
+    ['📈 Günlük Ort. (çalışılan gün)', `${ort} m`, '10B981', '052E16'],
+    ['📊 Günlük Ort. (takvim günü)', `${ortTakvimXls} m`, 'EC4899', '2D0A1F'],
     ['⚠️ Hatalı İşlem', `${hataCount} adet`, hataCount > 0 ? 'EF4444' : '10B981', hataCount > 0 ? '2D0A0A' : '052E16'],
   ];
   istatistikler.forEach(([etiket, deger, renk, bg], i) => {
@@ -5225,10 +5083,19 @@ function renderGiderOzet() {
   const buAy = giderler.filter(g => g.tarih.startsWith(ayStr));
   const toplamAy = buAy.reduce((s, g) => s + parseFloat(g.tutar), 0);
   const toplamTum = giderler.reduce((s, g) => s + parseFloat(g.tutar), 0);
-  const tumGunSayisi = new Set(giderler.map(g => g.tarih)).size;
+  const buAyGunSayisi = new Set(buAy.map(g => g.tarih)).size;
   document.getElementById('gToplamAy').textContent = toplamAy.toLocaleString('tr-TR') + ' ₺';
-  document.getElementById('gAdetAy').textContent = tumGunSayisi;
+  document.getElementById('gAdetAy').textContent = buAyGunSayisi;
   document.getElementById('gToplamTum').textContent = toplamTum.toLocaleString('tr-TR') + ' ₺';
+
+  const ayFiltre = document.getElementById('gAyFiltre')?.value || '';
+  if (!ayFiltre) {
+    const cardTitle = document.querySelector('#giderOzetCard .card-title');
+    if (cardTitle) {
+      const ayAdi = simdi.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
+      cardTitle.textContent = `📊 ${ayAdi} Özet`;
+    }
+  }
 }
 
 function renderGiderList() {
@@ -5266,17 +5133,20 @@ function renderGiderList() {
     const ayStr = `${simdi.getFullYear()}-${String(simdi.getMonth()+1).padStart(2,'0')}`;
     const buAyListe = giderler.filter(g => g.tarih.startsWith(ayStr));
     const buAyToplam = buAyListe.reduce((s, g) => s + parseFloat(g.tutar), 0);
-    const tumGunSayisi = new Set(giderler.map(g => g.tarih)).size;
+    const buAyGunSayisi = new Set(buAyListe.map(g => g.tarih)).size;
     const tumToplam = giderler.reduce((s, g) => s + parseFloat(g.tutar), 0);
 
     const gAdetEl     = document.getElementById('gAdetAy');
     const gToplamAyEl = document.getElementById('gToplamAy');
     const gToplamTumEl= document.getElementById('gToplamTum');
     if (gToplamAyEl)  gToplamAyEl.textContent  = buAyToplam.toLocaleString('tr-TR') + ' ₺';
-    if (gAdetEl)      gAdetEl.textContent       = tumGunSayisi;
+    if (gAdetEl)      gAdetEl.textContent       = buAyGunSayisi;
     if (gToplamTumEl) gToplamTumEl.textContent  = tumToplam.toLocaleString('tr-TR') + ' ₺';
     const cardTitle = document.querySelector('#giderOzetCard .card-title');
-    if (cardTitle) cardTitle.textContent = '📊 Tüm Zamanlar Özet';
+    if (cardTitle) {
+      const ayAdi = simdi.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
+      cardTitle.textContent = `📊 ${ayAdi} Özet`;
+    }
   }
 
   const container = document.getElementById('giderList');
@@ -5700,7 +5570,6 @@ sb.auth.getSession().then(({ data: { session } }) => {
       }
       if (data.activeProjectId) await loadEntries(data.activeProjectId);
       document.getElementById('gTarih').value = new Date().toISOString().split('T')[0];
-      loadAjanda();
     });
   }
 });
