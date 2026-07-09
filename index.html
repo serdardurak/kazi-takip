@@ -292,10 +292,16 @@
       font-size: 12px; cursor: pointer; font-family: inherit; transition: 0.15s;
     }
     .hata-type-btn.selected { border-color: var(--red); background: rgba(239,68,68,0.15); color: #fca5a5; }
+
     .hata-badge {
       display: inline-block; background: rgba(239,68,68,0.15);
       border: 1px solid var(--red); color: #fca5a5;
       border-radius: 6px; padding: 3px 8px; font-size: 11px; margin-left: 6px;
+    }
+    .giderildi-badge {
+      display: inline-block; background: rgba(16,185,129,0.15);
+      border: 1px solid #10b981; color: #10b981;
+      border-radius: 6px; padding: 3px 8px; font-size: 11px; margin-left: 6px; font-weight: 700;
     }
   
   
@@ -508,7 +514,7 @@
             style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px">✕</button>
         </div>
       </div>
-      <div id="entryList" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start"></div>
+      <div id="entryList" style="display:flex;flex-direction:column;gap:10px"></div>
       <div id="dahaFazlaBtn" style="display:none;padding:8px 0 16px">
         <button onclick="dahaFazlaYukle()" style="width:100%;background:rgba(245,158,11,0.1);border:1.5px solid var(--yellow);color:var(--yellow);border-radius:10px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">⬇ Daha Fazla Yükle</button>
       </div>
@@ -563,111 +569,7 @@
     <!-- Son Kayıtlar -->
     <div id="kayitViewEntryList" style="margin-top:4px"></div>
 
-    <!-- ADIM 2: Kaydedilen kazıya detay ekle (kayıt sonrası görünür) -->
-    <div id="detayEkleWrap" style="display:none">
-      <div id="kaydedilenBilgi" style="font-size:13px;color:var(--sub);margin-bottom:10px;padding:10px 14px;background:var(--card);border-radius:8px;border-left:3px solid var(--yellow)"></div>
-
-      <!-- Paneller -->
-      <div class="panel" id="malzemePanel">
-        <div class="panel-header">
-          <div style="font-size:13px;font-weight:700;color:var(--blue)">🧱 Malzemeler</div>
-          <span id="malzemeSayacBadge" style="font-size:11px;color:var(--muted)"></span>
-        </div>
-
-        <!-- Mevcut malzemeler listesi -->
-        <div id="mevcutMalzemeList" style="margin-bottom:10px"></div>
-
-        <!-- Yeni malzeme ekle butonu -->
-        <button onclick="toggleYeniMalzemeForm()" id="yeniMalzemeAcBtn" style="width:100%;background:rgba(59,130,246,0.1);border:1.5px solid var(--blue);color:var(--blue);border-radius:8px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">➕ Yeni Malzeme Ekle</button>
-
-        <!-- Yeni malzeme formu (gizli) -->
-        <div id="yeniMalzemeForm" style="display:none;margin-top:10px;background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.2);border-radius:8px;padding:10px">
-          <select id="fMalzemeSelect" style="margin-bottom:6px" onchange="malzemeSecDegis()">
-            <option value="">Malzeme Seç</option>
-            <option>Boru</option><option>9'luk Mehol</option><option>15'lik Mehol</option>
-            <option>16'lık Mehol</option><option>12'lik Mehol</option><option>Bant</option><option>Diğer</option>
-          </select>
-          <div id="malzemeOzelWrap" style="display:none;margin-bottom:6px">
-            <input type="text" id="fMalzemeOzel" placeholder="Malzeme adını yazın" />
-          </div>
-          <div class="form-row" style="margin-bottom:8px">
-            <input type="number" id="fMiktar" placeholder="Miktar" inputmode="decimal" />
-            <select id="fBirim">
-              <option>adet</option><option>m</option><option>m²</option>
-              <option>m³</option><option>kg</option><option>ton</option><option>lt</option>
-            </select>
-          </div>
-          <button class="btn-blue" style="width:100%" onclick="malzemeEkleVeKaydet()">💾 Ekle ve Kaydet</button>
-        </div>
-      </div>
-
-      <div class="panel" id="hataPanel">
-        <div class="panel-header">
-          <div style="font-size:13px;font-weight:700;color:#fca5a5">⚠️ Hatalı / Eksik İşlemler</div>
-          <span id="hataSayac" style="font-size:11px;color:var(--muted)"></span>
-        </div>
-
-        <!-- Mevcut hatalar listesi -->
-        <div id="mevcutHatalarList" style="margin-bottom:10px"></div>
-
-        <!-- Yeni hata ekle butonu -->
-        <button onclick="toggleYeniHataForm()" id="yeniHataAcBtn" style="width:100%;background:rgba(239,68,68,0.1);border:1.5px solid var(--red);color:#fca5a5;border-radius:8px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">➕ Yeni Hata Ekle</button>
-
-        <!-- Yeni hata formu (gizli) -->
-        <div id="yeniHataForm" style="display:none;margin-top:10px;background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:10px">
-          <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:1px;margin-bottom:8px">YENİ HATA</div>
-          <div class="hata-type-grid">
-            <button class="hata-type-btn" onclick="toggleHataTur(this,'Onay')">Onay</button>
-            <button class="hata-type-btn" onclick="toggleHataTur(this,'Eksik Malzeme')">Eksik Malzeme</button>
-            <button class="hata-type-btn" onclick="toggleHataTur(this,'Yanlış Ölçü')">Yanlış Ölçü</button>
-            <button class="hata-type-btn" onclick="toggleHataTur(this,'Hatalı Döşeme')">Hatalı Döşeme</button>
-            <button class="hata-type-btn" onclick="toggleHataTur(this,'Zemin Sorunu')">Zemin Sorunu</button>
-            <button class="hata-type-btn" onclick="toggleHataTur(this,'İş Durdu')">İş Durdu</button>
-            <button class="hata-type-btn" onclick="toggleHataTur(this,'Diğer')">Diğer</button>
-          </div>
-          <label class="field-label">AÇIKLAMA</label>
-          <textarea id="fHataAciklama" placeholder="Hatayı açıklayın..." style="height:60px"></textarea>
-          <input type="file" id="fHataGorsel" accept="image/*" multiple style="display:none" onchange="onHataGorselSec()" />
-          <button onclick="document.getElementById('fHataGorsel').click()" style="width:100%;background:rgba(59,130,246,0.12);border:1px solid var(--blue);color:var(--blue);border-radius:8px;padding:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:6px">📷 Görsel Ekle</button>
-          <div id="hataGorselOnizleme" class="chips" style="margin-top:6px"></div>
-          <button onclick="hataEkleVeKaydet()" style="width:100%;background:var(--red);color:white;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;margin-top:8px;font-family:inherit" id="hataEkleBtn">💾 Hatayı Kaydet</button>
-        </div>
-      </div>
-
-      <div class="panel" id="fotoPanel">
-        <div class="panel-header">
-          <div style="font-size:13px;font-weight:700;color:#10b981">📷 Günlük Fotoğraflar</div>
-          <span id="fotoSayacBadge" style="font-size:11px;color:var(--muted)"></span>
-        </div>
-
-        <!-- Mevcut fotoğraflar -->
-        <div id="mevcutFotolarList" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px"></div>
-
-        <!-- Yeni fotoğraf ekle -->
-        <input type="file" id="fFotograflar" accept="image/*" multiple style="display:none" onchange="onFotografSec()" />
-        <button style="width:100%;background:#10b981;color:#fff;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit" onclick="document.getElementById('fFotograflar').click()">📷 Fotoğraf Ekle (max 5)</button>
-        <div id="fotografSayac" style="font-size:11px;color:var(--muted);margin:6px 0;text-align:right">0 seçildi</div>
-        <div id="fotografOnizleme" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px"></div>
-        <button onclick="fotograflariYukle()" id="fotoYukleBtn" data-entry-id="" style="display:none;width:100%;background:#10b981;color:white;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;margin-top:8px;font-family:inherit">💾 Fotoğrafları Yükle</button>
-      </div>
-
-      <div class="panel" id="kmzPanel">
-        <div style="font-size:13px;font-weight:700;color:#a78bfa;margin-bottom:10px">📁 KMZ / KML Dosyası</div>
-        <!-- Mevcut KMZ -->
-        <div id="mevcutKmzAlani" style="margin-bottom:10px"></div>
-        <!-- Yeni KMZ ekleme -->
-        <div id="kmzEkleAlani">
-          <input type="file" id="fKmz" accept=".kmz,.kml" style="display:none" onchange="onKmzSec()" />
-          <button style="width:100%;background:#8b5cf6;color:#fff;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit" onclick="document.getElementById('fKmz').click()">📁 Dosya Seç</button>
-          <div id="kmzOnizleme" style="margin-top:8px"></div>
-          <button onclick="detayKaydet('kmz')" style="width:100%;background:#8b5cf6;color:white;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;margin-top:8px;font-family:inherit">💾 Dosyayı Yükle</button>
-        </div>
-      </div>
-
-      <button onclick="bitirDetay()" style="width:100%;background:none;border:1px solid var(--border);color:var(--sub);border-radius:8px;padding:12px;font-size:14px;cursor:pointer;margin-top:4px;margin-bottom:8px;font-family:inherit">
-        ← Özete Dön
-      </button>
-    </div>
+    <!-- ADIM 2: Kaydedilen kazıya detay ekle popup olarak açılır (bkz altta #detayEkleWrap) -->
 
   </div>
 
@@ -1058,6 +960,141 @@
 
 </main>
 
+<!-- POPUP: KAYIT İŞLEM EKRANI (malzeme/hata/foto/kmz/onay ekleme) -->
+<div id="detayEkleWrap" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:450;overflow-y:auto">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--card);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:2">
+    <div id="kaydedilenBilgi" style="font-size:14px;font-weight:700;color:var(--yellow)"></div>
+    <button onclick="bitirDetay()" style="background:none;border:1px solid var(--border);color:var(--sub);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:13px;font-family:inherit">✕ Kapat</button>
+  </div>
+  <div style="padding:14px 16px 24px">
+    <!-- Paneller -->
+    <div class="panel" id="malzemePanel">
+      <div class="panel-header">
+        <div style="font-size:13px;font-weight:700;color:var(--blue)">🧱 Malzemeler</div>
+        <span id="malzemeSayacBadge" style="font-size:11px;color:var(--muted)"></span>
+      </div>
+
+      <!-- Mevcut malzemeler listesi -->
+      <div id="mevcutMalzemeList" style="margin-bottom:10px"></div>
+
+      <!-- Yeni malzeme ekle butonu -->
+      <button onclick="toggleYeniMalzemeForm()" id="yeniMalzemeAcBtn" style="width:100%;background:rgba(59,130,246,0.1);border:1.5px solid var(--blue);color:var(--blue);border-radius:8px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">➕ Yeni Malzeme Ekle</button>
+
+      <!-- Yeni malzeme formu (gizli) -->
+      <div id="yeniMalzemeForm" style="display:none;margin-top:10px;background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.2);border-radius:8px;padding:10px">
+        <select id="fMalzemeSelect" style="margin-bottom:6px" onchange="malzemeSecDegis()">
+          <option value="">Malzeme Seç</option>
+          <option>Boru</option><option>9'luk Mehol</option><option>15'lik Mehol</option>
+          <option>16'lık Mehol</option><option>12'lik Mehol</option><option>Bant</option><option>Diğer</option>
+        </select>
+        <div id="malzemeOzelWrap" style="display:none;margin-bottom:6px">
+          <input type="text" id="fMalzemeOzel" placeholder="Malzeme adını yazın" />
+        </div>
+        <div class="form-row" style="margin-bottom:8px">
+          <input type="number" id="fMiktar" placeholder="Miktar" inputmode="decimal" />
+          <select id="fBirim">
+            <option>adet</option><option>m</option><option>m²</option>
+            <option>m³</option><option>kg</option><option>ton</option><option>lt</option>
+          </select>
+        </div>
+        <button class="btn-blue" style="width:100%" onclick="malzemeEkleVeKaydet()">💾 Ekle ve Kaydet</button>
+      </div>
+    </div>
+
+    <div class="panel" id="hataPanel">
+      <div class="panel-header">
+        <div style="font-size:13px;font-weight:700;color:#fca5a5">⚠️ Hatalı / Eksik İşlemler</div>
+        <span id="hataSayac" style="font-size:11px;color:var(--muted)"></span>
+      </div>
+
+      <!-- Mevcut hatalar listesi -->
+      <div id="mevcutHatalarList" style="margin-bottom:10px"></div>
+
+      <!-- Yeni hata ekle butonu -->
+      <button onclick="toggleYeniHataForm()" id="yeniHataAcBtn" style="width:100%;background:rgba(239,68,68,0.1);border:1.5px solid var(--red);color:#fca5a5;border-radius:8px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">➕ Yeni Hata Ekle</button>
+
+      <!-- Yeni hata formu (gizli) -->
+      <div id="yeniHataForm" style="display:none;margin-top:10px;background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:10px">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:1px;margin-bottom:8px">YENİ HATA</div>
+        <div class="hata-type-grid">
+          <button class="hata-type-btn" onclick="toggleHataTur(this,'Onay')">Onay</button>
+          <button class="hata-type-btn" onclick="toggleHataTur(this,'Eksik Malzeme')">Eksik Malzeme</button>
+          <button class="hata-type-btn" onclick="toggleHataTur(this,'Yanlış Ölçü')">Yanlış Ölçü</button>
+          <button class="hata-type-btn" onclick="toggleHataTur(this,'Hatalı Döşeme')">Hatalı Döşeme</button>
+          <button class="hata-type-btn" onclick="toggleHataTur(this,'Zemin Sorunu')">Zemin Sorunu</button>
+          <button class="hata-type-btn" onclick="toggleHataTur(this,'İş Durdu')">İş Durdu</button>
+          <button class="hata-type-btn" onclick="toggleHataTur(this,'Diğer')">Diğer</button>
+        </div>
+        <label class="field-label">AÇIKLAMA</label>
+        <textarea id="fHataAciklama" placeholder="Hatayı açıklayın..." style="height:60px"></textarea>
+        <input type="file" id="fHataGorsel" accept="image/*" multiple style="display:none" onchange="onHataGorselSec()" />
+        <button onclick="document.getElementById('fHataGorsel').click()" style="width:100%;background:rgba(59,130,246,0.12);border:1px solid var(--blue);color:var(--blue);border-radius:8px;padding:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:6px">📷 Görsel Ekle</button>
+        <div id="hataGorselOnizleme" class="chips" style="margin-top:6px"></div>
+        <button onclick="hataEkleVeKaydet()" style="width:100%;background:var(--red);color:white;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;margin-top:8px;font-family:inherit" id="hataEkleBtn">💾 Hatayı Kaydet</button>
+      </div>
+    </div>
+
+    <div class="panel" id="fotoPanel">
+      <div class="panel-header">
+        <div style="font-size:13px;font-weight:700;color:#10b981">📷 Günlük Fotoğraflar</div>
+        <span id="fotoSayacBadge" style="font-size:11px;color:var(--muted)"></span>
+      </div>
+
+      <!-- Mevcut fotoğraflar -->
+      <div id="mevcutFotolarList" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px"></div>
+
+      <!-- Yeni fotoğraf ekle -->
+      <input type="file" id="fFotograflar" accept="image/*" multiple style="display:none" onchange="onFotografSec()" />
+      <button style="width:100%;background:#10b981;color:#fff;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit" onclick="document.getElementById('fFotograflar').click()">📷 Fotoğraf Ekle (max 5)</button>
+      <div id="fotografSayac" style="font-size:11px;color:var(--muted);margin:6px 0;text-align:right">0 seçildi</div>
+      <div id="fotografOnizleme" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px"></div>
+      <button onclick="fotograflariYukle()" id="fotoYukleBtn" data-entry-id="" style="display:none;width:100%;background:#10b981;color:white;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;margin-top:8px;font-family:inherit">💾 Fotoğrafları Yükle</button>
+    </div>
+
+    <div class="panel" id="kmzPanel">
+      <div style="font-size:13px;font-weight:700;color:#a78bfa;margin-bottom:10px">📁 KMZ / KML Dosyası</div>
+      <!-- Mevcut KMZ -->
+      <div id="mevcutKmzAlani" style="margin-bottom:10px"></div>
+      <!-- Yeni KMZ ekleme -->
+      <div id="kmzEkleAlani">
+        <input type="file" id="fKmz" accept=".kmz,.kml" style="display:none" onchange="onKmzSec()" />
+        <button style="width:100%;background:#8b5cf6;color:#fff;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit" onclick="document.getElementById('fKmz').click()">📁 Dosya Seç</button>
+        <div id="kmzOnizleme" style="margin-top:8px"></div>
+        <button onclick="detayKaydet('kmz')" style="width:100%;background:#8b5cf6;color:white;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;margin-top:8px;font-family:inherit">💾 Dosyayı Yükle</button>
+      </div>
+    </div>
+
+    <div class="panel" id="onayPanel">
+      <div class="panel-header">
+        <div style="font-size:13px;font-weight:700;color:#06b6d4">✅ Saha Onayı</div>
+        <span id="onaySayac" style="font-size:11px;color:var(--muted)"></span>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin:-4px 0 10px">Sahadaki çalışmanın bitmiş halini fotoğraflayıp açıklama ekle.</div>
+
+      <!-- Mevcut onaylar listesi -->
+      <div id="mevcutOnaylarList" style="margin-bottom:10px"></div>
+
+      <!-- Yeni onay ekle butonu -->
+      <button onclick="toggleYeniOnayForm()" id="yeniOnayAcBtn" style="width:100%;background:rgba(6,182,212,0.1);border:1.5px solid #06b6d4;color:#06b6d4;border-radius:8px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">➕ Saha Onayı Ekle</button>
+
+      <!-- Yeni onay formu (gizli) -->
+      <div id="yeniOnayForm" style="display:none;margin-top:10px;background:rgba(6,182,212,0.06);border:1px solid rgba(6,182,212,0.2);border-radius:8px;padding:10px">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:1px;margin-bottom:8px">YENİ SAHA ONAYI</div>
+        <label class="field-label" style="margin-top:0">AÇIKLAMA</label>
+        <textarea id="fOnayAciklama" placeholder="Sahada gördüklerini, tamamlanan işi açıkla..." style="height:60px"></textarea>
+        <input type="file" id="fOnayGorsel" accept="image/*" multiple style="display:none" onchange="onOnayGorselSec()" />
+        <button onclick="document.getElementById('fOnayGorsel').click()" style="width:100%;background:rgba(6,182,212,0.15);border:1px solid #06b6d4;color:#06b6d4;border-radius:8px;padding:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:6px">📷 Fotoğraf Ekle</button>
+        <div id="onayGorselOnizleme" class="chips" style="margin-top:6px"></div>
+        <button onclick="onayEkleVeKaydet()" style="width:100%;background:#06b6d4;color:white;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;margin-top:8px;font-family:inherit" id="onayEkleBtn">💾 Onayı Kaydet</button>
+      </div>
+    </div>
+
+    <button onclick="bitirDetay()" style="width:100%;background:none;border:1px solid var(--border);color:var(--sub);border-radius:8px;padding:12px;font-size:14px;cursor:pointer;margin-top:4px;margin-bottom:8px;font-family:inherit">
+      ← Özete Dön
+    </button>
+  </div>
+</div>
+
 <!-- BOTTOM NAV -->
 <nav class="bottom-nav" id="appNav" style="display:none">
   <button class="nav-btn active" id="nav-dashboard" onclick="showView('dashboard')">
@@ -1253,6 +1290,11 @@ let data = { projects: [], deletedProjects: [], teams: [], activeProjectId: loca
 let editingId = null;
 let tempMalzemeler = [];
 let tempHataTurler = [];
+let hataGiderilmeTemp = {};
+let tempOnaylar = [];
+let tempOnayGorseller = [];
+let _onayDuzenleIdx = null;
+let _sahaOnaylariDesteklenmiyor = false;
 let tempHatalar = [];
 let tempFotograflar = [];
 let tempKmz = null;
@@ -1270,7 +1312,7 @@ function resetForm() {
   document.querySelectorAll('.hata-type-btn').forEach(b => b.className = 'hata-type-btn');
   const saveBtn = document.getElementById('saveBtn');
   if (saveBtn) saveBtn.textContent = '💾 Kaydı Kaydet';
-  ['malzemePanel','hataPanel','fotoPanel','kmzPanel'].forEach(id => document.getElementById(id)?.classList.remove('open'));
+  ['malzemePanel','hataPanel','fotoPanel','kmzPanel','onayPanel'].forEach(id => document.getElementById(id)?.classList.remove('open'));
   const banner = document.getElementById('editBanner');
   if (banner) banner.style.display = 'none';
   window._lastSavedEntryId = null;
@@ -1412,9 +1454,15 @@ async function saveEntry() {
   try {
   showLoading('Kaydediliyor...');
   const ekipId = document.getElementById('fEkip')?.value || null;
-  const { data: inserted, error } = await sb.from('kayitlar').insert({
-    proje_id: proj.id, tarih, kazi_metre: metre, ekip_id: ekipId, malzemeler: [], notlar, hata: { var: false }, hatalar: [], fotograflar: [], kmz: null
+  let { data: inserted, error } = await sb.from('kayitlar').insert({
+    proje_id: proj.id, tarih, kazi_metre: metre, ekip_id: ekipId, malzemeler: [], notlar, hata: { var: false }, hatalar: [], fotograflar: [], kmz: null, saha_onaylari: []
   }).select().single();
+  if (error && error.message && error.message.includes('saha_onaylari')) {
+    _sahaOnaylariDesteklenmiyor = true;
+    ({ data: inserted, error } = await sb.from('kayitlar').insert({
+      proje_id: proj.id, tarih, kazi_metre: metre, ekip_id: ekipId, malzemeler: [], notlar, hata: { var: false }, hatalar: [], fotograflar: [], kmz: null
+    }).select().single());
+  }
   if (error) { hideLoading(); islemBildir('Kayıt eklenemedi: ' + error.message, null, true); return; }
   if (tempFotograflar.length > 0 || tempKmz) {
     showLoading('Dosyalar yükleniyor...');
@@ -1578,6 +1626,7 @@ function yeniKayitAc() {
 }
 
 function bitirDetay() {
+  const acikKalacakId = window._lastSavedEntryId;
   window._lastSavedEntryId = null;
   tempHatalar = [];
   tempMalzemeler = [];
@@ -1585,22 +1634,26 @@ function bitirDetay() {
   tempKmz = null;
   tempHataGorseller = [];
   _hataduzenleIdx = null;
-  const kaziFormWrap = document.getElementById('kaziFormWrap');
-  const detayEkleWrap = document.getElementById('detayEkleWrap');
-  if (kaziFormWrap) kaziFormWrap.style.display = 'block';
-  if (detayEkleWrap) detayEkleWrap.style.display = 'none';
-  // Dashboard'a direkt geç
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('view-dashboard').classList.add('active');
-  document.getElementById('nav-dashboard').classList.add('active');
-  const geriBtn = document.getElementById('geriBtn');
-  if (geriBtn) geriBtn.style.display = 'none';
-  const projSel = document.getElementById('projSelector');
-  if (projSel && data.projects.length > 0) projSel.style.display = 'flex';
-  renderDashboard();
+  tempOnaylar = [];
+  tempOnayGorseller = [];
+  _onayDuzenleIdx = null;
+  // Popup'ı kapat - altındaki ekran neyse ona geri dön
+  document.getElementById('detayEkleWrap').style.display = 'none';
+  document.body.style.overflow = '';
+  const acikMenuyuGeriAc = () => {
+    if (!acikKalacakId) return;
+    const body = document.getElementById('body-' + acikKalacakId);
+    const tog = document.getElementById('tog-' + acikKalacakId);
+    const card = document.getElementById('card-' + acikKalacakId);
+    if (body) body.classList.add('open');
+    if (tog) tog.textContent = '▲';
+    if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
   if (data.activeProjectId) {
-    loadEntries(data.activeProjectId, true).then(() => renderDashboard());
+    loadEntries(data.activeProjectId, true).then(() => { renderDashboard(); acikMenuyuGeriAc(); });
+  } else {
+    renderDashboard();
+    acikMenuyuGeriAc();
   }
 }
 
@@ -1756,10 +1809,14 @@ async function startEdit(id) {
   let entry = proj.entries.find(e => e.id === id);
   if (!entry) {
     showLoading('Yükleniyor...');
-    const { data } = await sb.from('kayitlar').select('id, tarih, kazi_metre, ekip_id, notlar, malzemeler, hatalar, hata, fotograflar, kmz').eq('id', id).single();
+    let { data, error } = await sb.from('kayitlar').select('id, tarih, kazi_metre, ekip_id, notlar, malzemeler, hatalar, hata, fotograflar, kmz, saha_onaylari').eq('id', id).single();
+    if (error && error.message && error.message.includes('saha_onaylari')) {
+      _sahaOnaylariDesteklenmiyor = true;
+      ({ data, error } = await sb.from('kayitlar').select('id, tarih, kazi_metre, ekip_id, notlar, malzemeler, hatalar, hata, fotograflar, kmz').eq('id', id).single());
+    }
     hideLoading();
     if (!data) { islemBildir('Kayıt bulunamadı!', null, true); return; }
-    entry = { id: data.id, tarih: data.tarih, kaziMetre: parseFloat(data.kazi_metre), ekipId: data.ekip_id || null, malzemeler: data.malzemeler || [], notlar: data.notlar || '', hatalar: data.hatalar || [], fotograflar: data.fotograflar || [], kmz: data.kmz || null };
+    entry = { id: data.id, tarih: data.tarih, kaziMetre: parseFloat(data.kazi_metre), ekipId: data.ekip_id || null, malzemeler: data.malzemeler || [], notlar: data.notlar || '', hatalar: data.hatalar || [], fotograflar: data.fotograflar || [], kmz: data.kmz || null, sahaOnaylari: data.saha_onaylari || [] };
   }
 
   editingId = id;
@@ -1810,17 +1867,9 @@ async function hizliDetay(entryId, tip, hataIdx = null) {
   const proj = activeProject();
   const entry = proj?.entries.find(e => e.id === entryId);
   const sadeceBak = proj?.bitti === true;
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('view-kayit').classList.add('active');
-  document.getElementById('nav-kayit').classList.add('active');
-  const geriBtn = document.getElementById('geriBtn');
-  if (geriBtn) geriBtn.style.display = 'block';
-  document.getElementById('kaziFormWrap').style.display = 'none';
+  // Popup olarak aç - altındaki ekranı (dashboard/akordiyon) değiştirme
   document.getElementById('detayEkleWrap').style.display = 'block';
-  // Tamamlandı bannerını her zaman gizle - detay sayfasında gereksiz
-  const bitmisBanner = document.getElementById('projebitmisBanner');
-  if (bitmisBanner) bitmisBanner.style.display = 'none';
+  document.body.style.overflow = 'hidden';
   if (entry) {
     const bilgi = document.getElementById('kaydedilenBilgi');
     if (bilgi) bilgi.textContent = `📅 ${new Date(entry.tarih).toLocaleDateString('tr-TR')} — ⛏ ${entry.kaziMetre} m`;
@@ -1836,6 +1885,7 @@ async function hizliDetay(entryId, tip, hataIdx = null) {
     if (tip === 'hata') {
       tempHatalar = (entry.hatalar || []).map(h => ({ ...h, gorseller: h.gorseller || [] }));
       tempHataTurler = []; tempHataGorseller = [];
+      hataGiderilmeTemp = {};
       const fa = document.getElementById('fHataAciklama'); if (fa) fa.value = '';
       document.querySelectorAll('.hata-type-btn').forEach(b => b.className = 'hata-type-btn');
       const hgo = document.getElementById('hataGorselOnizleme'); if (hgo) hgo.innerHTML = '';
@@ -1865,6 +1915,19 @@ async function hizliDetay(entryId, tip, hataIdx = null) {
     const { data: fotoData } = await sb.from('kayitlar').select('fotograflar').eq('id', entryId).single();
     const fotograflar = fotoData?.fotograflar || [];
     renderMevcutFotolar(entryId, fotograflar, sadeceBak);
+  }
+
+  if (tip === 'onay') {
+    tempOnaylar = (entry?.sahaOnaylari || []).map(o => ({ ...o, gorseller: o.gorseller || [] }));
+    tempOnayGorseller = [];
+    _onayDuzenleIdx = null;
+    const fa = document.getElementById('fOnayAciklama'); if (fa) fa.value = '';
+    const ogo = document.getElementById('onayGorselOnizleme'); if (ogo) ogo.innerHTML = '';
+    renderMevcutOnaylar(sadeceBak);
+    const yeniOnayAcBtn = document.getElementById('yeniOnayAcBtn');
+    if (yeniOnayAcBtn) yeniOnayAcBtn.style.display = sadeceBak ? 'none' : 'block';
+    const yeniOnayForm = document.getElementById('yeniOnayForm');
+    if (yeniOnayForm) yeniOnayForm.style.display = 'none';
   }
 
   if (tip === 'kmz') {
@@ -1931,8 +1994,8 @@ async function hizliDetay(entryId, tip, hataIdx = null) {
   }
 
   updateBadges();
-  ['malzemePanel','hataPanel','fotoPanel','kmzPanel'].forEach(id => document.getElementById(id)?.classList.remove('open'));
-  const panelMap = { malzeme: 'malzemePanel', hata: 'hataPanel', foto: 'fotoPanel', kmz: 'kmzPanel' };
+  ['malzemePanel','hataPanel','fotoPanel','kmzPanel','onayPanel'].forEach(id => document.getElementById(id)?.classList.remove('open'));
+  const panelMap = { malzeme: 'malzemePanel', hata: 'hataPanel', foto: 'fotoPanel', kmz: 'kmzPanel', onay: 'onayPanel' };
   const hedefPanel = document.getElementById(panelMap[tip]);
   if (hedefPanel) { hedefPanel.classList.add('open'); setTimeout(() => hedefPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100); }
 }
@@ -2182,7 +2245,7 @@ function gunlukRaporPaylas(entryId) {
   if (!entry) return;
   const tarih = new Date(entry.tarih).toLocaleDateString('tr-TR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
   const malzStr = entry.malzemeler?.length > 0 ? entry.malzemeler.map(m => `   • ${m.name}: ${m.miktar} ${m.birim}`).join('\n') : '   • Yok';
-  const hataStr = entry.hatalar?.length > 0 ? entry.hatalar.map((h, i) => `   #${i+1} ${h.turler?.join(', ') || ''} - ${h.aciklama || ''}`).join('\n') : '   • Yok';
+  const hataStr = entry.hatalar?.length > 0 ? entry.hatalar.map((h, i) => `   #${i+1} ${h.turler?.join(', ') || ''} - ${h.aciklama || ''}${h.giderildi ? ' ✅ GİDERİLDİ' : ''}`).join('\n') : '   • Yok';
   const notStr = entry.notlar ? `\n📝 Not: ${entry.notlar}` : '';
   const metin = `📋 *GÜNLÜK KAZI RAPORU*\n📅 ${tarih}\n🏗 Proje: ${proj.name}${proj.location ? ' - ' + proj.location : ''}\n\n⛏ Günlük Kazı: *${entry.kaziMetre} m*${notStr}\n\n🧱 Malzeme:\n${malzStr}\n\n⚠️ Hata/Eksik:\n${hataStr}`;
   paylas(metin, 'Günlük Kazı Raporu');
@@ -2306,7 +2369,7 @@ function projeRaporPaylas() {
   const hataStr = hataEntries.length > 0 ? hataEntries.map(e => {
     const tarih = new Date(e.tarih).toLocaleDateString('tr-TR');
     const hatalar = e.hatalar?.length > 0
-      ? e.hatalar.map(h => `      - ${h.turler?.join(', ') || 'Belirtilmemiş'}${h.aciklama ? ': ' + h.aciklama : ''}`).join('\n')
+      ? e.hatalar.map(h => `      - ${h.turler?.join(', ') || 'Belirtilmemiş'}${h.aciklama ? ': ' + h.aciklama : ''}${h.giderildi ? ' ✅ GİDERİLDİ' : ''}`).join('\n')
       : `      - ${e.hata?.turler?.join(', ') || 'Belirtilmemiş'}${e.hata?.aciklama ? ': ' + e.hata.aciklama : ''}`;
     return `   📅 ${tarih}\n${hatalar}`;
   }).join('\n') : '   • Yok';
@@ -3422,11 +3485,20 @@ async function loadEntries(projeId, sessiz = false, sayfa = 0) {
   try {
     const from = sayfa * ENTRY_PAGE_SIZE;
     const to = from + ENTRY_PAGE_SIZE - 1;
-    const { data: kayitlar, error, count } = await sb.from('kayitlar')
-      .select('id, tarih, kazi_metre, ekip_id, notlar, malzemeler, hatalar, hata, fotograflar, kmz', { count: 'exact' })
+    let { data: kayitlar, error, count } = await sb.from('kayitlar')
+      .select('id, tarih, kazi_metre, ekip_id, notlar, malzemeler, hatalar, hata, fotograflar, kmz, saha_onaylari', { count: 'exact' })
       .eq('proje_id', projeId)
       .order('tarih', { ascending: false })
       .range(from, to);
+    // "saha_onaylari" sütunu henüz Supabase'de yoksa eski sütun listesiyle tekrar dene
+    if (error && error.message && error.message.includes('saha_onaylari')) {
+      _sahaOnaylariDesteklenmiyor = true;
+      ({ data: kayitlar, error, count } = await sb.from('kayitlar')
+        .select('id, tarih, kazi_metre, ekip_id, notlar, malzemeler, hatalar, hata, fotograflar, kmz', { count: 'exact' })
+        .eq('proje_id', projeId)
+        .order('tarih', { ascending: false })
+        .range(from, to));
+    }
     if (!sessiz) hideLoading();
     if (error) { islemBildir('Kayıtlar yüklenemedi!', null, true); return; }
     const proj = data.projects.find(p => p.id === projeId);
@@ -3436,6 +3508,7 @@ async function loadEntries(projeId, sessiz = false, sayfa = 0) {
         malzemeler: k.malzemeler || [], notlar: k.notlar || '',
         hata: k.hata || { var: false }, hatalar: k.hatalar || [],
         fotograflar: k.fotograflar || [], kmz: k.kmz || null,
+        sahaOnaylari: k.saha_onaylari || [],
       }));
       if (sayfa === 0) {
         proj.entries = yeniKayitlar;
@@ -3627,17 +3700,26 @@ async function hataEkleVeKaydet() {
     turler: [...tempHataTurler],
     aciklama,
     gorseller: yuklenenGorseller,
-    tarih: new Date().toISOString()
+    tarih: new Date().toISOString(),
+    giderildi: false,
+    giderilmeTarihi: null,
+    giderilmeNotu: null,
+    giderilmeGorseller: []
   };
 
   let yeniHatalar;
   if (_hataduzenleIdx !== null) {
-    // Güncelleme - eski görselleri koru, yenilerini ekle
+    // Güncelleme - eski görselleri koru, yenilerini ekle, giderildi durumunu koru
     yeniHatalar = [...mevcutHatalar];
-    const eskiGorseller = yeniHatalar[_hataduzenleIdx]?.gorseller || [];
+    const eskiKayit = yeniHatalar[_hataduzenleIdx] || {};
+    const eskiGorseller = eskiKayit.gorseller || [];
     yeniHatalar[_hataduzenleIdx] = {
       ...yeniHata,
-      gorseller: [...eskiGorseller, ...yuklenenGorseller]
+      gorseller: [...eskiGorseller, ...yuklenenGorseller],
+      giderildi: eskiKayit.giderildi || false,
+      giderilmeTarihi: eskiKayit.giderilmeTarihi || null,
+      giderilmeNotu: eskiKayit.giderilmeNotu || null,
+      giderilmeGorseller: eskiKayit.giderilmeGorseller || []
     };
   } else {
     // Yeni ekleme
@@ -3713,8 +3795,8 @@ async function renderMevcutHatalar(sadeceBak = false) {
   if (sayac) sayac.textContent = `${tempHatalar.length} hata`;
   div.innerHTML = tempHatalar.map((h, i) => `
     <div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:10px;margin-bottom:8px">
-      <div style="display:flex;gap:6px;margin-bottom:6px">
-        <span style="flex:1;font-size:11px;color:var(--muted);font-weight:700">#${i+1} HATA</span>
+      <div style="display:flex;gap:6px;margin-bottom:6px;align-items:center">
+        <span style="flex:1;font-size:11px;color:var(--muted);font-weight:700">#${i+1} HATA ${h.giderildi ? `<span class="giderildi-badge">✅ Giderildi</span>` : ''}</span>
         ${!sadeceBak ? `<button onclick="hataDuzenle(${i})" style="background:rgba(59,130,246,0.15);border:1px solid var(--blue);color:var(--blue);border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;font-family:inherit">✏️ Düzenle</button>
         <button onclick="tempHatalarSil(${i})" style="background:rgba(239,68,68,0.15);border:1px solid var(--red);color:var(--red);border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;font-family:inherit">🗑 Sil</button>` : ''}
       </div>
@@ -3738,10 +3820,322 @@ async function renderMevcutHatalar(sadeceBak = false) {
             toast('✅ Görsel silindi!');
           })" style="position:absolute;top:-6px;left:-6px;background:var(--red);border:none;color:white;border-radius:50%;width:18px;height:18px;font-size:11px;cursor:pointer;line-height:1">×</button>` : ''}
         </div>`).join('')}</div>` : ''}
+      ${h.giderildi ? `
+        <div style="margin-top:8px;padding:8px 10px;background:rgba(16,185,129,0.06);border-left:3px solid #10b981;border-radius:4px">
+          <div style="font-size:11px;color:#10b981;font-weight:700">✅ GİDERİLDİ ${h.giderilmeTarihi ? '(' + new Date(h.giderilmeTarihi).toLocaleDateString('tr-TR') + ')' : ''}</div>
+          ${h.giderilmeNotu ? `<div style="font-size:12px;color:var(--text);margin-top:2px;white-space:pre-wrap">${h.giderilmeNotu.replace(/</g,'&lt;')}</div>` : ''}
+          ${h.giderilmeGorseller?.length > 0 ? `<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px">${h.giderilmeGorseller.map(g => `<img src="${g.url}" onclick="fotoGoster('${g.url}')" style="width:56px;height:56px;object-fit:cover;border-radius:6px;border:1px solid #10b981;cursor:pointer">`).join('')}</div>` : ''}
+          ${!sadeceBak ? `<button onclick="hataGiderilmeGeriAl(${i})" style="width:100%;background:none;border:1px solid var(--border);color:var(--sub);border-radius:8px;padding:7px;font-size:11px;cursor:pointer;font-family:inherit;margin-top:8px">↩️ Giderildi İşaretini Geri Al</button>` : ''}
+        </div>
+      ` : (!sadeceBak ? (
+          hataGiderilmeTemp[i]
+          ? `<div style="margin-top:8px;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.3);border-radius:8px;padding:10px">
+              <label class="field-label" style="margin-top:0;color:#10b981">GİDERİLDİ AÇIKLAMASI</label>
+              <textarea id="hataGiderilmeNot-${i}" placeholder="Ne yapıldı, nasıl giderildi..." style="height:56px"></textarea>
+              <input type="file" id="hataGiderilmeFoto-${i}" accept="image/*" multiple style="display:none" onchange="onHataGiderilmeFotoSec(${i})" />
+              <button onclick="document.getElementById('hataGiderilmeFoto-${i}').click()" style="width:100%;background:rgba(16,185,129,0.12);border:1px solid #10b981;color:#10b981;border-radius:8px;padding:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:6px">📷 Kanıt Fotoğrafı Ekle</button>
+              <div id="hataGiderilmeOnizleme-${i}" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px"></div>
+              <div style="display:flex;gap:8px;margin-top:8px">
+                <button onclick="hataGiderilmeIptal(${i})" style="flex:1;background:none;border:1px solid var(--border);color:var(--sub);border-radius:8px;padding:9px;font-size:12px;cursor:pointer;font-family:inherit">İptal</button>
+                <button onclick="hataGiderildiKaydet(${i})" style="flex:2;background:#10b981;color:white;border:none;border-radius:8px;padding:9px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">✅ Giderildi Olarak Kaydet</button>
+              </div>
+            </div>`
+          : `<button onclick="hataGiderilmeAc(${i})" style="width:100%;background:rgba(16,185,129,0.1);border:1.5px solid #10b981;color:#10b981;border-radius:8px;padding:9px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:8px">✅ Giderildi Olarak İşaretle</button>`
+        ) : '')}
     </div>`).join('');
 }
 
 let tempFotolar = [];
+
+function hataGiderilmeAc(i) {
+  hataGiderilmeTemp[i] = { gorseller: [] };
+  renderMevcutHatalar();
+}
+
+function hataGiderilmeIptal(i) {
+  (hataGiderilmeTemp[i]?.gorseller || []).forEach(f => { try { URL.revokeObjectURL(f.url); } catch(e) {} });
+  delete hataGiderilmeTemp[i];
+  renderMevcutHatalar();
+}
+
+async function onHataGiderilmeFotoSec(i) {
+  const input = document.getElementById(`hataGiderilmeFoto-${i}`);
+  const files = input.files;
+  if (!files.length) return;
+  showLoading('Fotoğraflar işleniyor...');
+  for (const f of files) { hataGiderilmeTemp[i].gorseller.push(await sikistir(f)); }
+  hideLoading();
+  input.value = '';
+  renderHataGiderilmeOnizleme(i);
+}
+
+function renderHataGiderilmeOnizleme(i) {
+  const onizleme = document.getElementById(`hataGiderilmeOnizleme-${i}`);
+  if (!onizleme) return;
+  onizleme.innerHTML = (hataGiderilmeTemp[i]?.gorseller || []).map((f, gi) => `
+    <div style="position:relative;display:inline-block">
+      <img src="${f.url}" style="width:56px;height:56px;object-fit:cover;border-radius:6px;border:2px solid #10b981" loading="lazy"/>
+      <button onclick="hataGiderilmeTemp[${i}].gorseller.splice(${gi},1);renderHataGiderilmeOnizleme(${i})" style="position:absolute;top:-6px;right:-6px;background:var(--red);border:none;color:white;border-radius:50%;width:18px;height:18px;font-size:11px;cursor:pointer">×</button>
+    </div>`).join('');
+}
+
+async function hataGiderildiKaydet(i) {
+  const entryId = window._lastSavedEntryId;
+  if (!entryId) { islemBildir('Kayıt bulunamadı!', null, true); return; }
+  const notEl = document.getElementById(`hataGiderilmeNot-${i}`);
+  const not = notEl ? notEl.value.trim() : '';
+  showLoading('Kaydediliyor...');
+  try {
+    const gorseller = hataGiderilmeTemp[i]?.gorseller || [];
+    const fotoUrls = [];
+    for (const f of gorseller) {
+      const path = `kayitlar/${entryId}/hata/${i}/giderilme/${Date.now()}_${f.file.name}`;
+      const { error: upErr } = await sb.storage.from('kazi-dosyalar').upload(path, f.file);
+      if (!upErr) {
+        const { data: pub } = sb.storage.from('kazi-dosyalar').getPublicUrl(path);
+        fotoUrls.push({ url: pub.publicUrl, name: f.file.name, path });
+      }
+    }
+    tempHatalar[i] = {
+      ...tempHatalar[i],
+      giderildi: true,
+      giderilmeTarihi: new Date().toISOString(),
+      giderilmeNotu: not || null,
+      giderilmeGorseller: fotoUrls
+    };
+    const { error } = await sb.from('kayitlar').update({ hatalar: tempHatalar }).eq('id', entryId);
+    if (error) { hideLoading(); islemBildir('Kaydedilemedi: ' + error.message, null, true); return; }
+    const proj = activeProject();
+    const entry = proj?.entries.find(e => e.id === entryId);
+    if (entry) entry.hatalar = [...tempHatalar];
+    delete hataGiderilmeTemp[i];
+    hideLoading();
+    renderMevcutHatalar();
+    toast('✅ Eksik "giderildi" olarak işaretlendi!');
+  } catch (err) { hideLoading(); islemBildir('⚠️ ' + (err.message || 'Bağlantı hatası'), null, true); }
+}
+
+async function hataGiderilmeGeriAl(i) {
+  const entryId = window._lastSavedEntryId;
+  if (!entryId) { islemBildir('Kayıt bulunamadı!', null, true); return; }
+  showLoading('Güncelleniyor...');
+  try {
+    tempHatalar[i] = {
+      ...tempHatalar[i],
+      giderildi: false,
+      giderilmeTarihi: null,
+      giderilmeNotu: null,
+      giderilmeGorseller: []
+    };
+    const { error } = await sb.from('kayitlar').update({ hatalar: tempHatalar }).eq('id', entryId);
+    if (error) { hideLoading(); islemBildir('Güncellenemedi: ' + error.message, null, true); return; }
+    const proj = activeProject();
+    const entry = proj?.entries.find(e => e.id === entryId);
+    if (entry) entry.hatalar = [...tempHatalar];
+    hideLoading();
+    renderMevcutHatalar();
+    toast('↩️ Giderildi işareti geri alındı.');
+  } catch (err) { hideLoading(); islemBildir('⚠️ ' + (err.message || 'Bağlantı hatası'), null, true); }
+}
+
+// ─── SAHA ONAYI (bitmiş iş görsel/açıklama onayı) ─────────
+
+function toggleYeniOnayForm() {
+  const form = document.getElementById('yeniOnayForm');
+  const btn = document.getElementById('yeniOnayAcBtn');
+  const acik = form.style.display !== 'none';
+  form.style.display = acik ? 'none' : 'block';
+  btn.textContent = acik ? '➕ Saha Onayı Ekle' : '✕ Formu Kapat';
+  if (!acik) {
+    document.getElementById('fOnayAciklama').value = '';
+    tempOnayGorseller = [];
+    document.getElementById('onayGorselOnizleme').innerHTML = '';
+    _onayDuzenleIdx = null;
+  }
+}
+
+async function onOnayGorselSec() {
+  const files = document.getElementById('fOnayGorsel').files;
+  if (!files.length) return;
+  showLoading(`${files.length} görsel işleniyor...`);
+  for (const f of files) { tempOnayGorseller.push(await sikistir(f)); }
+  hideLoading();
+  document.getElementById('fOnayGorsel').value = '';
+  renderOnayGorselOnizleme();
+  toast(`✅ ${files.length} görsel eklendi (toplam: ${tempOnayGorseller.length})`);
+}
+
+function renderOnayGorselOnizleme() {
+  const div = document.getElementById('onayGorselOnizleme');
+  if (!div) return;
+  div.innerHTML = tempOnayGorseller.map((f, i) => `
+    <div style="position:relative;display:inline-block">
+      <img src="${f.url}" style="width:70px;height:70px;object-fit:cover;border-radius:8px;border:2px solid #06b6d4" loading="lazy"/>
+      <button onclick="tempOnayGorseller.splice(${i},1);renderOnayGorselOnizleme()" style="position:absolute;top:-6px;right:-6px;background:var(--red);border:none;color:white;border-radius:50%;width:18px;height:18px;font-size:11px;cursor:pointer">×</button>
+    </div>`).join('');
+}
+
+async function onayEkleVeKaydet() {
+  const aciklama = document.getElementById('fOnayAciklama').value.trim();
+  if (!aciklama && tempOnayGorseller.length === 0) {
+    islemBildir('Açıklama yaz veya en az bir fotoğraf ekle!', null, true);
+    return;
+  }
+
+  const entryId = window._lastSavedEntryId;
+  if (!entryId) { islemBildir('Kayıt bulunamadı!', null, true); return; }
+
+  showLoading('Kaydediliyor...');
+
+  const { data: kayit, error: fetchErr } = await sb.from('kayitlar')
+    .select('saha_onaylari').eq('id', entryId).single();
+  if (fetchErr) {
+    hideLoading();
+    if (fetchErr.message && fetchErr.message.includes('saha_onaylari')) {
+      islemBildir('⚠️ "saha_onaylari" sütunu Supabase\'de bulunamadı. Lütfen önce ekleyin (alter table kayitlar add column saha_onaylari jsonb default \'[]\';)', null, true);
+    } else {
+      islemBildir('Kayıt alınamadı!', null, true);
+    }
+    return;
+  }
+  if (!kayit) { hideLoading(); islemBildir('Kayıt alınamadı!', null, true); return; }
+
+  const mevcutOnaylar = Array.isArray(kayit.saha_onaylari) ? [...kayit.saha_onaylari] : [];
+
+  const yuklenenGorseller = [];
+  for (const f of tempOnayGorseller) {
+    const path = `kayitlar/${entryId}/onay/${Date.now()}_${f.file.name}`;
+    const { error: upErr } = await sb.storage.from('kazi-dosyalar').upload(path, f.file);
+    if (!upErr) {
+      const { data } = sb.storage.from('kazi-dosyalar').getPublicUrl(path);
+      yuklenenGorseller.push({ url: data.publicUrl, name: f.file.name, path });
+    }
+  }
+
+  const yeniOnay = {
+    aciklama,
+    gorseller: yuklenenGorseller,
+    tarih: new Date().toISOString()
+  };
+
+  let yeniOnaylar;
+  if (_onayDuzenleIdx !== null) {
+    yeniOnaylar = [...mevcutOnaylar];
+    const eskiGorseller = yeniOnaylar[_onayDuzenleIdx]?.gorseller || [];
+    yeniOnaylar[_onayDuzenleIdx] = { ...yeniOnay, gorseller: [...eskiGorseller, ...yuklenenGorseller] };
+  } else {
+    yeniOnaylar = [...mevcutOnaylar, yeniOnay];
+  }
+
+  const { error: updateErr } = await sb.from('kayitlar')
+    .update({ saha_onaylari: yeniOnaylar }).eq('id', entryId);
+
+  hideLoading();
+  if (updateErr) {
+    if (updateErr.message && updateErr.message.includes('saha_onaylari')) {
+      islemBildir('⚠️ "saha_onaylari" sütunu Supabase\'de bulunamadı. Lütfen önce ekleyin.', null, true);
+    } else {
+      islemBildir('Kaydedilemedi: ' + updateErr.message, null, true);
+    }
+    return;
+  }
+
+  const proj = activeProject();
+  const entry = proj?.entries.find(e => e.id === entryId);
+  if (entry) entry.sahaOnaylari = yeniOnaylar;
+
+  tempOnayGorseller = [];
+  _onayDuzenleIdx = null;
+  tempOnaylar = [...yeniOnaylar];
+  document.getElementById('fOnayAciklama').value = '';
+  document.getElementById('onayGorselOnizleme').innerHTML = '';
+  const btn = document.getElementById('onayEkleBtn');
+  if (btn) btn.textContent = '💾 Onayı Kaydet';
+  document.getElementById('yeniOnayForm').style.display = 'none';
+  const yeniOnayAcBtnEl = document.getElementById('yeniOnayAcBtn'); if (yeniOnayAcBtnEl) yeniOnayAcBtnEl.textContent = '➕ Saha Onayı Ekle';
+
+  renderMevcutOnaylar();
+  updateBadges();
+  toast(_onayDuzenleIdx !== null ? '✅ Saha onayı güncellendi!' : '✅ Saha onayı kaydedildi!');
+}
+
+function onayDuzenle(idx) {
+  const o = tempOnaylar[idx];
+  if (!o) return;
+  _onayDuzenleIdx = idx;
+  document.getElementById('fOnayAciklama').value = o.aciklama || '';
+  tempOnayGorseller = [];
+  document.getElementById('onayGorselOnizleme').innerHTML = '';
+  document.getElementById('yeniOnayForm').style.display = 'block';
+  document.getElementById('yeniOnayAcBtn').textContent = '✕ Formu Kapat';
+  const btn = document.getElementById('onayEkleBtn');
+  if (btn) btn.textContent = '💾 Değişiklikleri Kaydet';
+  document.getElementById('fOnayAciklama').scrollIntoView({ behavior: 'smooth' });
+}
+
+async function tempOnaylarSil(idx) {
+  const entryId = window._lastSavedEntryId;
+  if (!entryId) {
+    tempOnaylar.splice(idx, 1);
+    renderMevcutOnaylar();
+    return;
+  }
+  silOnayla('Bu saha onayı kaydını silmek istediğine emin misin?', async () => {
+    showLoading('Siliniyor...');
+    try {
+      const o = tempOnaylar[idx];
+      if (o?.gorseller?.length > 0) {
+        const paths = o.gorseller.filter(g => g.path).map(g => g.path);
+        if (paths.length > 0) await sb.storage.from('kazi-dosyalar').remove(paths);
+      }
+      tempOnaylar.splice(idx, 1);
+      const { error } = await sb.from('kayitlar').update({ saha_onaylari: tempOnaylar }).eq('id', entryId);
+      const proj = activeProject();
+      const entry = proj?.entries.find(e => e.id === entryId);
+      if (entry) entry.sahaOnaylari = [...tempOnaylar];
+      hideLoading();
+      if (error) { islemBildir('Silinemedi: ' + error.message, null, true); return; }
+      renderMevcutOnaylar();
+      updateBadges();
+      toast('✅ Saha onayı silindi!');
+    } catch(err) { hideLoading(); islemBildir('⚠️ ' + (err.message||'Bağlantı hatası'), null, true); }
+  });
+}
+
+function renderMevcutOnaylar(sadeceBak = false) {
+  const div = document.getElementById('mevcutOnaylarList');
+  const sayac = document.getElementById('onaySayac');
+  if (!div) return;
+  if (tempOnaylar.length === 0) { div.innerHTML = ''; if (sayac) sayac.textContent = ''; return; }
+  if (sayac) sayac.textContent = `${tempOnaylar.length} onay`;
+  div.innerHTML = tempOnaylar.map((o, i) => `
+    <div style="background:rgba(6,182,212,0.08);border:1px solid rgba(6,182,212,0.3);border-radius:8px;padding:10px;margin-bottom:8px">
+      <div style="display:flex;gap:6px;margin-bottom:6px;align-items:center">
+        <span style="flex:1;font-size:11px;color:var(--muted);font-weight:700">✅ ${o.tarih ? new Date(o.tarih).toLocaleDateString('tr-TR') : ''}</span>
+        ${!sadeceBak ? `<button onclick="onayDuzenle(${i})" style="background:rgba(59,130,246,0.15);border:1px solid var(--blue);color:var(--blue);border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;font-family:inherit">✏️ Düzenle</button>
+        <button onclick="tempOnaylarSil(${i})" style="background:rgba(239,68,68,0.15);border:1px solid var(--red);color:var(--red);border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;font-family:inherit">🗑 Sil</button>` : ''}
+      </div>
+      ${o.aciklama ? `<div style="color:#67e8f9;font-size:12px;white-space:pre-wrap">📋 ${o.aciklama}</div>` : ''}
+      ${o.gorseller?.length > 0 ? `<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px">${o.gorseller.map((g, gi) => `
+        <div style="position:relative">
+          <img src="${g.url}" onclick="fotoGoster('${g.url}')" style="width:60px;height:60px;object-fit:cover;border-radius:6px;border:1px solid #06b6d4;cursor:pointer">
+          ${!sadeceBak ? `<button onclick="silOnayla('Bu görseli silmek istediğine emin misin?', async () => {
+            const g = tempOnaylar[${i}].gorseller[${gi}];
+            if (g && g.path) await sb.storage.from('kazi-dosyalar').remove([g.path]);
+            tempOnaylar[${i}].gorseller.splice(${gi},1);
+            const entryId = window._lastSavedEntryId;
+            const proj = activeProject();
+            const entry = proj?.entries.find(e => e.id === entryId);
+            if (entry) {
+              entry.sahaOnaylari = [...tempOnaylar];
+              await sb.from('kayitlar').update({ saha_onaylari: entry.sahaOnaylari }).eq('id', entryId);
+            }
+            renderMevcutOnaylar();
+            toast('✅ Görsel silindi!');
+          })" style="position:absolute;top:-6px;left:-6px;background:var(--red);border:none;color:white;border-radius:50%;width:18px;height:18px;font-size:11px;cursor:pointer;line-height:1">×</button>` : ''}
+        </div>`).join('')}</div>` : ''}
+    </div>`).join('');
+}
 
 async function fotograflariYukle() {
   const btn = document.getElementById('fotoYukleBtn');
@@ -4033,88 +4427,47 @@ function renderDashboard() {
     return `
     <div id="card-${e.id}" style="background:var(--card);border:1px solid ${hataVar ? 'rgba(239,68,68,0.5)' : 'var(--border)'};border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.3)">
 
-      <!-- Üst satır - tıklayınca menü açılır -->
+      <!-- Üst satır - tıklayınca menü akordiyon olarak açılır -->
       <div onclick="toggleEntry('${e.id}')" style="cursor:pointer">
         <div style="height:4px;background:${cizgiRengi}"></div>
         <div style="padding:10px 12px;position:relative">
           <span id="tog-${e.id}" style="position:absolute;top:9px;right:10px;color:var(--muted);font-size:11px">▼</span>
-          <div style="font-size:12px;font-weight:700;color:var(--text);padding-right:16px">
-            ${gunKisa} ${tarihKisa}${ekipAdi ? ` <span style="font-size:10.5px;font-weight:600;color:var(--muted)">· ${ekipAdi}</span>` : ''}
+          <div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding-right:16px">
+            <span style="font-size:14px;font-weight:700;color:var(--text)">${gunKisa} ${tarihKisa}${ekipAdi ? ` <span style="font-size:12.5px;font-weight:600;color:var(--muted)">· ${ekipAdi}</span>` : ''}</span>
+            <span style="font-size:16px;font-weight:900;color:var(--yellow);white-space:nowrap">⛏ ${e.kaziMetre} m</span>
           </div>
-          <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:6px">
-            <span style="font-size:16px;font-weight:900;color:var(--yellow)">⛏ ${e.kaziMetre} m</span>
-            ${meta.length > 0 ? `<span style="font-size:10.5px;color:var(--muted)">${meta.join('&nbsp;&nbsp;')}</span>` : ''}
-          </div>
+          ${meta.length > 0 ? `<div style="margin-top:6px"><span style="font-size:10.5px;color:var(--muted)">${meta.join('&nbsp;&nbsp;')}</span></div>` : ''}
         </div>
       </div>
 
-      <!-- Buton satırı - varsayılan gizli -->
+      <!-- Menü - akordiyon, varsayılan gizli -->
       <div id="body-${e.id}" class="entry-body">
-        <div style="display:flex;gap:6px;padding:10px;background:rgba(0,0,0,0.2)">
-          <button onclick="hizliDetay('${e.id}','malzeme')" style="flex:1;background:rgba(59,130,246,0.15);border:1.5px solid var(--blue);color:var(--blue);border-radius:10px;padding:9px 2px;font-size:18px;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:2px">
+        <div style="display:flex;flex-wrap:wrap;gap:6px;padding:10px;background:rgba(0,0,0,0.2)">
+          <button onclick="hizliDetay('${e.id}','malzeme')" style="flex:1 1 22%;min-width:64px;background:rgba(59,130,246,0.15);border:1.5px solid var(--blue);color:var(--blue);border-radius:10px;padding:9px 2px;font-size:18px;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:2px">
             🧱<span style="font-size:9px;font-weight:700">${e.malzemeler?.length > 0 ? e.malzemeler.length+' malz.' : 'Malzeme'}</span>
           </button>
-          <button onclick="hizliDetay('${e.id}','hata')" style="flex:1;background:${(e.hatalar?.length > 0 || e.hata?.var) ? 'rgba(239,68,68,0.2)' : 'rgba(239,68,68,0.06)'};border:1.5px solid ${(e.hatalar?.length > 0 || e.hata?.var) ? 'var(--red)' : '#4b1a1a'};color:#fca5a5;border-radius:10px;padding:9px 2px;font-size:18px;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:2px">
+          <button onclick="hizliDetay('${e.id}','hata')" style="flex:1 1 22%;min-width:64px;background:${(e.hatalar?.length > 0 || e.hata?.var) ? 'rgba(239,68,68,0.2)' : 'rgba(239,68,68,0.06)'};border:1.5px solid ${(e.hatalar?.length > 0 || e.hata?.var) ? 'var(--red)' : '#4b1a1a'};color:#fca5a5;border-radius:10px;padding:9px 2px;font-size:18px;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:2px">
             ⚠️<span style="font-size:9px;font-weight:700">${e.hatalar?.length > 0 ? e.hatalar.length+' Hata' : e.hata?.var ? 'Hata Var' : 'Hata'}</span>
           </button>
-          <button onclick="hizliDetay('${e.id}','foto')" style="flex:1;background:rgba(16,185,129,0.1);border:1.5px solid #064e3b;color:#10b981;border-radius:10px;padding:9px 2px;font-size:18px;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:2px">
+          <button onclick="hizliDetay('${e.id}','foto')" style="flex:1 1 22%;min-width:64px;background:rgba(16,185,129,0.1);border:1.5px solid #064e3b;color:#10b981;border-radius:10px;padding:9px 2px;font-size:18px;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:2px">
             📷<span style="font-size:9px;font-weight:700">${e.fotograflar?.length > 0 ? e.fotograflar.length+' foto' : 'Fotoğraf'}</span>
           </button>
-          <button onclick="hizliDetay('${e.id}','kmz')" style="flex:1;background:rgba(139,92,246,0.1);border:1.5px solid ${e.kmz ? '#8b5cf6' : '#3b1f6e'};color:#a78bfa;border-radius:10px;padding:9px 2px;font-size:18px;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:2px">
+          <button onclick="hizliDetay('${e.id}','kmz')" style="flex:1 1 22%;min-width:64px;background:rgba(139,92,246,0.1);border:1.5px solid ${e.kmz ? '#8b5cf6' : '#3b1f6e'};color:#a78bfa;border-radius:10px;padding:9px 2px;font-size:18px;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:2px">
             📁<span style="font-size:9px;font-weight:700">${e.kmz ? 'KMZ ✓' : 'KMZ'}</span>
           </button>
-          <button onclick="toggleDetay('${e.id}')" style="flex:1;background:rgba(100,116,139,0.1);border:1.5px solid var(--border);color:var(--sub);border-radius:10px;padding:9px 2px;font-size:18px;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:2px">
+          <button onclick="hizliDetay('${e.id}','onay')" style="flex:1 1 22%;min-width:64px;background:${e.sahaOnaylari?.length > 0 ? 'rgba(6,182,212,0.2)' : 'rgba(6,182,212,0.08)'};border:1.5px solid ${e.sahaOnaylari?.length > 0 ? '#06b6d4' : '#0e4a52'};color:#06b6d4;border-radius:10px;padding:9px 2px;font-size:18px;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:2px">
+            ✅<span style="font-size:9px;font-weight:700">${e.sahaOnaylari?.length > 0 ? e.sahaOnaylari.length+' Onay' : 'Saha Onay'}</span>
+          </button>
+          <button onclick="toggleDetay('${e.id}')" style="flex:1 1 22%;min-width:64px;background:rgba(100,116,139,0.1);border:1.5px solid var(--border);color:var(--sub);border-radius:10px;padding:9px 2px;font-size:18px;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:2px">
             👁️<span style="font-size:9px;font-weight:700">Detay</span>
           </button>
           ${proj.bitti !== true ? `
-          <button onclick="startEdit('${e.id}')" style="flex:1;background:rgba(59,130,246,0.1);border:1.5px solid var(--blue);color:var(--blue);border-radius:10px;padding:9px 2px;font-size:18px;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:2px">
+          <button onclick="startEdit('${e.id}')" style="flex:1 1 22%;min-width:64px;background:rgba(59,130,246,0.1);border:1.5px solid var(--blue);color:var(--blue);border-radius:10px;padding:9px 2px;font-size:18px;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:2px">
             ✏️<span style="font-size:9px;font-weight:700">Düzenle</span>
           </button>
-          <button onclick="deleteEntry('${e.id}')" style="flex:1;background:rgba(239,68,68,0.08);border:1.5px solid #4b1a1a;color:var(--red);border-radius:10px;padding:9px 2px;font-size:18px;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:2px">
+          <button onclick="deleteEntry('${e.id}')" style="flex:1 1 22%;min-width:64px;background:rgba(239,68,68,0.08);border:1.5px solid #4b1a1a;color:var(--red);border-radius:10px;padding:9px 2px;font-size:18px;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:2px">
             🗑<span style="font-size:9px;font-weight:700">Sil</span>
           </button>` : ''}
-        </div>
-      </div>
-      <div id="detay-${e.id}" style="display:none;padding:10px 14px">
-        ${e.malzemeler?.length > 0 ? `
-          <div class="entry-detail">🧱 Malzemeler:</div>
-          <div class="chips">${e.malzemeler.map(m => `<span class="chip-readonly">${m.name} — ${m.miktar} ${m.birim}</span>`).join('')}</div>` : ''}
-        ${e.notlar ? `<div class="entry-detail" style="margin-top:8px;white-space:pre-wrap">📝 ${e.notlar}</div>` : ''}
-        ${e.fotograflar?.length > 0 ? `
-          <div class="entry-detail" style="margin-top:8px">📷 Fotoğraflar (${e.fotograflar.length}):</div>
-          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px">
-            ${e.fotograflar.map(f => `
-              <div style="position:relative">
-                <img src="${f.url}" onclick="fotoGoster('${f.url}')" loading="lazy" style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:2px solid var(--yellow);cursor:pointer" />
-                <button onclick="window.open('${f.url}','_blank');toast('📥 Fotoğraf indiriliyor...')" class="foto-indir-btn">⬇</button>
-              </div>`).join('')}
-          </div>` : ''}
-        ${e.kmz ? `
-          <div style="display:flex;align-items:center;gap:8px;background:rgba(59,130,246,0.1);border:1px solid var(--blue);border-radius:8px;padding:8px 12px;margin-top:8px">
-            <span style="font-size:18px">📁</span>
-            <span style="color:var(--text);font-size:13px;flex:1">${e.kmz.name}</span>
-            <button data-kmzurl="${e.kmz.url}" data-kmzad="${e.kmz.name}" onclick="event.stopPropagation();window.open(this.dataset.kmzurl,'_blank');toast('📥 KMZ indiriliyor: '+this.dataset.kmzad)" style="color:var(--blue);background:none;font-size:12px;border:1px solid var(--blue);border-radius:6px;padding:4px 8px;cursor:pointer">⬇ İndir</button>
-          </div>` : ''}
-        ${(e.hatalar?.length > 0 || e.hata?.var) ? `
-          <div style="margin-top:10px">
-            <div style="color:#fca5a5;font-size:11px;font-weight:700;letter-spacing:1px;margin-bottom:6px">⚠️ HATALI / EKSİK İŞLEMLER ${e.hatalar?.length > 0 ? '('+e.hatalar.length+')' : ''}</div>
-            ${e.hatalar?.length > 0 ? e.hatalar.map((h, hi) => `
-              <div style="background:rgba(239,68,68,0.06);border-left:3px solid var(--red);border-radius:0 8px 8px 0;padding:10px 12px;margin-bottom:6px">
-                <div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:5px">#${hi+1}</div>
-                ${h.turler?.length > 0 ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:5px">${h.turler.map(t => `<span class="hata-tag">${t}</span>`).join('')}</div>` : ''}
-                ${h.aciklama ? `<div style="color:#fca5a5;font-size:13px;margin-bottom:5px;white-space:pre-wrap">📋 ${h.aciklama}</div>` : ''}
-                ${h.gorseller?.length > 0 ? `<div style="display:flex;flex-wrap:wrap;gap:6px">${h.gorseller.map(f => `
-                  <img src="${f.url}" onclick="fotoGoster('${f.url}')" loading="lazy" class="hata-gorsel-thumb"/>
-                  `).join('')}</div>` : ''}
-              </div>`).join('') : `
-              <div style="background:rgba(239,68,68,0.06);border-left:3px solid var(--red);border-radius:0 8px 8px 0;padding:10px 12px">
-                ${e.hata?.turler?.length > 0 ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:5px">${e.hata.turler.map(t => `<span class="hata-tag">${t}</span>`).join('')}</div>` : ''}
-                ${e.hata?.aciklama ? `<div style="color:#fca5a5;font-size:13px;white-space:pre-wrap">📋 ${e.hata.aciklama}</div>` : ''}
-              </div>`}
-          </div>` : ''}
-        <div style="display:flex;justify-content:space-between;margin-top:10px">
-          <button onclick="gunlukRaporPaylas('${e.id}')" style="background:rgba(16,185,129,0.1);border:1px solid #064e3b;color:#10b981;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">📤 Paylaş</button>
-          ${proj.bitti !== true ? `<button class="btn-icon-edit" onclick="startEdit('${e.id}')">✏️ Kaydı Düzenle</button>` : ''}
         </div>
       </div>
     </div>`;
@@ -4133,21 +4486,10 @@ function aramaYap(val) {
 }
 
 function toggleEntry(id) {
-  const card = document.getElementById('card-' + id);
   const body = document.getElementById('body-' + id);
   const tog = document.getElementById('tog-' + id);
-  const detay = document.getElementById('detay-' + id);
-  // Detay açıksa ikisini de kapat
-  if (detay && detay.style.display !== 'none') {
-    detay.style.display = 'none';
-    body.classList.remove('open');
-    if (card) card.style.gridColumn = '';
-    if (tog) tog.textContent = '▼';
-    return;
-  }
-  // Menüyü aç/kapat
+  if (!body) return;
   const open = body.classList.toggle('open');
-  if (card) card.style.gridColumn = open ? '1 / -1' : '';
   if (tog) tog.textContent = open ? '▲' : '▼';
 }
 
@@ -4192,10 +4534,21 @@ function toggleDetay(id) {
         <div style="font-size:11px;font-weight:700;color:#fca5a5;letter-spacing:1px;margin-bottom:8px">⚠️ HATALAR ${e.hatalar?.length > 0 ? '('+e.hatalar.length+')' : ''}</div>
         ${(e.hatalar||[]).map((h,i) => `
           <div style="background:rgba(239,68,68,0.08);border-left:3px solid var(--red);border-radius:0 8px 8px 0;padding:10px 12px;margin-bottom:8px">
-            <div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:4px">#${i+1}</div>
+            <div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:4px">#${i+1} ${h.giderildi ? `<span class="giderildi-badge">✅ Giderildi</span>` : ''}</div>
             ${h.turler?.length > 0 ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px">${h.turler.map(t=>`<span class="hata-tag">${t}</span>`).join('')}</div>` : ''}
             ${h.aciklama ? `<div style="color:#fca5a5;font-size:13px;white-space:pre-wrap;margin-bottom:6px">${h.aciklama}</div>` : ''}
             ${h.gorseller?.length > 0 ? `<div style="display:flex;flex-wrap:wrap;gap:6px">${h.gorseller.map(g=>`<img src="${g.url}" onclick="fotoGoster('${g.url}')" loading="lazy" style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:2px solid var(--red);cursor:pointer"/>`).join('')}</div>` : ''}
+            ${h.giderildi && h.giderilmeNotu ? `<div style="margin-top:6px;padding:6px 8px;background:rgba(16,185,129,0.06);border-left:3px solid #10b981;border-radius:4px;font-size:12px;color:var(--text);white-space:pre-wrap">✅ ${h.giderilmeNotu}</div>` : ''}
+          </div>`).join('')}
+      </div>` : ''}
+    ${e.sahaOnaylari?.length > 0 ? `
+      <div style="margin-bottom:12px">
+        <div style="font-size:11px;font-weight:700;color:#67e8f9;letter-spacing:1px;margin-bottom:8px">✅ SAHA ONAYI (${e.sahaOnaylari.length})</div>
+        ${e.sahaOnaylari.map((o,i) => `
+          <div style="background:rgba(6,182,212,0.08);border-left:3px solid #06b6d4;border-radius:0 8px 8px 0;padding:10px 12px;margin-bottom:8px">
+            <div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:4px">#${i+1} ${o.tarih ? new Date(o.tarih).toLocaleDateString('tr-TR') : ''}</div>
+            ${o.aciklama ? `<div style="color:#67e8f9;font-size:13px;white-space:pre-wrap;margin-bottom:6px">${o.aciklama}</div>` : ''}
+            ${o.gorseller?.length > 0 ? `<div style="display:flex;flex-wrap:wrap;gap:6px">${o.gorseller.map(g=>`<img src="${g.url}" onclick="fotoGoster('${g.url}')" loading="lazy" style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:2px solid #06b6d4;cursor:pointer"/>`).join('')}</div>` : ''}
           </div>`).join('')}
       </div>` : ''}
     <div style="display:flex;gap:8px;margin-top:8px">
