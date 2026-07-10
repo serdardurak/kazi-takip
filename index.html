@@ -1268,7 +1268,7 @@ sb.auth.onAuthStateChange((event, session) => {
     if (headerEl) headerEl.style.display = 'flex';
     if (mainEl)   mainEl.style.display   = 'block';
     if (navEl)    navEl.style.display    = 'flex';
-    if (event === 'SIGNED_IN') {
+    if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED') {
       loadTeams();
       loadProjects().then(async () => {
         const ids = data.projects.map(p => p.id);
@@ -1322,6 +1322,8 @@ function resetForm() {
   if (typeof renderMalzemeChips === 'function') renderMalzemeChips();
   if (typeof updateBadges === 'function') updateBadges();
   if (typeof resetDosyaForm === 'function') resetDosyaForm();
+  if (typeof renderEkipSelect === 'function') renderEkipSelect();
+  if (typeof data !== 'undefined' && data.teams && data.teams.length === 0 && typeof loadTeams === 'function') loadTeams();
 }
 
 function resetDosyaForm() {
@@ -1830,6 +1832,7 @@ async function startEdit(id) {
   document.getElementById('fMetre').value = entry.kaziMetre;
   document.getElementById('fNotlar').value = entry.notlar || '';
   renderEkipSelect();
+  if (data.teams.length === 0) loadTeams();
   const fEkipEl = document.getElementById('fEkip');
   if (fEkipEl) fEkipEl.value = entry.ekipId || '';
 
@@ -5563,6 +5566,7 @@ sb.auth.getSession().then(({ data: { session } }) => {
     document.getElementById('appHeader').style.display = 'flex';
     document.getElementById('appMain').style.display = 'block';
     document.getElementById('appNav').style.display = 'flex';
+    loadTeams();
     loadProjects().then(async () => {
       const ids = data.projects.map(p => p.id);
       if (!data.activeProjectId || !ids.includes(data.activeProjectId)) {
