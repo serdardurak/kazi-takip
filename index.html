@@ -101,40 +101,68 @@
     }
     .card-title { font-size: 15px; font-weight: 800; color: var(--yellow); margin-bottom: 12px; letter-spacing: 1px; }
 
-    /* PROJE KARTLARI */
-    .proje-card {
-      background: var(--card); border: 1px solid var(--border); border-left: 3px solid var(--border);
-      border-radius: 10px; padding: 10px 12px; transition: border-color .15s;
+    /* PROJE KARTLARI — "Saha Etiketi" tasarımı */
+    .scard {
+      position: relative; background: var(--card); border: 1px solid var(--border);
+      border-radius: 8px; padding: 12px 13px 11px; overflow: hidden;
     }
-    .proje-card.aktif { border-left-color: var(--yellow); background: linear-gradient(180deg, rgba(245,158,11,0.07), rgba(245,158,11,0) 40%), var(--card); }
-    .proje-card.bitmis { border-left-color: #10b981; opacity: 0.72; }
-    .proje-card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; cursor: pointer; }
-    .proje-card-isim { font-size: 14px; font-weight: 800; color: var(--text); line-height: 1.25; }
-    .proje-card.aktif .proje-card-isim { color: var(--yellow); }
-    .proje-card-konum { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--sub); margin-top: 2px; }
-    .proje-badge { flex-shrink: 0; font-size: 9px; font-weight: 800; letter-spacing: .3px; padding: 3px 8px; border-radius: 20px; white-space: nowrap; }
-    .proje-badge.devam { background: rgba(245,158,11,0.15); color: var(--yellow); border: 1px solid rgba(245,158,11,0.4); }
-    .proje-badge.tamam { background: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.4); }
-    .proje-badge-sil {
-      flex-shrink: 0; background: none; border: 1px solid rgba(239,68,68,0.35); color: var(--red);
-      border-radius: 7px; width: 24px; height: 24px; font-size: 11px; cursor: pointer;
+    .scard.aktif { border-color: rgba(245,158,11,0.55); box-shadow: inset 3px 0 0 var(--yellow); }
+    .scard.tamam { border-color: rgba(16,185,129,0.3); }
+    .scard-top { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .scard-kod {
+      font-family: ui-monospace, 'SF Mono', 'Roboto Mono', monospace; font-size: 10px; color: var(--sub);
+      border: 1px solid var(--border); border-radius: 4px; padding: 2px 6px; letter-spacing: 1px; flex-shrink: 0;
+    }
+    .scard-icobtn {
+      flex-shrink: 0; width: 25px; height: 25px; border-radius: 6px; border: 1px solid var(--border);
+      background: none; color: var(--sub); font-size: 12px; cursor: pointer; font-family: inherit;
       display: flex; align-items: center; justify-content: center; padding: 0;
     }
-    .proje-card-divider { border-top: 1px solid var(--border); margin: 8px 0 7px; }
-    .proje-card-stats { display: flex; align-items: center; justify-content: space-between; font-size: 11.5px; color: var(--sub); }
-    .proje-card-stats b { color: var(--text); font-weight: 700; }
-    .proje-progress-track { height: 4px; border-radius: 4px; background: rgba(148,163,184,0.15); margin-top: 6px; overflow: hidden; }
-    .proje-progress-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, #f59e0b, #fbbf24); transition: width .3s; }
-    .proje-card.bitmis .proje-progress-fill { background: linear-gradient(90deg, #10b981, #34d399); }
-    .proje-card-actions { display: flex; gap: 5px; margin-top: 8px; }
-    .proje-card-actions button {
-      flex: 1; background: none; border: 1px solid var(--border); color: var(--sub);
-      border-radius: 7px; padding: 5px 4px; font-size: 11px; font-weight: 600; cursor: pointer; font-family: inherit;
-      display: flex; align-items: center; justify-content: center; gap: 4px;
+    .scard-icobtn.tamamla { border-color: rgba(16,185,129,.4); color: #10b981; }
+    .scard-icobtn.ac { border-color: var(--border); color: var(--sub); }
+    .scard-icobtn.duzenle { border-color: rgba(59,130,246,.4); color: var(--blue); }
+    .scard-icobtn.sil { border-color: rgba(239,68,68,.35); color: var(--red); }
+    .scard-durum {
+      font-size: 9.5px; font-weight: 800; letter-spacing: .5px; color: var(--muted); white-space: nowrap;
     }
-    .proje-card-actions button.act-tamamla { border-color: rgba(16,185,129,0.4); color: #10b981; }
-    .proje-card-actions button.act-ac { border-color: var(--border); color: var(--sub); }
-    .proje-card-actions button.act-duzenle { border-color: rgba(59,130,246,0.4); color: var(--blue); }
+    .scard-icobtn-group { margin-left: auto; display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+    .scard-durum.canli { color: var(--yellow); display: flex; align-items: center; gap: 5px; }
+    .scard-durum.tamam-rozet {
+      background: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.4);
+      border-radius: 20px; padding: 3px 9px;
+    }
+    .scard-durum.canli .dot {
+      width: 6px; height: 6px; border-radius: 50%; background: var(--yellow); flex-shrink: 0;
+      animation: scard-pulse 1.6s infinite;
+    }
+    @keyframes scard-pulse {
+      0%   { box-shadow: 0 0 0 0 rgba(245,158,11,.55); }
+      70%  { box-shadow: 0 0 0 6px rgba(245,158,11,0); }
+      100% { box-shadow: 0 0 0 0 rgba(245,158,11,0); }
+    }
+    .scard-isim {
+      margin-top: 8px; font-size: 14px; font-weight: 800; letter-spacing: .3px; text-transform: uppercase;
+      color: var(--text); line-height: 1.25; cursor: pointer;
+    }
+    .scard.aktif .scard-isim { color: var(--yellow); }
+    .scard-konum { margin-top: 3px; font-size: 11px; color: var(--sub); cursor: pointer; }
+    .scard-divider { border-top: 1px dashed var(--border); margin: 9px 0 8px; }
+    .scard-ruler {
+      position: relative; height: 8px; border-radius: 2px; background: rgba(148,163,184,.12);
+      background-image: repeating-linear-gradient(90deg, rgba(148,163,184,.4) 0 1px, transparent 1px 8px);
+      overflow: hidden;
+    }
+    .scard-ruler-fill {
+      position: absolute; inset: 0; width: 0%; border-radius: 2px 0 0 2px;
+      background: linear-gradient(90deg, #f59e0b, #fbbf24);
+    }
+    .scard.tamam .scard-ruler-fill { background: linear-gradient(90deg, #10b981, #34d399); }
+    .scard-ruler-labels {
+      display: flex; justify-content: space-between; align-items: center; margin-top: 4px;
+      font-family: ui-monospace, 'SF Mono', 'Roboto Mono', monospace; font-size: 10px; color: var(--muted);
+    }
+    .scard-ruler-pct { color: var(--text); font-weight: 700; }
+    .scard-meta { font-family: ui-monospace, 'SF Mono', 'Roboto Mono', monospace; font-size: 10.5px; color: var(--sub); }
 
     /* STAT CARDS */
     .stats-row { display: flex; gap: 8px; margin-bottom: 14px; }
@@ -589,7 +617,10 @@
             <input type="number" id="fMetre" placeholder="örn: 25" inputmode="decimal" style="font-size:18px;font-weight:700;color:var(--yellow)" />
           </div>
         </div>
-        <label class="field-label">KAZI EKİBİ (opsiyonel)</label>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px">
+          <label class="field-label" style="margin:0">KAZI EKİBİ (opsiyonel)</label>
+          <button type="button" onclick="ekipYonetimAc()" style="flex-shrink:0;display:flex;align-items:center;gap:5px;background:rgba(139,92,246,0.15);border:1.5px solid #8b5cf6;color:#c4b5fd;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;padding:7px 12px;border-radius:20px">👷 Ekipleri Yönet</button>
+        </div>
         <select id="fEkip">
           <option value="">Ekip seçilmedi</option>
         </select>
@@ -894,17 +925,6 @@
       <div id="projList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px"></div>
     </div>
 
-    <!-- Ekipler -->
-    <div class="card" id="ekiplerCard" style="margin-bottom:12px;border-color:rgba(139,92,246,0.3)">
-      <div class="card-title" style="color:#a78bfa">👷 KAZI EKİPLERİ</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Kayıt eklerken günün kazısını yapan ekibi seçebilmek için buradan ekip tanımlayın. Aynı projede farklı zamanlarda farklı ekipler dönüşümlü çalışabilir.</div>
-      <div style="display:flex;gap:8px;margin-bottom:10px">
-        <input type="text" id="ekipAdInput" placeholder="örn: A Ekibi - Mehmet Usta" style="flex:1" onkeydown="if(event.key==='Enter')ekipEkle()" />
-        <button onclick="ekipEkle()" style="background:#8b5cf6;color:#fff;border:none;border-radius:8px;padding:0 18px;font-size:20px;font-weight:700;cursor:pointer;font-family:inherit">+</button>
-      </div>
-      <div id="ekipListesi"></div>
-    </div>
-
     <!-- Silinenler -->
     <div class="card" id="silinenlerCard" style="display:none;margin-bottom:12px;border-color:rgba(239,68,68,0.3)">
       <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';this.querySelector('.sil-chevron').textContent=this.nextElementSibling.style.display==='none'?'▼':'▲'">
@@ -1189,6 +1209,23 @@
 </div>
 
 <!-- RAPOR ÖNİZLEME MODALI -->
+<div id="ekipYonetimModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:450;align-items:center;justify-content:center">
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;margin:16px;max-width:400px;width:100%;max-height:80vh;display:flex;flex-direction:column">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--border)">
+      <span style="font-size:15px;font-weight:700;color:#a78bfa">👷 Kazı Ekipleri</span>
+      <button onclick="document.getElementById('ekipYonetimModal').style.display='none'" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;line-height:1">✕</button>
+    </div>
+    <div style="padding:16px 18px;overflow-y:auto">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Kayıt eklerken günün kazısını yapan ekibi seçebilmek için buradan ekip tanımlayın. Aynı projede farklı zamanlarda farklı ekipler dönüşümlü çalışabilir.</div>
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <input type="text" id="ekipAdInput" placeholder="örn: A Ekibi - Mehmet Usta" style="flex:1" onkeydown="if(event.key==='Enter')ekipEkle()" />
+        <button onclick="ekipEkle()" style="background:#8b5cf6;color:#fff;border:none;border-radius:8px;padding:0 18px;font-size:20px;font-weight:700;cursor:pointer;font-family:inherit">+</button>
+      </div>
+      <div id="ekipListesi"></div>
+    </div>
+  </div>
+</div>
+
 <div id="raporOnizlemeModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:450;align-items:center;justify-content:center">
   <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;margin:16px;max-width:400px;width:100%;max-height:85vh;display:flex;flex-direction:column">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--border)">
@@ -3309,6 +3346,15 @@ function renderEkipFiltre() {
   });
 }
 
+function ekipYonetimAc() {
+  const input = document.getElementById('ekipAdInput');
+  if (input) { input.value = ''; delete input.dataset.editingId; }
+  const btn = document.querySelector('#ekipYonetimModal button[onclick="ekipEkle()"]');
+  if (btn) { btn.textContent = '+'; btn.style.background = '#8b5cf6'; }
+  renderEkipler();
+  document.getElementById('ekipYonetimModal').style.display = 'flex';
+}
+
 function renderEkipler() {
   const el = document.getElementById('ekipListesi');
   if (!el) return;
@@ -3319,20 +3365,40 @@ function renderEkipler() {
   el.innerHTML = data.teams.map(t => `
     <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:rgba(139,92,246,0.06);border:1px solid rgba(139,92,246,0.2);border-radius:8px;margin-bottom:6px">
       <span style="font-size:13px;color:var(--text);font-weight:600">👷 ${t.ad}</span>
-      <button onclick="ekipSil('${t.id}')" style="background:none;border:none;color:var(--red);font-size:16px;cursor:pointer;padding:2px 6px">×</button>
+      <div style="display:flex;align-items:center;gap:4px">
+        <button onclick="ekipDuzenle('${t.id}')" style="background:none;border:none;color:var(--blue);font-size:14px;cursor:pointer;padding:2px 6px">✎</button>
+        <button onclick="ekipSil('${t.id}')" style="background:none;border:none;color:var(--red);font-size:16px;cursor:pointer;padding:2px 6px">×</button>
+      </div>
     </div>`).join('');
+}
+
+async function ekipDuzenle(id) {
+  const t = data.teams.find(x => x.id === id);
+  if (!t) return;
+  const input = document.getElementById('ekipAdInput');
+  const btn = document.querySelector('#ekipYonetimModal button[onclick="ekipEkle()"]');
+  input.value = t.ad;
+  input.focus();
+  input.dataset.editingId = id;
+  if (btn) { btn.textContent = '✓'; btn.style.background = '#10b981'; }
 }
 
 async function ekipEkle() {
   const input = document.getElementById('ekipAdInput');
   const ad = input?.value.trim();
   if (!ad) { toast('⚠️ Ekip adı girin', true); return; }
-  showLoading('Ekleniyor...');
-  const { error } = await sb.from('ekipler').insert({ ad });
+  const editingId = input.dataset.editingId;
+  showLoading(editingId ? 'Güncelleniyor...' : 'Ekleniyor...');
+  const { error } = editingId
+    ? await sb.from('ekipler').update({ ad }).eq('id', editingId)
+    : await sb.from('ekipler').insert({ ad });
   hideLoading();
   if (error) { toast('⚠️ ' + error.message, true); return; }
   input.value = '';
-  toast('✅ Ekip eklendi');
+  delete input.dataset.editingId;
+  const btn = document.querySelector('#ekipYonetimModal button[onclick="ekipEkle()"]');
+  if (btn) { btn.textContent = '+'; btn.style.background = '#8b5cf6'; }
+  toast(editingId ? '✅ Ekip güncellendi' : '✅ Ekip eklendi');
   await loadTeams();
 }
 
@@ -5585,6 +5651,9 @@ function renderProjeler() {
         kayitSayiMap[k.proje_id] = (kayitSayiMap[k.proje_id] || 0) + 1;
       });
       renderProjeToplamRapor(toplamMap);
+      const kodMap = {};
+      data.projects.forEach((p, i) => { kodMap[p.id] = 'P-' + String(i + 1).padStart(2, '0'); });
+
       list.innerHTML = [...data.projects].sort((a,b) => (a.bitti===true ? 1 : 0) - (b.bitti===true ? 1 : 0)).map(p => {
         const isActive = p.id === data.activeProjectId;
         const toplam = toplamMap[p.id] || 0;
@@ -5594,38 +5663,39 @@ function renderProjeler() {
         const kalan = p.hedefMetre > 0 ? Math.max(0, p.hedefMetre - toplam) : 0;
         const tahminiGun = (gunlukOrt > 0 && kalan > 0) ? Math.ceil(kalan / gunlukOrt) : 0;
         const yuzde = p.hedefMetre > 0 ? Math.min(100, (toplam / p.hedefMetre) * 100) : 0;
-        const tahminiStr = (!bitti && tahminiGun > 0) ? ` &nbsp;·&nbsp; ≈${tahminiGun} gün kaldı` : '';
+        const tahminiStr = (!bitti && tahminiGun > 0) ? ` · ≈${tahminiGun} gün kaldı` : '';
 
-        const badge = bitti
-          ? `<span class="proje-badge tamam">✓ TAMAMLANDI</span>`
-          : `<span class="proje-badge devam">${isActive ? '● AKTİF PROJE' : 'DEVAM EDİYOR'}</span>`;
+        const durum = bitti
+          ? `<span class="scard-durum tamam-rozet">✓ TAMAMLANDI</span>`
+          : isActive
+            ? `<span class="scard-durum canli"><span class="dot"></span>SAHADA</span>`
+            : `<span class="scard-durum">DEVAM EDİYOR</span>`;
 
-        const statSatiri = p.hedefMetre > 0
-          ? `<div class="proje-card-stats"><span>⛏ <b>${Math.round(toplam).toLocaleString("tr-TR")} m</b> / ${p.hedefMetre.toLocaleString("tr-TR")} m</span><span><b>%${yuzde.toFixed(0)}</b></span></div>
-             <div class="proje-progress-track"><div class="proje-progress-fill" style="width:${yuzde}%"></div></div>
-             <div style="font-size:10.5px;color:var(--muted);margin-top:5px">${kayitSayisi} kayıt${tahminiStr}</div>`
-          : `<div class="proje-card-stats"><span>⛏ <b>${Math.round(toplam).toLocaleString("tr-TR")} m</b> kazıldı</span><span>${kayitSayisi} kayıt</span></div>`;
+        const ruler = p.hedefMetre > 0
+          ? `<div class="scard-ruler"><div class="scard-ruler-fill" style="width:${yuzde}%"></div></div>
+             <div class="scard-ruler-labels"><span>0m</span><span class="scard-ruler-pct">%${yuzde.toFixed(0)}</span><span>${p.hedefMetre.toLocaleString("tr-TR")}m</span></div>
+             <div class="scard-meta" style="margin-top:4px">⛏ ${Math.round(toplam).toLocaleString("tr-TR")} m kazıldı · ${kayitSayisi} kayıt${tahminiStr}</div>`
+          : `<div class="scard-meta">⛏ ${Math.round(toplam).toLocaleString("tr-TR")} m kazıldı · ${kayitSayisi} kayıt</div>`;
 
-        return `<div class="proje-card ${bitti ? 'bitmis' : (isActive ? 'aktif' : '')}">
-          <div class="proje-card-top">
-            <div style="flex:1;cursor:pointer" onclick="${bitti ? '' : `switchProject('${p.id}')`}">
-              <div class="proje-card-isim">${p.name}</div>
-              ${p.location ? `<div class="proje-card-konum">📍 ${p.location}</div>` : ''}
-            </div>
-            <div style="display:flex;align-items:center;gap:6px">
-              ${badge}
-              <button class="proje-badge-sil" onclick="silOnayla('Bu projeyi silmek istediğine emin misin?', async () => { await deleteProject('${p.id}'); })" title="Sil">🗑</button>
+        return `<div class="scard ${bitti ? 'tamam' : (isActive ? 'aktif' : '')}">
+          <div class="scard-top">
+            <span class="scard-kod">${kodMap[p.id]}</span>
+            ${durum}
+            <div class="scard-icobtn-group">
+              ${!bitti
+                ? `<button class="scard-icobtn tamamla" onclick="projeKapat('${p.id}')" title="Tamamla">✓</button>`
+                : `<button class="scard-icobtn ac" onclick="projeAc('${p.id}')" title="Yeniden Aç">↺</button>`
+              }
+              <button class="scard-icobtn duzenle" onclick="renameProject('${p.id}')" title="Düzenle">✎</button>
+              <button class="scard-icobtn sil" onclick="silOnayla('Bu projeyi silmek istediğine emin misin?', async () => { await deleteProject('${p.id}'); })" title="Sil">✕</button>
             </div>
           </div>
-          <div class="proje-card-divider"></div>
-          ${statSatiri}
-          <div class="proje-card-actions">
-            ${!bitti
-              ? `<button class="act-tamamla" onclick="projeKapat('${p.id}')">✅ Tamamla</button>`
-              : `<button class="act-ac" onclick="projeAc('${p.id}')">🔄 Yeniden Aç</button>`
-            }
-            <button class="act-duzenle" onclick="renameProject('${p.id}')">✏️ Düzenle</button>
+          <div onclick="${bitti ? '' : `switchProject('${p.id}')`}">
+            <div class="scard-isim">${p.name}</div>
+            ${p.location ? `<div class="scard-konum">📍 ${p.location}</div>` : ''}
           </div>
+          <div class="scard-divider"></div>
+          ${ruler}
         </div>`;
       }).join('');
     }
