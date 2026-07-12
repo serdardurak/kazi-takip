@@ -101,6 +101,41 @@
     }
     .card-title { font-size: 15px; font-weight: 800; color: var(--yellow); margin-bottom: 12px; letter-spacing: 1px; }
 
+    /* PROJE KARTLARI */
+    .proje-card {
+      background: var(--card); border: 1px solid var(--border); border-left: 3px solid var(--border);
+      border-radius: 10px; padding: 10px 12px; transition: border-color .15s;
+    }
+    .proje-card.aktif { border-left-color: var(--yellow); background: linear-gradient(180deg, rgba(245,158,11,0.07), rgba(245,158,11,0) 40%), var(--card); }
+    .proje-card.bitmis { border-left-color: #10b981; opacity: 0.72; }
+    .proje-card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; cursor: pointer; }
+    .proje-card-isim { font-size: 14px; font-weight: 800; color: var(--text); line-height: 1.25; }
+    .proje-card.aktif .proje-card-isim { color: var(--yellow); }
+    .proje-card-konum { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--sub); margin-top: 2px; }
+    .proje-badge { flex-shrink: 0; font-size: 9px; font-weight: 800; letter-spacing: .3px; padding: 3px 8px; border-radius: 20px; white-space: nowrap; }
+    .proje-badge.devam { background: rgba(245,158,11,0.15); color: var(--yellow); border: 1px solid rgba(245,158,11,0.4); }
+    .proje-badge.tamam { background: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.4); }
+    .proje-badge-sil {
+      flex-shrink: 0; background: none; border: 1px solid rgba(239,68,68,0.35); color: var(--red);
+      border-radius: 7px; width: 24px; height: 24px; font-size: 11px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; padding: 0;
+    }
+    .proje-card-divider { border-top: 1px solid var(--border); margin: 8px 0 7px; }
+    .proje-card-stats { display: flex; align-items: center; justify-content: space-between; font-size: 11.5px; color: var(--sub); }
+    .proje-card-stats b { color: var(--text); font-weight: 700; }
+    .proje-progress-track { height: 4px; border-radius: 4px; background: rgba(148,163,184,0.15); margin-top: 6px; overflow: hidden; }
+    .proje-progress-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, #f59e0b, #fbbf24); transition: width .3s; }
+    .proje-card.bitmis .proje-progress-fill { background: linear-gradient(90deg, #10b981, #34d399); }
+    .proje-card-actions { display: flex; gap: 5px; margin-top: 8px; }
+    .proje-card-actions button {
+      flex: 1; background: none; border: 1px solid var(--border); color: var(--sub);
+      border-radius: 7px; padding: 5px 4px; font-size: 11px; font-weight: 600; cursor: pointer; font-family: inherit;
+      display: flex; align-items: center; justify-content: center; gap: 4px;
+    }
+    .proje-card-actions button.act-tamamla { border-color: rgba(16,185,129,0.4); color: #10b981; }
+    .proje-card-actions button.act-ac { border-color: var(--border); color: var(--sub); }
+    .proje-card-actions button.act-duzenle { border-color: rgba(59,130,246,0.4); color: var(--blue); }
+
     /* STAT CARDS */
     .stats-row { display: flex; gap: 8px; margin-bottom: 14px; }
     .stat-card {
@@ -854,9 +889,9 @@
     </div>
 
     <!-- Proje Listesi -->
-    <div class="card" id="projListCard" style="display:none">
-      <div class="card-title">📋 Projeler</div>
-      <div id="projList"></div>
+    <div id="projListCard" style="display:none;margin-bottom:4px">
+      <div class="section-title" style="display:flex;align-items:center;gap:6px">📋 PROJELER</div>
+      <div id="projList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px"></div>
     </div>
 
     <!-- Ekipler -->
@@ -930,7 +965,11 @@
 
     <!-- Özet -->
     <div class="card" id="giderOzetCard">
-      <div class="card-title">📊 Bu Ay Özet</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px">
+        <button onclick="gOzetAyDegis(-1)" style="flex-shrink:0;background:none;border:1px solid var(--border);color:var(--text);border-radius:8px;padding:6px 12px;font-size:16px;cursor:pointer;font-family:inherit">‹</button>
+        <div class="card-title" id="giderOzetBaslik" style="margin-bottom:0;text-align:center;flex:1">📊 Bu Ay Özet</div>
+        <button onclick="gOzetAyDegis(1)" style="flex-shrink:0;background:none;border:1px solid var(--border);color:var(--text);border-radius:8px;padding:6px 12px;font-size:16px;cursor:pointer;font-family:inherit">›</button>
+      </div>
       <div class="stats-row">
         <div class="stat-card" style="border-top-color:#f59e0b">
           <div class="stat-icon">💰</div>
@@ -946,6 +985,13 @@
           <div class="stat-icon">📈</div>
           <div class="stat-value" id="gToplamTum" style="color:#10b981">0 ₺</div>
           <div class="stat-label">Genel Toplam</div>
+        </div>
+      </div>
+      <div class="stats-row" id="gTahminWrap" style="display:none;margin-bottom:0">
+        <div class="stat-card" style="border-top-color:#a855f7;flex:1">
+          <div class="stat-icon">🔮</div>
+          <div class="stat-value" id="gTahminAySonu" style="color:#a855f7">-</div>
+          <div class="stat-label" id="gTahminLabel">Ay Sonu Tahmini</div>
         </div>
       </div>
     </div>
@@ -1173,7 +1219,8 @@
     <div id="raporOnizlemeIcerik" style="padding:12px 16px;overflow-y:auto;flex:1;font-size:13px;color:var(--text);line-height:1.4"></div>
     <div style="padding:12px 18px;border-top:1px solid var(--border);display:flex;gap:8px">
       <button onclick="document.getElementById('raporOnizlemeModal').style.display='none'" style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--sub);border-radius:8px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">✕ Kapat</button>
-      <button onclick="raporOnizlemePaylas()" style="flex:2;background:#10b981;border:none;color:white;border-radius:8px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">📤 Paylaş</button>
+      <button id="raporOnizlemePdfBtn" onclick="giderRaporPdf()" style="display:none;flex:1.3;background:rgba(239,68,68,0.12);border:1.5px solid var(--red);color:var(--red);border-radius:8px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">📄 PDF</button>
+      <button onclick="raporOnizlemePaylas()" style="flex:1.7;background:#10b981;border:none;color:white;border-radius:8px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">📤 Paylaş</button>
     </div>
   </div>
 </div>
@@ -2393,6 +2440,10 @@ function paylas(metin, baslik) {
   _bekleyenRaporMetni = metin;
   const modal = document.getElementById('raporOnizlemeModal');
   const icerik = document.getElementById('raporOnizlemeIcerik');
+  const nav = document.getElementById('raporOnizlemeAyNav');
+  const pdfBtn = document.getElementById('raporOnizlemePdfBtn');
+  if (nav) nav.style.display = 'none';
+  if (pdfBtn) pdfBtn.style.display = 'none';
   if (modal && icerik) {
     icerik.textContent = metin;
     modal.style.display = 'flex';
@@ -2416,7 +2467,8 @@ function giderRaporOnizle() {
     const [yil, ay] = filtreAy.split('-').map(Number);
     _giderRaporAy = { yil, ay };
   } else {
-    _giderRaporAy = 'tum';
+    const simdi = new Date();
+    _giderRaporAy = { yil: simdi.getFullYear(), ay: simdi.getMonth() + 1 };
   }
   _giderRaporGoster();
 }
@@ -2548,6 +2600,8 @@ function _giderRaporGoster() {
   if (label) label.textContent = ayAdi;
   const nav = document.getElementById('raporOnizlemeAyNav');
   if (nav) nav.style.display = 'flex';
+  const pdfBtn = document.getElementById('raporOnizlemePdfBtn');
+  if (pdfBtn) pdfBtn.style.display = 'block';
   const isOzelVeTum = _giderRaporAy === 'tum' || _giderRaporAy?.ozel;
   document.querySelectorAll('#raporOnizlemeAyNav > div button').forEach(b => b.style.visibility = isOzelVeTum ? 'hidden' : 'visible');
   const modal = document.getElementById('raporOnizlemeModal');
@@ -2555,6 +2609,7 @@ function _giderRaporGoster() {
 
   // Paylaş butonuna bağla
   window._raporOnizlemeMevcutMetin = metin;
+  window._giderRaporVeri = { ayAdi, ikon, basStr, bitStr, tarihAralikStr, haftaStr, donemGiderler, katSatirlar, toplam };
 }
 
 function giderRaporPaylas() {
@@ -4784,6 +4839,76 @@ function aylikRaporPdf() {
 
 // ─── EXCEL EXPORT ────────────────────────────────────────
 
+function giderRaporPdf() {
+  const veri = window._giderRaporVeri;
+  if (!veri || veri.donemGiderler.length === 0) { toast('⚠️ Gider kaydı yok', true); return; }
+  const tarihStr = new Date().toLocaleDateString('tr-TR');
+
+  const katRows = veri.katSatirlar.map(([k, t]) =>
+    `<tr><td>${k}</td><td style="font-weight:700">${t.toLocaleString('tr-TR')} ₺</td><td>${veri.toplam > 0 ? ((t / veri.toplam) * 100).toFixed(0) : 0}%</td></tr>`
+  ).join('') || '<tr><td colspan="3" style="color:#999">Kayıt yok</td></tr>';
+
+  const sorted = [...veri.donemGiderler].sort((a, b) => a.tarih.localeCompare(b.tarih));
+  const detayRows = sorted.map(g =>
+    `<tr><td>${new Date(g.tarih).toLocaleDateString('tr-TR')}</td><td>${g.kategori}</td><td>${g.aciklama || '-'}</td><td style="font-weight:700">${parseFloat(g.tutar).toLocaleString('tr-TR')} ₺</td></tr>`
+  ).join('');
+
+  const gunSayisi = new Set(veri.donemGiderler.map(g => g.tarih)).size;
+
+  const html = `<!DOCTYPE html><html lang="tr"><head><meta charset="utf-8">
+  <title>Gider Raporu - ${veri.ayAdi}</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 24px; color: #1a1a1a; font-size: 12px; max-width: 900px; margin: 0 auto; }
+    h1 { font-size: 20px; color: #92400e; border-bottom: 3px solid #f59e0b; padding-bottom: 8px; margin-bottom: 4px; }
+    .meta { font-size: 11px; color: #666; margin-bottom: 18px; }
+    .stats { display: flex; gap: 12px; margin: 16px 0; flex-wrap: wrap; }
+    .stat-box { background: #fffbeb; border: 1px solid #fcd34d; border-radius: 8px; padding: 10px 16px; text-align: center; min-width: 100px; }
+    .stat-val { font-size: 20px; font-weight: bold; color: #b45309; }
+    .stat-lbl { font-size: 10px; color: #78716c; margin-top: 2px; }
+    h2 { font-size: 13px; background: #f3f4f6; padding: 6px 10px; border-radius: 4px; margin: 20px 0 8px; border-left: 4px solid #f59e0b; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+    th { background: #f59e0b; color: #fff; padding: 6px 8px; text-align: left; font-size: 11px; }
+    td { border: 1px solid #e5e7eb; padding: 5px 8px; font-size: 11px; }
+    tr:nth-child(even) td { background: #f9fafb; }
+    .footer { margin-top: 24px; font-size: 10px; color: #999; border-top: 1px solid #e5e7eb; padding-top: 8px; }
+    thead { display: table-header-group; }
+    h2 { page-break-after: avoid; break-after: avoid-page; }
+    tr { page-break-inside: avoid; break-inside: avoid-page; }
+    table { page-break-inside: auto; }
+    @media print { body { padding: 10px; } }
+  </style></head><body>
+  <h1>💸 Gider Raporu</h1>
+  <div class="meta">${veri.ikon} ${veri.ayAdi}${veri.tarihAralikStr ? ` &nbsp;|&nbsp; 📆 ${veri.tarihAralikStr}` : ''} &nbsp;|&nbsp; Oluşturma: ${tarihStr}</div>
+
+  <div class="stats">
+    <div class="stat-box"><div class="stat-val">${veri.toplam.toLocaleString('tr-TR')} ₺</div><div class="stat-lbl">Toplam Gider</div></div>
+    <div class="stat-box"><div class="stat-val">${veri.donemGiderler.length}</div><div class="stat-lbl">Kayıt Sayısı</div></div>
+    <div class="stat-box"><div class="stat-val">${gunSayisi}</div><div class="stat-lbl">Gün Sayısı</div></div>
+    <div class="stat-box"><div class="stat-val">${veri.katSatirlar.length}</div><div class="stat-lbl">Kategori Sayısı</div></div>
+  </div>
+
+  <h2>📂 Kategoriye Göre Toplam</h2>
+  <table>
+    <tr><th>Kategori</th><th>Toplam</th><th>Oran</th></tr>
+    ${katRows}
+  </table>
+
+  <h2>📋 Gider Detayları</h2>
+  <table>
+    <tr><th>Tarih</th><th>Kategori</th><th>Açıklama</th><th>Tutar</th></tr>
+    ${detayRows}
+  </table>
+
+  <div class="footer">Kazı Takip Uygulaması &nbsp;|&nbsp; ${tarihStr} tarihinde oluşturulmuştur</div>
+  </body></html>`;
+
+  const win = window.open('', '_blank');
+  win.document.write(html);
+  win.document.close();
+  setTimeout(() => win.print(), 400);
+  toast('✅ PDF için yazdırma ekranı açıldı! "PDF olarak kaydet" seçin.');
+}
+
 function exportExcel(filtreliKayitlar, dosyaEki) {
   if (typeof XLSX === 'undefined') {
     showLoading('Excel kütüphanesi yükleniyor...');
@@ -5068,6 +5193,31 @@ async function loadGiderler() {
     renderGiderOzet();
   } catch(e) { hideLoading(); toast('⚠️ Bağlantı hatası!', true); }
 }
+function gOzetAyDegis(yon) {
+  const sel = document.getElementById('gAyFiltre');
+  if (!sel) return;
+  let yil, ay;
+  const mevcut = sel.value;
+  if (mevcut && /^\d{4}-\d{2}$/.test(mevcut)) {
+    [yil, ay] = mevcut.split('-').map(Number);
+  } else {
+    const simdi = new Date();
+    yil = simdi.getFullYear(); ay = simdi.getMonth() + 1;
+  }
+  ay += yon;
+  if (ay > 12) { ay = 1; yil++; }
+  if (ay < 1) { ay = 12; yil--; }
+  const ayStr = `${yil}-${String(ay).padStart(2, '0')}`;
+  if (![...sel.options].some(o => o.value === ayStr)) {
+    const opt = document.createElement('option');
+    opt.value = ayStr;
+    opt.textContent = new Date(yil, ay - 1).toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
+    sel.appendChild(opt);
+  }
+  sel.value = ayStr;
+  renderGiderList();
+}
+
 function renderAyFiltre() {
   const aylar = [...new Set(giderler.map(g => g.tarih.substring(0, 7)))].sort().reverse();
   const sel = document.getElementById('gAyFiltre');
@@ -5090,6 +5240,7 @@ function renderGiderOzet() {
   document.getElementById('gToplamAy').textContent = toplamAy.toLocaleString('tr-TR') + ' ₺';
   document.getElementById('gAdetAy').textContent = buAyGunSayisi;
   document.getElementById('gToplamTum').textContent = toplamTum.toLocaleString('tr-TR') + ' ₺';
+  gTahminGuncelle(simdi, toplamAy);
 
   const ayFiltre = document.getElementById('gAyFiltre')?.value || '';
   if (!ayFiltre) {
@@ -5099,6 +5250,22 @@ function renderGiderOzet() {
       cardTitle.textContent = `📊 ${ayAdi} Özet`;
     }
   }
+}
+
+function gTahminGuncelle(simdi, toplamAy) {
+  const wrap = document.getElementById('gTahminWrap');
+  const el = document.getElementById('gTahminAySonu');
+  const label = document.getElementById('gTahminLabel');
+  if (!wrap || !el) return;
+  const bugununGunu = simdi.getDate();
+  const ayinToplamGunu = new Date(simdi.getFullYear(), simdi.getMonth() + 1, 0).getDate();
+  if (toplamAy <= 0 || bugununGunu < 1) { wrap.style.display = 'none'; return; }
+  const gunlukOrt = toplamAy / bugununGunu;
+  const tahmin = gunlukOrt * ayinToplamGunu;
+  wrap.style.display = 'flex';
+  el.textContent = tahmin.toLocaleString('tr-TR', { maximumFractionDigits: 0 }) + ' ₺';
+  const ayAdi = simdi.toLocaleDateString('tr-TR', { month: 'long' });
+  if (label) label.textContent = `${ayAdi} Sonu Tahmini (~${bugununGunu}/${ayinToplamGunu} gün)`;
 }
 
 function renderGiderList() {
@@ -5118,17 +5285,29 @@ function renderGiderList() {
     if (gToplamAyEl) gToplamAyEl.textContent = filtreToplam.toLocaleString('tr-TR') + ' ₺';
     const cardTitle = document.querySelector('#giderOzetCard .card-title');
     if (cardTitle) {
-      if (ayFiltre && liste.length > 0) {
+      if (ayFiltre) {
         const [yil, ay] = ayFiltre.split('-');
         const ayAdi = new Date(yil, ay - 1).toLocaleDateString('tr-TR', { month: 'long' });
-        const baslik = `${ayAdi} / ${yil}`;
-        const tarihler = liste.map(g => g.tarih).sort();
-        const ilk = tarihler[0].split('-').reverse().join('.');
-        const son = tarihler[tarihler.length - 1].split('-').reverse().join('.');
-        cardTitle.innerHTML = `📊 ${ayAdi} / ${yil}<br><span style="font-size:11px;font-weight:500;color:var(--muted)">${ilk} ile ${son} arası</span>`;
+        if (liste.length > 0) {
+          const tarihler = liste.map(g => g.tarih).sort();
+          const ilk = tarihler[0].split('-').reverse().join('.');
+          const son = tarihler[tarihler.length - 1].split('-').reverse().join('.');
+          cardTitle.innerHTML = `📊 ${ayAdi} / ${yil}<br><span style="font-size:11px;font-weight:500;color:var(--muted)">${ilk} ile ${son} arası</span>`;
+        } else {
+          cardTitle.innerHTML = `📊 ${ayAdi} / ${yil}<br><span style="font-size:11px;font-weight:500;color:var(--muted)">Kayıt yok</span>`;
+        }
       } else {
         cardTitle.textContent = '📊 Filtre Özeti';
       }
+    }
+    // Sadece gerçek bugünkü ay seçiliyse tahmini göster, aksi halde gizle
+    const simdiF = new Date();
+    const buAyStrF = `${simdiF.getFullYear()}-${String(simdiF.getMonth()+1).padStart(2,'0')}`;
+    if (ayFiltre === buAyStrF && !katFiltre) {
+      gTahminGuncelle(simdiF, filtreToplam);
+    } else {
+      const wrap = document.getElementById('gTahminWrap');
+      if (wrap) wrap.style.display = 'none';
     }
   } else {
     // Tüm zamanlar — her kartı doğru değerle doldur
@@ -5150,6 +5329,7 @@ function renderGiderList() {
       const ayAdi = simdi.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
       cardTitle.textContent = `📊 ${ayAdi} Özet`;
     }
+    gTahminGuncelle(simdi, buAyToplam);
   }
 
   const container = document.getElementById('giderList');
@@ -5409,30 +5589,43 @@ function renderProjeler() {
         const isActive = p.id === data.activeProjectId;
         const toplam = toplamMap[p.id] || 0;
         const bitti = p.bitti === true;
-        const hedefStr = p.hedefMetre > 0
-          ? `⛏ ${Math.round(toplam).toLocaleString("tr-TR")} m &nbsp;|&nbsp; 🎯 ${p.hedefMetre.toLocaleString("tr-TR")} m`
-          : `⛏ ${Math.round(toplam).toLocaleString("tr-TR")} m`;
         const kayitSayisi = kayitSayiMap[p.id] || 0;
         const gunlukOrt = kayitSayisi > 0 ? toplam / kayitSayisi : 0;
         const kalan = p.hedefMetre > 0 ? Math.max(0, p.hedefMetre - toplam) : 0;
         const tahminiGun = (gunlukOrt > 0 && kalan > 0) ? Math.ceil(kalan / gunlukOrt) : 0;
-        const tahminiStr = (!bitti && tahminiGun > 0)
-          ? ` <span style="font-size:11px;color:var(--muted);font-weight:400">(≈${tahminiGun} gün)</span>`
-          : '';
-        return `<div style="display:flex;align-items:center;padding:12px 14px;border-bottom:1px solid var(--border);gap:10px;${bitti ? 'opacity:0.55' : ''}${isActive && !bitti ? ';background:rgba(245,158,11,0.06)' : ''}">
-          <div style="flex:1;cursor:pointer" onclick="${bitti ? '' : `switchProject('${p.id}')`}">
-            <div style="font-size:14px;font-weight:600;color:${bitti ? '#10b981' : isActive ? 'var(--yellow)' : 'var(--text)'}">
-              ${bitti ? '✅ ' : isActive ? '● ' : ''}${p.name}${bitti ? ' — Tamamlandı' : ''}${tahminiStr}
+        const yuzde = p.hedefMetre > 0 ? Math.min(100, (toplam / p.hedefMetre) * 100) : 0;
+        const tahminiStr = (!bitti && tahminiGun > 0) ? ` &nbsp;·&nbsp; ≈${tahminiGun} gün kaldı` : '';
+
+        const badge = bitti
+          ? `<span class="proje-badge tamam">✓ TAMAMLANDI</span>`
+          : `<span class="proje-badge devam">${isActive ? '● AKTİF PROJE' : 'DEVAM EDİYOR'}</span>`;
+
+        const statSatiri = p.hedefMetre > 0
+          ? `<div class="proje-card-stats"><span>⛏ <b>${Math.round(toplam).toLocaleString("tr-TR")} m</b> / ${p.hedefMetre.toLocaleString("tr-TR")} m</span><span><b>%${yuzde.toFixed(0)}</b></span></div>
+             <div class="proje-progress-track"><div class="proje-progress-fill" style="width:${yuzde}%"></div></div>
+             <div style="font-size:10.5px;color:var(--muted);margin-top:5px">${kayitSayisi} kayıt${tahminiStr}</div>`
+          : `<div class="proje-card-stats"><span>⛏ <b>${Math.round(toplam).toLocaleString("tr-TR")} m</b> kazıldı</span><span>${kayitSayisi} kayıt</span></div>`;
+
+        return `<div class="proje-card ${bitti ? 'bitmis' : (isActive ? 'aktif' : '')}">
+          <div class="proje-card-top">
+            <div style="flex:1;cursor:pointer" onclick="${bitti ? '' : `switchProject('${p.id}')`}">
+              <div class="proje-card-isim">${p.name}</div>
+              ${p.location ? `<div class="proje-card-konum">📍 ${p.location}</div>` : ''}
             </div>
-            <div style="font-size:11px;color:var(--muted);margin-top:2px">${hedefStr}</div>
-            ${p.location ? `<div style="font-size:11px;color:var(--muted)">${p.location}</div>` : ''}
+            <div style="display:flex;align-items:center;gap:6px">
+              ${badge}
+              <button class="proje-badge-sil" onclick="silOnayla('Bu projeyi silmek istediğine emin misin?', async () => { await deleteProject('${p.id}'); })" title="Sil">🗑</button>
+            </div>
           </div>
-          ${!bitti
-            ? `<button onclick="projeKapat('${p.id}')" style="background:none;border:1px solid #10b981;color:#10b981;border-radius:6px;padding:5px 8px;font-size:12px;cursor:pointer" title="Projeyi Tamamla">✅</button>`
-            : `<button onclick="projeAc('${p.id}')" style="background:none;border:1px solid var(--muted);color:var(--muted);border-radius:6px;padding:5px 8px;font-size:12px;cursor:pointer" title="Yeniden Aç">🔄</button>`
-          }
-          <button onclick="renameProject('${p.id}')" style="background:none;border:1px solid var(--blue);color:var(--blue);border-radius:6px;padding:5px 8px;font-size:12px;cursor:pointer">✏️</button>
-          <button onclick="silOnayla('Bu projeyi silmek istediğine emin misin?', async () => { await deleteProject('${p.id}'); })" style="background:none;border:1px solid var(--red);color:var(--red);border-radius:6px;padding:5px 8px;font-size:12px;cursor:pointer">🗑</button>
+          <div class="proje-card-divider"></div>
+          ${statSatiri}
+          <div class="proje-card-actions">
+            ${!bitti
+              ? `<button class="act-tamamla" onclick="projeKapat('${p.id}')">✅ Tamamla</button>`
+              : `<button class="act-ac" onclick="projeAc('${p.id}')">🔄 Yeniden Aç</button>`
+            }
+            <button class="act-duzenle" onclick="renameProject('${p.id}')">✏️ Düzenle</button>
+          </div>
         </div>`;
       }).join('');
     }
