@@ -607,13 +607,18 @@
           <span style="font-size:22px">⛏</span>
           <span style="font-size:14px;font-weight:800;color:var(--yellow);letter-spacing:1px">GÜNLÜK KAZI KAYDI</span>
         </div>
+        <div style="display:flex;align-items:center;gap:8px;background:rgba(139,92,246,0.06);border:1px solid rgba(139,92,246,0.25);border-radius:8px;padding:10px 12px;margin-bottom:10px">
+          <input type="checkbox" id="fBakim" onchange="bakimToggle()" style="display:none" />
+          <label for="fBakim" id="fBakimBox" style="width:22px;height:22px;flex-shrink:0;border:2px solid var(--border);border-radius:6px;background:var(--bg);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;color:transparent;font-weight:900">✓</label>
+          <label for="fBakim" style="font-size:12.5px;color:var(--text);font-weight:600;cursor:pointer;flex:1">🔧 Bugün kazı yapılmadı, saha bakım/onarım çalışması yapıldı</label>
+        </div>
         <div style="display:flex;gap:10px;margin-bottom:10px">
           <div style="flex:1">
             <label class="field-label" style="margin-top:0">TARİH *</label>
             <input type="date" id="fTarih" />
           </div>
-          <div style="flex:1">
-            <label class="field-label" style="margin-top:0">MİKTAR (m) *</label>
+          <div style="flex:1" id="fMetreWrap">
+            <label class="field-label" style="margin-top:0" id="fMetreLabel">MİKTAR (m) *</label>
             <input type="number" id="fMetre" placeholder="örn: 25" inputmode="decimal" style="font-size:18px;font-weight:700;color:var(--yellow)" />
           </div>
         </div>
@@ -624,7 +629,7 @@
         <select id="fEkip">
           <option value="">Ekip seçilmedi</option>
         </select>
-        <label class="field-label">NOTLAR</label>
+        <label class="field-label" id="fNotlarLabel">NOTLAR</label>
         <textarea id="fNotlar" placeholder="Günlük notlar..." style="height:56px"></textarea>
         <button class="btn-primary" id="saveBtn" onclick="handleSave()" style="font-size:15px;padding:14px;margin-top:10px">
           💾 Kazıyı Kaydet
@@ -1403,6 +1408,9 @@ function resetForm() {
   if (banner) banner.style.display = 'none';
   window._lastSavedEntryId = null;
   _hataduzenleIdx = null;
+  const fBakimReset = document.getElementById('fBakim');
+  if (fBakimReset) { fBakimReset.checked = false; }
+  if (typeof bakimToggle === 'function') bakimToggle();
   if (typeof renderMalzemeChips === 'function') renderMalzemeChips();
   if (typeof updateBadges === 'function') updateBadges();
   if (typeof resetDosyaForm === 'function') resetDosyaForm();
@@ -1536,9 +1544,11 @@ async function saveEntry() {
   if (!proj) { islemBildir('Önce proje seçin!', null, true); return; }
   if (proj.bitti) { islemBildir('Bu proje tamamlanmış! Kayıt eklenemez.', null, true); return; }
   const tarih = document.getElementById('fTarih').value;
-  const metre = parseFloat(document.getElementById('fMetre').value);
+  const bakimMi = document.getElementById('fBakim')?.checked || false;
+  const metre = bakimMi ? 0 : parseFloat(document.getElementById('fMetre').value);
   const notlar = document.getElementById('fNotlar').value.trim();
-  if (!tarih || isNaN(metre) || metre <= 0) { islemBildir('Tarih ve geçerli kazı miktarı zorunlu!', null, true); return; }
+  if (!tarih || isNaN(metre) || metre < 0 || (!bakimMi && metre <= 0)) { islemBildir('Tarih ve geçerli kazı miktarı zorunlu!', null, true); return; }
+  if (bakimMi && !notlar) { islemBildir('Bakım/onarım günü için açıklama zorunlu!', null, true); return; }
   try {
   showLoading('Kaydediliyor...');
   const ekipId = document.getElementById('fEkip')?.value || null;
@@ -1573,6 +1583,8 @@ async function saveEntry() {
   if (fNotlar) fNotlar.value = '';
   const fEkipReset = document.getElementById('fEkip');
   if (fEkipReset) fEkipReset.value = '';
+  const fBakimReset = document.getElementById('fBakim');
+  if (fBakimReset) { fBakimReset.checked = false; bakimToggle(); }
   toast('✅ Kazı kaydı eklendi!');
   } catch(err) { hideLoading(); islemBildir('Kayıt eklenemedi: ' + (err.message || 'Bağlantı hatası'), null, true); }
 }
@@ -1581,9 +1593,11 @@ async function updateEntry() {
   const proj = activeProject();
   if (!proj || !editingId) return;
   const tarih = document.getElementById('fTarih').value;
-  const metre = parseFloat(document.getElementById('fMetre').value);
+  const bakimMi = document.getElementById('fBakim')?.checked || false;
+  const metre = bakimMi ? 0 : parseFloat(document.getElementById('fMetre').value);
   const notlar = document.getElementById('fNotlar').value.trim();
-  if (!tarih || isNaN(metre) || metre <= 0) { islemBildir('Tarih ve geçerli kazı miktarı zorunlu!', null, true); return; }
+  if (!tarih || isNaN(metre) || metre < 0 || (!bakimMi && metre <= 0)) { islemBildir('Tarih ve geçerli kazı miktarı zorunlu!', null, true); return; }
+  if (bakimMi && !notlar) { islemBildir('Bakım/onarım günü için açıklama zorunlu!', null, true); return; }
   try {
   showLoading('Güncelleniyor...');
   const { data: mevcutKayit } = await sb.from('kayitlar').select('fotograflar,kmz').eq('id', editingId).single();
@@ -1874,6 +1888,39 @@ function cancelEdit() {
   showView('dashboard');
 }
 
+function bakimToggle() {
+  const ck = document.getElementById('fBakim');
+  const box = document.getElementById('fBakimBox');
+  const metreWrap = document.getElementById('fMetreWrap');
+  const metreLabel = document.getElementById('fMetreLabel');
+  const metreInput = document.getElementById('fMetre');
+  const notlarLabel = document.getElementById('fNotlarLabel');
+  const notlar = document.getElementById('fNotlar');
+  const baslikSpan = document.querySelector('#kaziFormWrap .card > div > span:last-child');
+  if (!ck) return;
+  if (ck.checked) {
+    if (box) { box.style.background = '#10b981'; box.style.borderColor = '#10b981'; box.style.color = '#fff'; }
+    metreInput.value = '0';
+    metreInput.disabled = true;
+    metreInput.style.opacity = '0.5';
+    metreLabel.textContent = 'MİKTAR (m) — bakım günü';
+    notlarLabel.textContent = 'AÇIKLAMA * (yapılan bakım/onarım çalışması)';
+    notlar.placeholder = 'örn: Kadıköy hattında borulama onarımı yapıldı, arıza giderildi...';
+    notlar.style.borderColor = '#10b981';
+    if (baslikSpan) baslikSpan.textContent = 'GÜNLÜK SAHA KAYDI';
+  } else {
+    if (box) { box.style.background = 'var(--bg)'; box.style.borderColor = 'var(--border)'; box.style.color = 'transparent'; }
+    metreInput.disabled = false;
+    metreInput.style.opacity = '1';
+    if (metreInput.value === '0') metreInput.value = '';
+    metreLabel.textContent = 'MİKTAR (m) *';
+    notlarLabel.textContent = 'NOTLAR';
+    notlar.placeholder = 'Günlük notlar...';
+    notlar.style.borderColor = '';
+    if (baslikSpan) baslikSpan.textContent = 'GÜNLÜK KAZI KAYDI';
+  }
+}
+
 function handleSave() {
   if (editingId) updateEntry(); else saveEntry();
 }
@@ -1915,6 +1962,8 @@ async function startEdit(id) {
   document.getElementById('fTarih').value = entry.tarih;
   document.getElementById('fMetre').value = entry.kaziMetre;
   document.getElementById('fNotlar').value = entry.notlar || '';
+  const fBakimEl = document.getElementById('fBakim');
+  if (fBakimEl) { fBakimEl.checked = Number(entry.kaziMetre) === 0; bakimToggle(); }
   renderEkipSelect();
   if (data.teams.length === 0) loadTeams();
   const fEkipEl = document.getElementById('fEkip');
@@ -2343,14 +2392,16 @@ function projeRaporPdf() {
   const proj = activeProject();
   if (!proj || proj.entries.length === 0) { toast('⚠️ Proje veya kayıt yok', true); return; }
 
+  const kaziEntries = proj.entries.filter(e => Number(e.kaziMetre) > 0);
   const toplam = proj.entries.reduce((s, e) => s + e.kaziMetre, 0);
-  const gun = proj.entries.length;
-  const ort = (toplam / gun).toFixed(1);
+  const gun = kaziEntries.length;
+  const ort = gun > 0 ? (toplam / gun).toFixed(1) : '0';
   const hataCount = proj.entries.filter(e => e.hatalar?.length > 0 || e.hata?.var).length;
   const tarihler = proj.entries.map(e => new Date(e.tarih));
   const ilk = new Date(Math.min(...tarihler)).toLocaleDateString('tr-TR');
   const son = new Date(Math.max(...tarihler)).toLocaleDateString('tr-TR');
-  const takvimGunSayisi = Math.round((Math.max(...tarihler) - Math.min(...tarihler)) / 86400000) + 1;
+  const kaziTarihler = kaziEntries.map(e => new Date(e.tarih));
+  const takvimGunSayisi = kaziEntries.length > 0 ? Math.round((Math.max(...kaziTarihler) - Math.min(...kaziTarihler)) / 86400000) + 1 : 0;
   const ortTakvim = takvimGunSayisi > 0 ? (toplam / takvimGunSayisi).toFixed(1) : '0';
   const tarihStr = new Date().toLocaleDateString('tr-TR');
 
@@ -2370,7 +2421,7 @@ function projeRaporPdf() {
     const malzStr = (e.malzemeler || []).map(m => `${m.name} ${m.miktar} ${m.birim}`).join(', ') || '-';
     return `<tr${hataVar ? ' style="background:#fff5f5"' : ''}>
       <td>${new Date(e.tarih).toLocaleDateString('tr-TR')}</td>
-      <td style="font-weight:700">${e.kaziMetre} m</td>
+      <td style="font-weight:700">${Number(e.kaziMetre) === 0 ? '🔧 Bakım' : e.kaziMetre + ' m'}</td>
       <td>${malzStr}</td>
       <td>${hataVar ? '⚠️' : ''} ${(e.notlar || '').substring(0, 60)}</td>
     </tr>`;
@@ -2447,13 +2498,15 @@ function projeRaporPdf() {
 function projeRaporPaylas() {
   const proj = activeProject();
   if (!proj || proj.entries.length === 0) { toast('⚠️ Proje veya kayıt yok', true); return; }
+  const kaziEntries = proj.entries.filter(e => Number(e.kaziMetre) > 0);
   const toplam = proj.entries.reduce((s, e) => s + e.kaziMetre, 0);
-  const ort = (toplam / proj.entries.length).toFixed(1);
+  const ort = kaziEntries.length > 0 ? (toplam / kaziEntries.length).toFixed(1) : '0';
   const hataCount = proj.entries.filter(e => e.hatalar?.length > 0 || e.hata?.var).length;
   const tarihlerMs = proj.entries.map(e => new Date(e.tarih).getTime());
   const ilk = new Date(Math.min(...tarihlerMs)).toLocaleDateString('tr-TR');
   const son = new Date(Math.max(...tarihlerMs)).toLocaleDateString('tr-TR');
-  const takvimGunSayisi = Math.round((Math.max(...tarihlerMs) - Math.min(...tarihlerMs)) / 86400000) + 1;
+  const kaziTarihlerMs = kaziEntries.map(e => new Date(e.tarih).getTime());
+  const takvimGunSayisi = kaziEntries.length > 0 ? Math.round((Math.max(...kaziTarihlerMs) - Math.min(...kaziTarihlerMs)) / 86400000) + 1 : 0;
   const ortTakvim = takvimGunSayisi > 0 ? (toplam / takvimGunSayisi).toFixed(1) : '0';
   const hedefStr = proj.hedefMetre > 0 ? `\n🎯 Hedef: ${proj.hedefMetre} m (%${((toplam/proj.hedefMetre)*100).toLocaleString("tr-TR",{maximumFractionDigits:0})} tamamlandı)` : '';
   const malzMap = {};
@@ -2467,7 +2520,7 @@ function projeRaporPaylas() {
       : `      - ${e.hata?.turler?.join(', ') || 'Belirtilmemiş'}${e.hata?.aciklama ? ': ' + e.hata.aciklama : ''}`;
     return `   📅 ${tarih}\n${hatalar}`;
   }).join('\n') : '   • Yok';
-  const metin = `📊 *PROJE RAPORU*\n🏗 ${proj.name}${proj.location ? ' - ' + proj.location : ''}\n\n📅 ${ilk} → ${son}\n⛏ Toplam Kazı: *${toplam.toLocaleString("tr-TR",{maximumFractionDigits:0})} m*\n📈 Günlük Ort. (çalışılan gün): ${ort} m\n📊 Günlük Ort. (takvim günü): ${ortTakvim} m\n📅 Kazı Günü: ${proj.entries.length} gün${hedefStr}\n⚠️ Hatalı Gün: ${hataCount}\n\n🧱 Toplam Malzeme:\n${malzStr}\n\n⚠️ Hata Detayları:\n${hataStr}`;
+  const metin = `📊 *PROJE RAPORU*\n🏗 ${proj.name}${proj.location ? ' - ' + proj.location : ''}\n\n📅 ${ilk} → ${son}\n⛏ Toplam Kazı: *${toplam.toLocaleString("tr-TR",{maximumFractionDigits:0})} m*\n📈 Günlük Ort. (çalışılan gün): ${ort} m\n📊 Günlük Ort. (takvim günü): ${ortTakvim} m\n📅 Kazı Günü: ${kaziEntries.length} gün${hedefStr}\n⚠️ Hatalı Gün: ${hataCount}\n\n🧱 Toplam Malzeme:\n${malzStr}\n\n⚠️ Hata Detayları:\n${hataStr}`;
   paylas(metin, 'Proje Raporu');
 }
 
@@ -4266,15 +4319,16 @@ function renderMalzemeChips() {
 function updateStats() {
   const proj = activeProject();
   if (!proj) return;
+  const kaziEntries = proj.entries.filter(e => Number(e.kaziMetre) > 0);
   const total = proj.entries.reduce((s, e) => s + e.kaziMetre, 0);
-  const avg = proj.entries.length > 1 ? (total / proj.entries.length).toFixed(1) : total.toFixed(1);
+  const avg = kaziEntries.length > 0 ? (total / kaziEntries.length).toFixed(1) : total.toFixed(1);
   const toplamHata = proj.entries.reduce((s, e) => s + (e.hatalar?.length || (e.hata?.var ? 1 : 0)), 0);
   const sm = document.getElementById('statMetre');
   const so = document.getElementById('statOrt');
   const sh = document.getElementById('statHata');
   if (sm) sm.textContent = total.toLocaleString('tr-TR', {maximumFractionDigits:0}) + ' m';
   const statGunEl = document.getElementById('statGun');
-  if (statGunEl) statGunEl.textContent = proj.entries.length;
+  if (statGunEl) statGunEl.textContent = kaziEntries.length;
   if (so) so.textContent = avg + ' m';
   if (sh) sh.textContent = toplamHata;
 }
@@ -4287,13 +4341,14 @@ function renderDashboard() {
   if (!proj) { empty.style.display = 'block'; content.style.display = 'none'; return; }
   empty.style.display = 'none'; content.style.display = 'block';
 
+  const kaziEntries = proj.entries.filter(e => Number(e.kaziMetre) > 0);
   const total = proj.entries.reduce((s, e) => s + e.kaziMetre, 0);
-  const avg = proj.entries.length ? (total / proj.entries.length).toFixed(1) : '-';
+  const avg = kaziEntries.length ? (total / kaziEntries.length).toFixed(1) : '-';
   document.getElementById('statMetre').textContent = total.toLocaleString('tr-TR', {maximumFractionDigits:0}) + ' m';
   const statKayit = document.getElementById('statKayit');
-  if (statKayit) statKayit.textContent = proj.entries.length;
+  if (statKayit) statKayit.textContent = kaziEntries.length;
   const statGunEl = document.getElementById('statGun');
-  if (statGunEl) statGunEl.textContent = proj.entries.length;
+  if (statGunEl) statGunEl.textContent = kaziEntries.length;
   document.getElementById('statOrt').textContent = avg !== '-' ? avg + ' m' : '-';
   const toplamHata = proj.entries.reduce((s, e) => s + (e.hatalar?.length || (e.hata?.var ? 1 : 0)), 0);
   document.getElementById('statHata').textContent = toplamHata;
@@ -4320,7 +4375,7 @@ function renderDashboard() {
       const kalanEl = document.getElementById('ilerlemeKalan');
       if (yapilan) yapilan.textContent = total.toLocaleString('tr-TR') + ' m';
       if (hedefEl) hedefEl.textContent = hm + ' m';
-      const avgGun = proj.entries.length > 0 ? total / proj.entries.length : 0;
+      const avgGun = kaziEntries.length > 0 ? total / kaziEntries.length : 0;
       const tahminiGun = avgGun > 0 ? Math.ceil(parseFloat(kalan) / avgGun) : 0;
       if (kalanEl) kalanEl.textContent = kalan + ' m';
       const tahminiEl = document.getElementById('ilerlemeTahmini');
@@ -4373,7 +4428,7 @@ function renderDashboard() {
           <span id="tog-${e.id}" style="position:absolute;top:9px;right:10px;color:var(--muted);font-size:11px">▼</span>
           <div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding-right:16px">
             <span style="font-size:14px;font-weight:700;color:var(--text)">${gunKisa} ${tarihKisa}${ekipAdi ? ` <span style="font-size:12.5px;font-weight:600;color:var(--muted)">· ${ekipAdi}</span>` : ''}</span>
-            <span style="font-size:16px;font-weight:900;color:var(--yellow);white-space:nowrap">⛏ ${e.kaziMetre} m</span>
+            <span style="font-size:16px;font-weight:900;color:${Number(e.kaziMetre) === 0 ? '#a78bfa' : 'var(--yellow)'};white-space:nowrap">${Number(e.kaziMetre) === 0 ? '🔧 Bakım' : `⛏ ${e.kaziMetre} m`}</span>
           </div>
           ${meta.length > 0 ? `<div style="margin-top:6px"><span style="font-size:10.5px;color:var(--muted)">${meta.join('&nbsp;&nbsp;')}</span></div>` : ''}
         </div>
@@ -4446,7 +4501,9 @@ function toggleDetay(id) {
   const baslik = document.getElementById('detayModalBaslik');
   const icerik = document.getElementById('detayModalIcerik');
 
-  baslik.textContent = `📅 ${tarihStr} — ⛏ ${Number(e.kaziMetre).toLocaleString('tr-TR')} m`;
+  baslik.textContent = Number(e.kaziMetre) === 0
+    ? `📅 ${tarihStr} — 🔧 Bakım/Onarım Günü`
+    : `📅 ${tarihStr} — ⛏ ${Number(e.kaziMetre).toLocaleString('tr-TR')} m`;
 
   icerik.innerHTML = `
     ${e.notlar ? `<div style="background:rgba(255,255,255,0.04);border-radius:8px;padding:12px;margin-bottom:12px;font-size:14px;color:var(--text);white-space:pre-wrap;line-height:1.6">📝 ${e.notlar}</div>` : ''}
@@ -4505,20 +4562,21 @@ function renderRapor() {
   if (!proj) { empty.style.display = 'block'; content.style.display = 'none'; return; }
   empty.style.display = 'none'; content.style.display = 'block';
 
+  const kaziEntries = proj.entries.filter(e => Number(e.kaziMetre) > 0);
   const total = proj.entries.reduce((s, e) => s + e.kaziMetre, 0);
-  const avg = proj.entries.length ? (total / proj.entries.length) : 0;
+  const avg = kaziEntries.length ? (total / kaziEntries.length) : 0;
   const avgStr = avg > 0 ? avg.toLocaleString('tr-TR', {maximumFractionDigits:1}) + ' m' : '-';
   const hataCount = proj.entries.filter(e => e.hatalar?.length > 0 || e.hata?.var).length;
   const titleEl = document.getElementById('raporTitle');
 
   document.getElementById('rStatMetre').textContent = total.toLocaleString('tr-TR', {maximumFractionDigits:0}) + ' m';
-  document.getElementById('rStatGun').textContent = proj.entries.length;
+  document.getElementById('rStatGun').textContent = kaziEntries.length;
   document.getElementById('rStatOrt').textContent = avgStr;
 
   const rStatOrtTakvimEl = document.getElementById('rStatOrtTakvim');
   if (rStatOrtTakvimEl) {
-    if (proj.entries.length > 0) {
-      const tarihler = proj.entries.map(e => new Date(e.tarih).getTime());
+    if (kaziEntries.length > 0) {
+      const tarihler = kaziEntries.map(e => new Date(e.tarih).getTime());
       const takvimGunSayisi = Math.round((Math.max(...tarihler) - Math.min(...tarihler)) / 86400000) + 1;
       const avgTakvim = takvimGunSayisi > 0 ? (total / takvimGunSayisi) : 0;
       rStatOrtTakvimEl.textContent = avgTakvim > 0 ? avgTakvim.toLocaleString('tr-TR', {maximumFractionDigits:1}) + ' m' : '-';
@@ -4545,7 +4603,7 @@ function renderRapor() {
       if (hedefEl) hedefEl.textContent = proj.hedefMetre + ' m';
       const kalanEl = document.getElementById('raporKalan');
       if (kalanEl) kalanEl.textContent = kalan + ' m';
-      const avgGunR = proj.entries.length > 0 ? total / proj.entries.length : 0;
+      const avgGunR = kaziEntries.length > 0 ? total / kaziEntries.length : 0;
       const kalanSayi = Math.max(0, proj.hedefMetre - total);
       tahminiGunSonuc = (avgGunR > 0 && kalanSayi > 0) ? Math.ceil(kalanSayi / avgGunR) : 0;
       const raporTahmini = document.getElementById('raporTahmini');
@@ -4595,7 +4653,7 @@ function renderRapor() {
 
   const sorted = [...proj.entries].sort((a, b) => new Date(b.tarih) - new Date(a.tarih));
   document.getElementById('raporEntryBody').innerHTML = sorted.map(e =>
-    `<tr><td>${new Date(e.tarih).toLocaleDateString('tr-TR')}</td><td style="color:var(--yellow);font-weight:700">${Number(e.kaziMetre).toLocaleString('tr-TR', {maximumFractionDigits:0})} m</td><td>${e.malzemeler.length} çeşit</td></tr>`
+    `<tr><td>${new Date(e.tarih).toLocaleDateString('tr-TR')}</td><td style="color:${Number(e.kaziMetre) === 0 ? '#a78bfa' : 'var(--yellow)'};font-weight:700">${Number(e.kaziMetre) === 0 ? '🔧 Bakım' : Number(e.kaziMetre).toLocaleString('tr-TR', {maximumFractionDigits:0}) + ' m'}</td><td>${e.malzemeler.length} çeşit</td></tr>`
   ).join('');
 }
 
@@ -4736,16 +4794,17 @@ async function renderAylikRapor() {
 
   const toplamMetre = filtreli.reduce((s, k) => s + parseFloat(k.kazi_metre || 0), 0);
   const projeSet = new Set(filtreli.map(k => k.proje_id));
+  const kaziKayitlari = filtreli.filter(k => parseFloat(k.kazi_metre || 0) > 0);
 
   // Günlük ortalama hesapları
-  const calisilanGunler = new Set(filtreli.map(k => k.tarih));
+  const calisilanGunler = new Set(kaziKayitlari.map(k => k.tarih));
   const calisilanGunSayisi = calisilanGunler.size;
   const ortCalisilanGun = calisilanGunSayisi > 0 ? (toplamMetre / calisilanGunSayisi) : 0;
 
   let takvimGunSayisi = 0;
   if (tumZamanlar) {
-    if (filtreli.length > 0) {
-      const tarihler = filtreli.map(k => new Date(k.tarih).getTime());
+    if (kaziKayitlari.length > 0) {
+      const tarihler = kaziKayitlari.map(k => new Date(k.tarih).getTime());
       const minT = Math.min(...tarihler), maxT = Math.max(...tarihler);
       takvimGunSayisi = Math.round((maxT - minT) / 86400000) + 1;
     }
@@ -4761,14 +4820,14 @@ async function renderAylikRapor() {
   if (gunlukOrtTakvimEl) gunlukOrtTakvimEl.textContent = takvimGunSayisi > 0 ? ortTakvimGun.toLocaleString('tr-TR', { maximumFractionDigits: 1 }) + ' m' : '-';
 
   document.getElementById('aStatMetre').textContent = toplamMetre.toLocaleString('tr-TR', { maximumFractionDigits: 0 }) + ' m';
-  document.getElementById('aStatKayit').textContent = filtreli.length;
+  document.getElementById('aStatKayit').textContent = kaziKayitlari.length;
   document.getElementById('aStatProje').textContent = projeSet.size;
 
   const projeMap = {};
   filtreli.forEach(k => {
     if (!projeMap[k.proje_id]) projeMap[k.proje_id] = { toplam: 0, sayi: 0 };
     projeMap[k.proje_id].toplam += parseFloat(k.kazi_metre || 0);
-    projeMap[k.proje_id].sayi += 1;
+    if (parseFloat(k.kazi_metre || 0) > 0) projeMap[k.proje_id].sayi += 1;
   });
   const ozetGiris = Object.entries(projeMap).sort((a, b) => b[1].toplam - a[1].toplam);
   const ozetCard = document.getElementById('aylikProjeOzetCard');
@@ -4784,7 +4843,7 @@ async function renderAylikRapor() {
     const key = k.ekip_id || '__bos__';
     if (!ekipMap[key]) ekipMap[key] = { toplam: 0, sayi: 0 };
     ekipMap[key].toplam += parseFloat(k.kazi_metre || 0);
-    ekipMap[key].sayi += 1;
+    if (parseFloat(k.kazi_metre || 0) > 0) ekipMap[key].sayi += 1;
   });
   const ekipOzetGiris = Object.entries(ekipMap).sort((a, b) => b[1].toplam - a[1].toplam);
   const ekipOzetCard = document.getElementById('aylikEkipOzetCard');
@@ -4804,11 +4863,11 @@ async function renderAylikRapor() {
   } else {
     bos.style.display = 'none';
     body.innerHTML = filtreli.map(k =>
-      `<tr><td>${new Date(k.tarih).toLocaleDateString('tr-TR')}</td><td>${tumProjeler[k.proje_id] || 'Bilinmeyen Proje'}</td><td>${k.ekip_id ? (tumEkipler[k.ekip_id] || 'Bilinmeyen Ekip') : '-'}</td><td style="color:var(--yellow);font-weight:700">${Number(k.kazi_metre).toLocaleString('tr-TR', { maximumFractionDigits: 0 })} m</td></tr>`
+      `<tr><td>${new Date(k.tarih).toLocaleDateString('tr-TR')}</td><td>${tumProjeler[k.proje_id] || 'Bilinmeyen Proje'}</td><td>${k.ekip_id ? (tumEkipler[k.ekip_id] || 'Bilinmeyen Ekip') : '-'}</td><td style="color:${Number(k.kazi_metre) === 0 ? '#a78bfa' : 'var(--yellow)'};font-weight:700">${Number(k.kazi_metre) === 0 ? '🔧 Bakım' : Number(k.kazi_metre).toLocaleString('tr-TR', { maximumFractionDigits: 0 }) + ' m'}</td></tr>`
     ).join('');
   }
 
-  window._aylikRaporVeri = { yil, ay, tumZamanlar, aralikMi, basStr, bitStr, kayitlar: filtreli, tumProjeler, tumEkipler, toplamMetre, ozetGiris, ekipOzetGiris, calisilanGunSayisi, ortCalisilanGun, takvimGunSayisi, ortTakvimGun, ekipFiltreAd: ekipFiltre === '__bos__' ? 'Ekip Atanmamış' : (ekipFiltre ? (tumEkipler[ekipFiltre] || '') : '') };
+  window._aylikRaporVeri = { yil, ay, tumZamanlar, aralikMi, basStr, bitStr, kayitlar: filtreli, kaziKayitSayisi: kaziKayitlari.length, tumProjeler, tumEkipler, toplamMetre, ozetGiris, ekipOzetGiris, calisilanGunSayisi, ortCalisilanGun, takvimGunSayisi, ortTakvimGun, ekipFiltreAd: ekipFiltre === '__bos__' ? 'Ekip Atanmamış' : (ekipFiltre ? (tumEkipler[ekipFiltre] || '') : '') };
 }
 
 function aylikRaporPaylas() {
@@ -4819,7 +4878,7 @@ function aylikRaporPaylas() {
   const filtreStr = veri.ekipFiltreAd ? `\n👷 Ekip: ${veri.ekipFiltreAd}` : '';
   const satirlar = veri.ozetGiris.map(([pid, v]) => `${veri.tumProjeler[pid] || 'Bilinmeyen Proje'}: ${v.toplam.toLocaleString('tr-TR', { maximumFractionDigits: 0 })} m (${v.sayi} kayıt)`);
   const ortStr = veri.calisilanGunSayisi > 0 ? `\n📈 Günlük Ort.: ${veri.ortCalisilanGun.toLocaleString('tr-TR', { maximumFractionDigits: 1 })} m (çalışılan gün) / ${veri.ortTakvimGun.toLocaleString('tr-TR', { maximumFractionDigits: 1 })} m (takvim günü)` : '';
-  const metin = `🗓️ *${baslikMetin}*\n📅 ${donemAdi}${filtreStr}${ortStr}\n\n${satirlar.join('\n')}\n\nTOPLAM: ${veri.toplamMetre.toLocaleString('tr-TR', { maximumFractionDigits: 0 })} m (${veri.kayitlar.length} kayıt)`;
+  const metin = `🗓️ *${baslikMetin}*\n📅 ${donemAdi}${filtreStr}${ortStr}\n\n${satirlar.join('\n')}\n\nTOPLAM: ${veri.toplamMetre.toLocaleString('tr-TR', { maximumFractionDigits: 0 })} m (${veri.kaziKayitSayisi} kayıt)`;
   paylas(metin, veri.tumZamanlar ? 'Tüm Zamanlar Kazı Raporu' : (veri.aralikMi ? 'Özel Tarih Aralığı Raporu' : 'Aylık Kazı Raporu'));
 }
 
@@ -4839,7 +4898,7 @@ function aylikRaporPdf() {
 
   const sorted = [...veri.kayitlar].sort((a, b) => new Date(a.tarih) - new Date(b.tarih));
   const detayRows = sorted.map(k =>
-    `<tr><td>${new Date(k.tarih).toLocaleDateString('tr-TR')}</td><td>${veri.tumProjeler[k.proje_id] || 'Bilinmeyen Proje'}</td><td>${k.ekip_id ? (veri.tumEkipler[k.ekip_id] || '-') : '-'}</td><td style="font-weight:700">${Number(k.kazi_metre).toLocaleString('tr-TR', { maximumFractionDigits: 0 })} m</td></tr>`
+    `<tr><td>${new Date(k.tarih).toLocaleDateString('tr-TR')}</td><td>${veri.tumProjeler[k.proje_id] || 'Bilinmeyen Proje'}</td><td>${k.ekip_id ? (veri.tumEkipler[k.ekip_id] || '-') : '-'}</td><td style="font-weight:700">${Number(k.kazi_metre) === 0 ? '🔧 Bakım' : Number(k.kazi_metre).toLocaleString('tr-TR', { maximumFractionDigits: 0 }) + ' m'}</td></tr>`
   ).join('');
 
   const html = `<!DOCTYPE html><html lang="tr"><head><meta charset="utf-8">
@@ -4869,7 +4928,7 @@ function aylikRaporPdf() {
 
   <div class="stats">
     <div class="stat-box"><div class="stat-val">${veri.toplamMetre.toLocaleString('tr-TR', { maximumFractionDigits: 0 })} m</div><div class="stat-lbl">Toplam Kazı</div></div>
-    <div class="stat-box"><div class="stat-val">${veri.kayitlar.length}</div><div class="stat-lbl">Kayıt Sayısı</div></div>
+    <div class="stat-box"><div class="stat-val">${veri.kaziKayitSayisi}</div><div class="stat-lbl">Kayıt Sayısı</div></div>
     <div class="stat-box"><div class="stat-val">${new Set(veri.kayitlar.map(k => k.proje_id)).size}</div><div class="stat-lbl">Aktif Proje</div></div>
     <div class="stat-box"><div class="stat-val">${veri.calisilanGunSayisi > 0 ? veri.ortCalisilanGun.toLocaleString('tr-TR', { maximumFractionDigits: 1 }) + ' m' : '-'}</div><div class="stat-lbl">Günlük Ort. (çalışılan gün)</div></div>
     <div class="stat-box"><div class="stat-val">${veri.takvimGunSayisi > 0 ? veri.ortTakvimGun.toLocaleString('tr-TR', { maximumFractionDigits: 1 }) + ' m' : '-'}</div><div class="stat-lbl">Günlük Ort. (takvim günü)</div></div>
@@ -4992,10 +5051,11 @@ function exportExcel(filtreliKayitlar, dosyaEki) {
   const sorted = [...kayitlar].sort((a, b) => new Date(a.tarih) - new Date(b.tarih));
   const wb = XLSX.utils.book_new();
   const bugun = new Date().toLocaleDateString('tr-TR');
+  const kaziEntriesXls = proj.entries.filter(e => Number(e.kaziMetre) > 0);
   const toplam = proj.entries.reduce((s, e) => s + e.kaziMetre, 0);
-  const ort = (toplam / proj.entries.length).toFixed(1);
-  const tarihlerMsXls = proj.entries.map(e => new Date(e.tarih).getTime());
-  const takvimGunSayisiXls = Math.round((Math.max(...tarihlerMsXls) - Math.min(...tarihlerMsXls)) / 86400000) + 1;
+  const ort = kaziEntriesXls.length > 0 ? (toplam / kaziEntriesXls.length).toFixed(1) : '0';
+  const tarihlerMsXls = kaziEntriesXls.map(e => new Date(e.tarih).getTime());
+  const takvimGunSayisiXls = kaziEntriesXls.length > 0 ? Math.round((Math.max(...tarihlerMsXls) - Math.min(...tarihlerMsXls)) / 86400000) + 1 : 0;
   const ortTakvimXls = takvimGunSayisiXls > 0 ? (toplam / takvimGunSayisiXls).toFixed(1) : '0';
   const hataCount = proj.entries.filter(e => e.hatalar?.length > 0 || e.hata?.var).length;
 
@@ -5068,7 +5128,7 @@ function exportExcel(filtreliKayitlar, dosyaEki) {
 
   const istatistikler = [
     ['📏 Toplam Kazı', `${toplam.toLocaleString("tr-TR",{maximumFractionDigits:0})} m`, 'F59E0B', '1C1917'],
-    ['📅 Toplam Gün', `${proj.entries.length} gün`, '3B82F6', '0C1A2E'],
+    ['📅 Toplam Gün', `${kaziEntriesXls.length} gün`, '3B82F6', '0C1A2E'],
     ['📈 Günlük Ort. (çalışılan gün)', `${ort} m`, '10B981', '052E16'],
     ['📊 Günlük Ort. (takvim günü)', `${ortTakvimXls} m`, 'EC4899', '2D0A1F'],
     ['⚠️ Hatalı İşlem', `${hataCount} adet`, hataCount > 0 ? 'EF4444' : '10B981', hataCount > 0 ? '2D0A0A' : '052E16'],
@@ -5648,7 +5708,7 @@ function renderProjeler() {
       const kayitSayiMap = {};
       kayitlar.forEach(k => {
         toplamMap[k.proje_id] = (toplamMap[k.proje_id] || 0) + parseFloat(k.kazi_metre || 0);
-        kayitSayiMap[k.proje_id] = (kayitSayiMap[k.proje_id] || 0) + 1;
+        if (parseFloat(k.kazi_metre || 0) > 0) kayitSayiMap[k.proje_id] = (kayitSayiMap[k.proje_id] || 0) + 1;
       });
       renderProjeToplamRapor(toplamMap);
       const kodMap = {};
