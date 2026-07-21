@@ -378,6 +378,79 @@
     .hata-gorsel-thumb { width:72px;height:72px;object-fit:cover;border-radius:6px;border:1px solid var(--red);cursor:pointer; }
     .silme-btn-kirmizi { background:none;border:1px solid var(--red);color:var(--red);border-radius:50%;width:22px;height:22px;font-size:13px;cursor:pointer;line-height:1; }
 
+    /* DETAY MODAL — sade, tek vurgulu tasarım */
+    .detay-eyebrow {
+      font-size: 10.5px; font-weight: 800; letter-spacing: 1.6px; color: var(--muted);
+      text-transform: uppercase; margin-bottom: 4px;
+    }
+    .detay-sheet-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 10px; padding-top: 4px; }
+    .detay-header-main { flex: 1; min-width: 0; }
+    .detay-header-tarih { font-size: 23px; font-weight: 900; color: var(--text); line-height: 1.15; letter-spacing: -.2px; }
+    .detay-header-proje {
+      display: flex; align-items: center; gap: 5px; margin-top: 7px;
+      font-size: 12.5px; font-weight: 600; color: var(--sub);
+    }
+    .detay-header-stat {
+      flex-shrink: 0; text-align: right;
+    }
+    .detay-header-stat .val { display: block; font-size: 21px; font-weight: 900; color: var(--yellow); line-height: 1.1; white-space: nowrap; }
+    .detay-header-stat .lbl { display: block; font-size: 10px; font-weight: 700; letter-spacing: .5px; color: var(--muted); text-transform: uppercase; margin-top: 2px; }
+    .detay-header-stat.bakim .val { color: var(--sub); font-size: 15px; }
+    .detay-close-btn {
+      margin-top: 1px; flex-shrink: 0; background: none; border: none; color: var(--sub);
+      cursor: pointer; font-size: 18px; line-height: 1; padding: 4px;
+    }
+    .detay-chip-row { display: flex; gap: 14px; flex-wrap: wrap; padding: 12px 0; margin-bottom: 4px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .detay-chip { font-size: 11.5px; font-weight: 600; color: var(--sub); display: flex; align-items: center; gap: 5px; }
+    .detay-chip b { color: var(--text); font-weight: 700; }
+    .detay-sec-label {
+      font-size: 10.5px; font-weight: 800; letter-spacing: 1.2px; color: var(--muted);
+      margin: 20px 0 10px; text-transform: uppercase;
+    }
+    .detay-mention { color: var(--yellow); font-weight: 700; }
+    .detay-metin { font-size: 13.5px; line-height: 1.6; white-space: pre-wrap; color: var(--text); }
+    .detay-foto-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .detay-foto-thumb {
+      width: 76px; height: 76px; object-fit: cover; border-radius: 8px; cursor: pointer;
+      border: 1px solid var(--border);
+    }
+    .detay-malzeme-row {
+      display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; color: var(--sub);
+    }
+    .detay-malzeme-row:last-child { border-bottom: none; }
+    .detay-malzeme-row span:last-child { font-weight: 700; color: var(--text); }
+
+    /* Zaman çizelgesi (hata + onay birleşik) — pro tasarım */
+    .detay-timeline { position: relative; padding-left: 30px; }
+    .detay-timeline::before {
+      content: ''; position: absolute; left: 11px; top: 22px; bottom: 6px; width: 1px; background: var(--border);
+    }
+    .detay-tl-item { position: relative; margin-bottom: 12px; }
+    .detay-tl-item:last-child { margin-bottom: 0; }
+    .detay-tl-dot {
+      position: absolute; left: -30px; top: 0; width: 23px; height: 23px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; font-size: 11px; color: #fff;
+      border: 2px solid var(--bg2, var(--card));
+    }
+    .detay-tl-dot.hata { background: var(--red); }
+    .detay-tl-dot.onay { background: #10b981; }
+    .detay-tl-card {
+      background: rgba(255,255,255,0.025); border: 1px solid var(--border); border-radius: 11px; padding: 12px 13px;
+    }
+    .detay-tl-top { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+    .detay-tl-etiket { font-size: 12.5px; font-weight: 800; color: var(--text); }
+    .detay-tl-tarih { font-size: 10.5px; color: var(--muted); font-weight: 700; margin-left: auto; }
+    .detay-tl-tag { font-size: 10px; font-weight: 700; color: var(--sub); border: 1px solid var(--border); border-radius: 20px; padding: 2px 8px; }
+    .detay-tl-pill { font-size: 10px; font-weight: 800; letter-spacing: .3px; border-radius: 20px; padding: 3px 9px; white-space: nowrap; }
+    .detay-tl-pill.acik { background: rgba(239,68,68,0.12); color: #fca5a5; }
+    .detay-tl-pill.cozuldu { background: rgba(16,185,129,0.15); color: #10b981; }
+    .detay-tl-cozum {
+      display: flex; gap: 7px; margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border);
+    }
+    .detay-tl-cozum-ikon { flex-shrink: 0; color: #10b981; font-size: 13px; line-height: 1.5; }
+    .detay-tl-cozum-metin { flex: 1; }
+    .detay-tl-cozum-baslik { font-size: 10.5px; font-weight: 800; color: #10b981; letter-spacing: .3px; margin-bottom: 2px; text-transform: uppercase; }
+
   
     /* Utility classes */
     .btn-sil-kirmizi { background:none;border:1px solid var(--red);color:var(--red);border-radius:6px;padding:4px 8px;font-size:12px;cursor:pointer;font-family:inherit; }
@@ -1042,6 +1115,23 @@
     </div>
   </div>
 
+  <!-- VIEW: KAYIT DETAYI -->
+  <div class="view" id="view-detay">
+    <div class="detay-sheet-header">
+      <div class="detay-header-main">
+        <div class="detay-eyebrow" id="detayGunAdi">PAZARTESİ</div>
+        <div class="detay-header-tarih" id="detayHeaderTarih">20 Temmuz 2026</div>
+        <div class="detay-header-proje" id="detayProjeAdi">🏗 Proje</div>
+      </div>
+      <div class="detay-header-stat" id="detayHeaderStatWrap">
+        <span class="val" id="detayHeaderStat">117 m</span>
+        <span class="lbl" id="detayHeaderStatLbl">Kazıldı</span>
+      </div>
+    </div>
+    <div class="detay-chip-row" id="detayChipRow"></div>
+    <div id="detayModalIcerik"></div>
+  </div>
+
 </main>
 
 <!-- POPUP: KAYIT İŞLEM EKRANI (malzeme/hata/foto/kmz/onay ekleme) -->
@@ -1203,16 +1293,6 @@
 </nav>
 
 <!-- DETAY MODALI -->
-<div id="detayModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:500;overflow-y:auto">
-  <div style="background:var(--card);border-radius:16px 16px 0 0;min-height:60vh;margin-top:20vh;padding:20px">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-      <div id="detayModalBaslik" style="font-size:15px;font-weight:700;color:var(--yellow)"></div>
-      <button onclick="detayModalKapat()" style="background:none;border:1px solid var(--border);color:var(--sub);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:13px">✕ Kapat</button>
-    </div>
-    <div id="detayModalIcerik"></div>
-  </div>
-</div>
-
 <!-- RAPOR ÖNİZLEME MODALI -->
 <div id="ekipYonetimModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:450;align-items:center;justify-content:center">
   <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;margin:16px;max-width:400px;width:100%;max-height:80vh;display:flex;flex-direction:column">
@@ -2386,6 +2466,105 @@ function gunlukRaporPaylas(entryId) {
   const notStr = entry.notlar ? `\n📝 Not: ${entry.notlar}` : '';
   const metin = `📋 *GÜNLÜK KAZI RAPORU*\n📅 ${tarih}\n🏗 Proje: ${proj.name}${proj.location ? ' - ' + proj.location : ''}\n\n⛏ Günlük Kazı: *${entry.kaziMetre} m*${notStr}\n\n🧱 Malzeme:\n${malzStr}\n\n⚠️ Hata/Eksik:\n${hataStr}`;
   paylas(metin, 'Günlük Kazı Raporu');
+}
+
+function gunlukRaporPdf(entryId) {
+  const proj = activeProject();
+  const e = proj?.entries.find(x => x.id === entryId);
+  if (!e) return;
+
+  const bakimMi = Number(e.kaziMetre) === 0;
+  const tarihObj = new Date(e.tarih);
+  const tarihStr = tarihObj.toLocaleDateString('tr-TR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  const olusturmaStr = new Date().toLocaleDateString('tr-TR');
+  const ekip = e.ekipId ? data.teams.find(t => t.id === e.ekipId) : null;
+
+  const malzRows = (e.malzemeler || []).map(m => `<tr><td>${m.name}</td><td style="font-weight:700">${m.miktar} ${m.birim}</td></tr>`).join('') || '';
+
+  const fotoBlok = (title, urls) => urls.length > 0 ? `
+    <h2>${title} (${urls.length})</h2>
+    <div class="foto-grid">
+      ${urls.map(u => `<img src="${u}" class="foto-buyuk"/>`).join('')}
+    </div>` : '';
+
+  const hataBlok = (e.hatalar || []).map((h, i) => `
+    <div class="hata-kutu">
+      <div class="hata-baslik">
+        <span>#${i+1} ${h.turler?.join(', ') || 'Hata'}</span>
+        <span class="pill ${h.giderildi ? 'yesil' : 'kirmizi'}">${h.giderildi ? '✓ Giderildi' : '● Açık'}</span>
+      </div>
+      ${h.aciklama ? `<div class="p-metin">${h.aciklama}</div>` : ''}
+      ${h.gorseller?.length > 0 ? `<div class="foto-grid">${h.gorseller.map(g => `<img src="${g.url}" class="foto-buyuk"/>`).join('')}</div>` : ''}
+      ${h.giderildi && h.giderilmeNotu ? `<div class="cozum-kutu"><b>Çözüm notu:</b> ${h.giderilmeNotu}</div>` : ''}
+    </div>`).join('');
+
+  const onayBlok = (e.sahaOnaylari || []).map((o, i) => `
+    <div class="hata-kutu">
+      <div class="hata-baslik">
+        <span>#${i+1} Saha Onayı</span>
+        ${o.tarih ? `<span class="pill yesil">${new Date(o.tarih).toLocaleDateString('tr-TR')}</span>` : ''}
+      </div>
+      ${o.aciklama ? `<div class="p-metin">${o.aciklama}</div>` : ''}
+      ${o.gorseller?.length > 0 ? `<div class="foto-grid">${o.gorseller.map(g => `<img src="${g.url}" class="foto-buyuk"/>`).join('')}</div>` : ''}
+    </div>`).join('');
+
+  const html = `<!DOCTYPE html><html lang="tr"><head><meta charset="utf-8">
+  <title>Günlük Saha Raporu - ${tarihStr}</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 24px; color: #1a1a1a; font-size: 13px; max-width: 900px; margin: 0 auto; }
+    h1 { font-size: 20px; color: #92400e; border-bottom: 3px solid #f59e0b; padding-bottom: 8px; margin-bottom: 4px; }
+    .meta { font-size: 12px; color: #666; margin-bottom: 18px; }
+    .stats { display: flex; gap: 12px; margin: 16px 0; flex-wrap: wrap; }
+    .stat-box { background: #fffbeb; border: 1px solid #fcd34d; border-radius: 8px; padding: 10px 16px; text-align: center; min-width: 110px; }
+    .stat-val { font-size: 19px; font-weight: bold; color: #b45309; }
+    .stat-lbl { font-size: 10px; color: #78716c; margin-top: 2px; }
+    h2 { font-size: 14px; background: #f3f4f6; padding: 7px 10px; border-radius: 4px; margin: 22px 0 10px; border-left: 4px solid #f59e0b; page-break-after: avoid; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+    th { background: #f59e0b; color: #fff; padding: 6px 8px; text-align: left; font-size: 11px; }
+    td { border: 1px solid #e5e7eb; padding: 6px 8px; font-size: 12px; }
+    tr:nth-child(even) td { background: #f9fafb; }
+    .p-metin { font-size: 13px; line-height: 1.6; white-space: pre-wrap; margin-bottom: 8px; }
+    /* Fotoğraflar okunabilecek kadar büyük — sayfa başına 2 sütun */
+    .foto-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0; }
+    .foto-buyuk { width: 100%; height: 260px; object-fit: cover; border-radius: 6px; border: 1px solid #ddd; display: block; break-inside: avoid; page-break-inside: avoid; }
+    .hata-kutu { border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px 14px; margin-bottom: 12px; }
+    .hata-baslik { display: flex; justify-content: space-between; align-items: center; font-weight: 700; margin-bottom: 6px; font-size: 13px; }
+    .pill { font-size: 10px; font-weight: 800; border-radius: 20px; padding: 3px 9px; }
+    .pill.kirmizi { background: #fee2e2; color: #b91c1c; }
+    .pill.yesil { background: #d1fae5; color: #065f46; }
+    .cozum-kutu { background: #ecfdf5; border-left: 3px solid #10b981; border-radius: 4px; padding: 8px 10px; font-size: 12px; margin-top: 6px; }
+    .footer { margin-top: 24px; font-size: 10px; color: #999; border-top: 1px solid #e5e7eb; padding-top: 8px; }
+    @page { margin: 14mm 12mm; }
+    @media print { body { padding: 0; } }
+  </style></head><body>
+  <h1>📋 Günlük Saha Raporu</h1>
+  <div class="meta">🏗 ${proj.name}${proj.location ? ' - ' + proj.location : ''} &nbsp;|&nbsp; 📅 ${tarihStr}${ekip ? ` &nbsp;|&nbsp; 👷 ${ekip.ad}` : ''} &nbsp;|&nbsp; Oluşturma: ${olusturmaStr}</div>
+
+  <div class="stats">
+    <div class="stat-box"><div class="stat-val">${bakimMi ? '🔧' : Number(e.kaziMetre).toLocaleString('tr-TR') + ' m'}</div><div class="stat-lbl">${bakimMi ? 'Bakım/Onarım' : 'Kazıldı'}</div></div>
+    <div class="stat-box"><div class="stat-val">${e.malzemeler?.length || 0}</div><div class="stat-lbl">Malzeme</div></div>
+    <div class="stat-box"><div class="stat-val">${e.hatalar?.length || 0}</div><div class="stat-lbl">Hata</div></div>
+    <div class="stat-box"><div class="stat-val">${e.sahaOnaylari?.length || 0}</div><div class="stat-lbl">Saha Onayı</div></div>
+  </div>
+
+  ${e.notlar ? `<h2>📝 Notlar</h2><div class="p-metin">${e.notlar}</div>` : ''}
+
+  ${malzRows ? `<h2>🧱 Malzemeler</h2><table><tr><th>Malzeme</th><th>Miktar</th></tr>${malzRows}</table>` : ''}
+
+  ${fotoBlok('📷 Fotoğraflar', (e.fotograflar || []).map(f => f.url))}
+
+  ${hataBlok ? `<h2>⚠️ Hatalar</h2>${hataBlok}` : ''}
+
+  ${onayBlok ? `<h2>✅ Saha Onayları</h2>${onayBlok}` : ''}
+
+  <div class="footer">Kazı Takip Uygulaması &nbsp;|&nbsp; ${olusturmaStr} tarihinde oluşturulmuştur</div>
+  </body></html>`;
+
+  const win = window.open('', '_blank');
+  win.document.write(html);
+  win.document.close();
+  setTimeout(() => win.print(), 500);
+  toast('✅ PDF için yazdırma ekranı açıldı! "PDF olarak kaydet" seçin.');
 }
 
 function projeRaporPdf() {
@@ -4488,7 +4667,12 @@ function toggleEntry(id) {
 }
 
 function detayModalKapat() {
-  document.getElementById('detayModal').style.display = 'none';
+  geriGit();
+}
+
+function mentionVurgula(text) {
+  if (!text) return '';
+  return text.replace(/@(\S+)/g, '<span class="detay-mention">@$1</span>');
 }
 
 function toggleDetay(id) {
@@ -4496,63 +4680,113 @@ function toggleDetay(id) {
   const e = proj?.entries.find(x => x.id === id);
   if (!e) return;
 
-  const tarihStr = new Date(e.tarih).toLocaleDateString('tr-TR', {day:'numeric', month:'long', year:'numeric'});
-  const modal = document.getElementById('detayModal');
-  const baslik = document.getElementById('detayModalBaslik');
+  const tarihObj = new Date(e.tarih);
+  const gunAdi = tarihObj.toLocaleDateString('tr-TR', { weekday: 'long' }).toUpperCase();
+  const tarihStr = tarihObj.toLocaleDateString('tr-TR', {day:'numeric', month:'long', year:'numeric'});
+  const bakimMi = Number(e.kaziMetre) === 0;
   const icerik = document.getElementById('detayModalIcerik');
 
-  baslik.textContent = Number(e.kaziMetre) === 0
-    ? `📅 ${tarihStr} — 🔧 Bakım/Onarım Günü`
-    : `📅 ${tarihStr} — ⛏ ${Number(e.kaziMetre).toLocaleString('tr-TR')} m`;
+  document.getElementById('detayGunAdi').textContent = gunAdi;
+  document.getElementById('detayHeaderTarih').textContent = tarihStr;
+  document.getElementById('detayProjeAdi').textContent = `🏗 ${proj.name}${proj.location ? ' · ' + proj.location : ''}`;
+  const statEl = document.getElementById('detayHeaderStat');
+  const statLblEl = document.getElementById('detayHeaderStatLbl');
+  statEl.textContent = bakimMi ? '🔧' : Number(e.kaziMetre).toLocaleString('tr-TR') + ' m';
+  statLblEl.textContent = bakimMi ? 'Bakım/Onarım' : 'Kazıldı';
+  document.getElementById('detayHeaderStatWrap').className = 'detay-header-stat' + (bakimMi ? ' bakim' : '');
+
+  const hataSayisi = e.hatalar?.length || 0;
+  const onaySayisi = e.sahaOnaylari?.length || 0;
+  const fotoSayisi = (e.fotograflar?.length || 0) + (e.hatalar || []).reduce((s,h) => s + (h.gorseller?.length||0), 0) + (e.sahaOnaylari || []).reduce((s,o) => s + (o.gorseller?.length||0), 0);
+  const chips = [];
+  if (e.malzemeler?.length > 0) chips.push(`<span class="detay-chip">🧱 <b>${e.malzemeler.length}</b> malzeme</span>`);
+  if (fotoSayisi > 0) chips.push(`<span class="detay-chip">📷 <b>${fotoSayisi}</b> fotoğraf</span>`);
+  if (hataSayisi > 0) chips.push(`<span class="detay-chip">⚠️ <b style="color:#fca5a5">${hataSayisi}</b> hata</span>`);
+  if (onaySayisi > 0) chips.push(`<span class="detay-chip">✅ <b style="color:#10b981">${onaySayisi}</b> onay</span>`);
+  if (e.kmz) chips.push(`<span class="detay-chip">📁 KMZ</span>`);
+  if (e.ekipId && data.teams.find(t => t.id === e.ekipId)) chips.push(`<span class="detay-chip">👷 <b>${data.teams.find(t => t.id === e.ekipId).ad}</b></span>`);
+  const chipRow = document.getElementById('detayChipRow');
+  chipRow.innerHTML = chips.join('');
+  chipRow.style.display = chips.length > 0 ? 'flex' : 'none';
+
+  // Hata + onay kayıtlarını tek zaman çizelgesinde birleştir
+  const tlItems = [
+    ...(e.hatalar || []).map(h => ({ tip: 'hata', veri: h })),
+    ...(e.sahaOnaylari || []).map(o => ({ tip: 'onay', veri: o }))
+  ];
 
   icerik.innerHTML = `
-    ${e.notlar ? `<div style="background:rgba(255,255,255,0.04);border-radius:8px;padding:12px;margin-bottom:12px;font-size:14px;color:var(--text);white-space:pre-wrap;line-height:1.6">📝 ${e.notlar}</div>` : ''}
+    ${e.notlar ? `<div class="detay-metin" style="padding-top:16px">📝 ${mentionVurgula(e.notlar)}</div>` : ''}
     ${e.malzemeler?.length > 0 ? `
-      <div style="margin-bottom:12px">
-        <div style="font-size:11px;font-weight:700;color:var(--blue);letter-spacing:1px;margin-bottom:8px">🧱 MALZEMELER</div>
-        ${e.malzemeler.map(m => `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px"><span>${m.name}</span><span style="font-weight:700;color:var(--text)">${m.miktar} ${m.birim}</span></div>`).join('')}
-      </div>` : ''}
+      <div class="detay-sec-label">🧱 Malzemeler</div>
+      ${e.malzemeler.map(m => `<div class="detay-malzeme-row"><span>${m.name}</span><span>${m.miktar} ${m.birim}</span></div>`).join('')}` : ''}
     ${e.fotograflar?.length > 0 ? `
-      <div style="margin-bottom:12px">
-        <div style="font-size:11px;font-weight:700;color:#10b981;letter-spacing:1px;margin-bottom:8px">📷 FOTOĞRAFLAR (${e.fotograflar.length})</div>
-        <div style="display:flex;flex-wrap:wrap;gap:8px">
-          ${e.fotograflar.map(f => `<div style="position:relative"><img src="${f.url}" onclick="fotoGoster('${f.url}')" loading="lazy" style="width:90px;height:90px;object-fit:cover;border-radius:8px;border:2px solid #10b981;cursor:pointer"/></div>`).join('')}
-        </div>
+      <div class="detay-sec-label">📷 Fotoğraflar (${e.fotograflar.length})</div>
+      <div class="detay-foto-grid">
+        ${e.fotograflar.map(f => `<img src="${f.url}" onclick="fotoGoster('${f.url}')" loading="lazy" class="detay-foto-thumb"/>`).join('')}
       </div>` : ''}
     ${e.kmz ? `
-      <div style="display:flex;align-items:center;gap:8px;background:rgba(139,92,246,0.1);border:1px solid #8b5cf6;border-radius:8px;padding:10px 12px;margin-bottom:12px">
-        <span style="font-size:18px">📁</span>
+      <div class="detay-sec-label">📁 Dosya</div>
+      <div style="display:flex;align-items:center;gap:8px">
         <span style="color:var(--text);font-size:13px;flex:1">${e.kmz.name}</span>
-        <button onclick="window.open('${e.kmz.url}','_blank');toast('📥 KMZ indiriliyor...')" style="color:#a78bfa;background:none;font-size:12px;border:1px solid #8b5cf6;border-radius:6px;padding:4px 8px;cursor:pointer">⬇</button>
+        <button onclick="window.open('${e.kmz.url}','_blank');toast('📥 KMZ indiriliyor...')" style="color:var(--sub);background:none;font-size:12px;border:1px solid var(--border);border-radius:6px;padding:5px 10px;cursor:pointer">İndir ⬇</button>
       </div>` : ''}
-    ${(e.hatalar?.length > 0 || e.hata?.var) ? `
-      <div style="margin-bottom:12px">
-        <div style="font-size:11px;font-weight:700;color:#fca5a5;letter-spacing:1px;margin-bottom:8px">⚠️ HATALAR ${e.hatalar?.length > 0 ? '('+e.hatalar.length+')' : ''}</div>
-        ${(e.hatalar||[]).map((h,i) => `
-          <div style="background:rgba(239,68,68,0.08);border-left:3px solid var(--red);border-radius:0 8px 8px 0;padding:10px 12px;margin-bottom:8px">
-            <div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:4px">#${i+1} ${h.giderildi ? `<span class="giderildi-badge">✅ Giderildi</span>` : ''}</div>
-            ${h.turler?.length > 0 ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px">${h.turler.map(t=>`<span class="hata-tag">${t}</span>`).join('')}</div>` : ''}
-            ${h.aciklama ? `<div style="color:#fca5a5;font-size:13px;white-space:pre-wrap;margin-bottom:6px">${h.aciklama}</div>` : ''}
-            ${h.gorseller?.length > 0 ? `<div style="display:flex;flex-wrap:wrap;gap:6px">${h.gorseller.map(g=>`<img src="${g.url}" onclick="fotoGoster('${g.url}')" loading="lazy" style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:2px solid var(--red);cursor:pointer"/>`).join('')}</div>` : ''}
-            ${h.giderildi && h.giderilmeNotu ? `<div style="margin-top:6px;padding:6px 8px;background:rgba(16,185,129,0.06);border-left:3px solid #10b981;border-radius:4px;font-size:12px;color:var(--text);white-space:pre-wrap">✅ ${h.giderilmeNotu}</div>` : ''}
-          </div>`).join('')}
+    ${tlItems.length > 0 ? `
+      <div class="detay-sec-label">📋 Saha Kayıtları (${tlItems.length})</div>
+      <div class="detay-timeline">
+        ${tlItems.map(item => {
+          if (item.tip === 'hata') {
+            const h = item.veri;
+            const saat = h.tarih ? new Date(h.tarih).toLocaleTimeString('tr-TR', {hour:'2-digit', minute:'2-digit'}) : '';
+            return `<div class="detay-tl-item">
+              <span class="detay-tl-dot hata">⚠</span>
+              <div class="detay-tl-card">
+                <div class="detay-tl-top">
+                  <span class="detay-tl-etiket">${h.turler?.length > 0 ? h.turler[0] : 'Hata'}</span>
+                  ${h.turler?.length > 1 ? h.turler.slice(1).map(t => `<span class="detay-tl-tag">${t}</span>`).join('') : ''}
+                  ${saat ? `<span class="detay-tl-tarih">${saat}</span>` : ''}
+                </div>
+                ${h.aciklama ? `<div class="detay-metin">${mentionVurgula(h.aciklama)}</div>` : ''}
+                ${h.gorseller?.length > 0 ? `<div class="detay-foto-grid">${h.gorseller.map(g=>`<img src="${g.url}" onclick="fotoGoster('${g.url}')" loading="lazy" class="detay-foto-thumb"/>`).join('')}</div>` : ''}
+                <div style="display:flex;margin-top:9px">
+                  <span class="detay-tl-pill ${h.giderildi ? 'cozuldu' : 'acik'}">${h.giderildi ? '✓ Giderildi' : '● Açık'}</span>
+                </div>
+                ${h.giderildi && h.giderilmeNotu ? `<div class="detay-tl-cozum">
+                  <span class="detay-tl-cozum-ikon">↳</span>
+                  <div class="detay-tl-cozum-metin">
+                    <div class="detay-tl-cozum-baslik">Çözüm notu</div>
+                    <div class="detay-metin">${mentionVurgula(h.giderilmeNotu)}</div>
+                  </div>
+                </div>` : ''}
+              </div>
+            </div>`;
+          } else {
+            const o = item.veri;
+            const saat = o.tarih ? new Date(o.tarih).toLocaleTimeString('tr-TR', {hour:'2-digit', minute:'2-digit'}) : '';
+            return `<div class="detay-tl-item">
+              <span class="detay-tl-dot onay">✓</span>
+              <div class="detay-tl-card">
+                <div class="detay-tl-top">
+                  <span class="detay-tl-etiket">Saha Onayı</span>
+                  ${saat ? `<span class="detay-tl-tarih">${saat}</span>` : ''}
+                </div>
+                ${o.aciklama ? `<div class="detay-metin">${mentionVurgula(o.aciklama)}</div>` : ''}
+                ${o.gorseller?.length > 0 ? `<div class="detay-foto-grid">${o.gorseller.map(g=>`<img src="${g.url}" onclick="fotoGoster('${g.url}')" loading="lazy" class="detay-foto-thumb"/>`).join('')}</div>` : ''}
+                <div style="display:flex;margin-top:9px">
+                  <span class="detay-tl-pill cozuldu">✓ Onaylandı</span>
+                </div>
+              </div>
+            </div>`;
+          }
+        }).join('')}
       </div>` : ''}
-    ${e.sahaOnaylari?.length > 0 ? `
-      <div style="margin-bottom:12px">
-        <div style="font-size:11px;font-weight:700;color:#67e8f9;letter-spacing:1px;margin-bottom:8px">✅ SAHA ONAYI (${e.sahaOnaylari.length})</div>
-        ${e.sahaOnaylari.map((o,i) => `
-          <div style="background:rgba(6,182,212,0.08);border-left:3px solid #06b6d4;border-radius:0 8px 8px 0;padding:10px 12px;margin-bottom:8px">
-            <div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:4px">#${i+1} ${o.tarih ? new Date(o.tarih).toLocaleDateString('tr-TR') : ''}</div>
-            ${o.aciklama ? `<div style="color:#67e8f9;font-size:13px;white-space:pre-wrap;margin-bottom:6px">${o.aciklama}</div>` : ''}
-            ${o.gorseller?.length > 0 ? `<div style="display:flex;flex-wrap:wrap;gap:6px">${o.gorseller.map(g=>`<img src="${g.url}" onclick="fotoGoster('${g.url}')" loading="lazy" style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:2px solid #06b6d4;cursor:pointer"/>`).join('')}</div>` : ''}
-          </div>`).join('')}
-      </div>` : ''}
-    <div style="display:flex;gap:8px;margin-top:8px">
-      <button onclick="gunlukRaporPaylas('${e.id}');detayModalKapat()" style="flex:1;background:rgba(16,185,129,0.1);border:1px solid #064e3b;color:#10b981;border-radius:8px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">📤 Paylaş</button>
-      ${proj.bitti !== true ? `<button onclick="startEdit('${e.id}');detayModalKapat()" style="flex:1;background:rgba(59,130,246,0.1);border:1px solid var(--blue);color:var(--blue);border-radius:8px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">✏️ Düzenle</button>` : ''}
+    <div style="display:flex;gap:8px;margin-top:20px;flex-wrap:wrap">
+      <button onclick="gunlukRaporPaylas('${e.id}')" style="flex:1;min-width:100px;background:none;border:1px solid var(--border);color:var(--text);border-radius:9px;padding:11px 6px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit">📤 Paylaş</button>
+      <button onclick="gunlukRaporPdf('${e.id}')" style="flex:1;min-width:100px;background:rgba(239,68,68,0.1);border:1px solid var(--red);color:var(--red);border-radius:9px;padding:11px 6px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit">📄 PDF</button>
+      ${proj.bitti !== true ? `<button onclick="startEdit('${e.id}')" style="flex:1;min-width:100px;background:var(--yellow);border:none;color:#0f172a;border-radius:9px;padding:11px 6px;font-size:12.5px;font-weight:800;cursor:pointer;font-family:inherit">✏️ Düzenle</button>` : ''}
     </div>`;
 
-  modal.style.display = 'block';
+  showView('detay');
 }
 // ─── RAPOR ───────────────────────────────────────────────
 function renderRapor() {
