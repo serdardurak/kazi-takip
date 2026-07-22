@@ -702,6 +702,23 @@
         <select id="fEkip">
           <option value="">Ekip seçilmedi</option>
         </select>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px">
+          <label class="field-label" style="margin:0">DENETİMCİLER (opsiyonel)</label>
+          <button type="button" onclick="denetimciYonetimAc()" style="flex-shrink:0;display:flex;align-items:center;gap:5px;background:rgba(6,182,212,0.15);border:1.5px solid #06b6d4;color:#67e8f9;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;padding:7px 12px;border-radius:20px">🕵️ Denetimcileri Yönet</button>
+        </div>
+        <div id="fDenetimciSeciliListe" style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px"></div>
+        <div style="display:flex;gap:6px">
+          <select id="fDenetimciVakit" style="flex:0 0 122px">
+            <option value="tumgun">Tüm Gün</option>
+            <option value="sabah">🌅 Sabah</option>
+            <option value="ogle">🌇 Öğleden Sonra</option>
+          </select>
+          <select id="fDenetimciEkle" style="flex:1">
+            <option value="">Denetimci seçin...</option>
+          </select>
+          <button type="button" onclick="formDenetimciSatirEkle()" style="flex-shrink:0;width:40px;background:rgba(6,182,212,0.15);border:1.5px solid #06b6d4;color:#67e8f9;border-radius:8px;font-size:18px;font-weight:800;cursor:pointer;font-family:inherit">+</button>
+        </div>
+        <div style="font-size:10px;color:var(--muted);margin-top:5px">Aynı firmadan sabah ve öğleden sonra farklı denetmen geldiyse ikisini de vakit etiketiyle ekleyebilirsiniz.</div>
         <label class="field-label" id="fNotlarLabel">NOTLAR</label>
         <textarea id="fNotlar" placeholder="Günlük notlar..." style="height:56px"></textarea>
         <button class="btn-primary" id="saveBtn" onclick="handleSave()" style="font-size:15px;padding:14px;margin-top:10px">
@@ -841,6 +858,11 @@
           <option value="">Tüm Ekipler</option>
           <option value="__bos__">Ekip Atanmamış</option>
         </select>
+        <label class="field-label">🕵️ DENETİMCİYE GÖRE FİLTRELE</label>
+        <select id="aylikRaporDenetimciFiltre" onchange="renderAylikRapor()">
+          <option value="">Tüm Denetimciler</option>
+          <option value="__bos__">Denetimci Atanmamış</option>
+        </select>
       </div>
 
 
@@ -891,10 +913,18 @@
         </table>
       </div>
 
+      <div class="card" id="aylikDenetimciOzetCard" style="display:none">
+        <div class="card-title">🕵️ Denetimcilere Göre Toplam</div>
+        <table class="tbl">
+          <thead><tr><th>Denetimci</th><th>Toplam</th><th>Kayıt</th></tr></thead>
+          <tbody id="aylikDenetimciOzetBody"></tbody>
+        </table>
+      </div>
+
       <div class="card">
         <div class="card-title">📋 Kazı Detayları</div>
         <table class="tbl">
-          <thead><tr><th>Tarih</th><th>Proje</th><th>Ekip</th><th>Kazı (m)</th></tr></thead>
+          <thead><tr><th>Tarih</th><th>Proje</th><th>Ekip</th><th>Denetimci</th><th>Kazı (m)</th></tr></thead>
           <tbody id="aylikRaporBody"></tbody>
         </table>
         <div id="aylikRaporBos" style="display:none;padding:20px 0;text-align:center;color:var(--muted);font-size:13px">Bu ayda kayıt bulunamadı.</div>
@@ -1311,6 +1341,24 @@
   </div>
 </div>
 
+<div id="denetimciYonetimModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:450;align-items:center;justify-content:center">
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;margin:16px;max-width:400px;width:100%;max-height:80vh;display:flex;flex-direction:column">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--border)">
+      <span style="font-size:15px;font-weight:700;color:#67e8f9">🕵️ Denetimciler</span>
+      <button onclick="document.getElementById('denetimciYonetimModal').style.display='none'" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;line-height:1">✕</button>
+    </div>
+    <div style="padding:16px 18px;overflow-y:auto">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Günlük kazıyı denetleyen kişiyi, kurum/firma bilgisiyle birlikte buradan tanımlayın. Bu kişi Saha Ekibi'nden farklıdır — kazıyı denetleyen dış kurum/kişidir.</div>
+      <input type="text" id="denetimciAdInput" placeholder="Denetimci adı - örn: Ali Yılmaz" style="margin-bottom:8px" onkeydown="if(event.key==='Enter')document.getElementById('denetimciKurumInput').focus()" />
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <input type="text" id="denetimciKurumInput" placeholder="Kurum / Firma - örn: Belediye Fen İşleri" style="flex:1" onkeydown="if(event.key==='Enter')denetimciEkle()" />
+        <button onclick="denetimciEkle()" style="background:#06b6d4;color:#fff;border:none;border-radius:8px;padding:0 18px;font-size:20px;font-weight:700;cursor:pointer;font-family:inherit">+</button>
+      </div>
+      <div id="denetimciListesi"></div>
+    </div>
+  </div>
+</div>
+
 <div id="raporOnizlemeModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:450;align-items:center;justify-content:center">
   <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;margin:16px;max-width:400px;width:100%;max-height:85vh;display:flex;flex-direction:column">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--border)">
@@ -1343,6 +1391,21 @@
       <button onclick="document.getElementById('raporOnizlemeModal').style.display='none'" style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--sub);border-radius:8px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">✕ Kapat</button>
       <button id="raporOnizlemePdfBtn" onclick="giderRaporPdf()" style="display:none;flex:1.3;background:rgba(239,68,68,0.12);border:1.5px solid var(--red);color:var(--red);border-radius:8px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">📄 PDF</button>
       <button onclick="raporOnizlemePaylas()" style="flex:1.7;background:#10b981;border:none;color:white;border-radius:8px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">📤 Paylaş</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROJE DETAY MODALI -->
+<div id="projeDetayModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:450;align-items:center;justify-content:center">
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;margin:16px;max-width:400px;width:100%;max-height:85vh;display:flex;flex-direction:column">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--border)">
+      <span style="font-size:15px;font-weight:700;color:var(--yellow)">🏗 Proje Detayı</span>
+      <button onclick="document.getElementById('projeDetayModal').style.display='none'" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;line-height:1">✕</button>
+    </div>
+    <div id="projeDetayIcerik" style="padding:14px 18px;overflow-y:auto;flex:1;font-size:13px;color:var(--text);line-height:1.4"></div>
+    <div style="padding:12px 18px;border-top:1px solid var(--border);display:flex;gap:8px">
+      <button onclick="document.getElementById('projeDetayModal').style.display='none'" style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--sub);border-radius:8px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">✕ Kapat</button>
+      <button id="projeDetayAktifBtn" style="flex:1.6;background:var(--yellow);border:none;color:#0f172a;border-radius:8px;padding:10px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit">🔄 Bu Projeyi Aktif Yap</button>
     </div>
   </div>
 </div>
@@ -1439,6 +1502,7 @@ sb.auth.onAuthStateChange((event, session) => {
     if (navEl)    navEl.style.display    = 'flex';
     if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED') {
       loadTeams();
+      loadDenetimciler();
       loadProjects().then(async () => {
         const ids = data.projects.map(p => p.id);
         if (!data.activeProjectId || !ids.includes(data.activeProjectId)) {
@@ -1457,7 +1521,7 @@ sb.auth.onAuthStateChange((event, session) => {
 });
 
 // ─── DATA ────────────────────────────────────────────────
-let data = { projects: [], deletedProjects: [], teams: [], activeProjectId: localStorage.getItem('aktifProje') || null };
+let data = { projects: [], deletedProjects: [], teams: [], denetimciler: [], activeProjectId: localStorage.getItem('aktifProje') || null };
 let editingId = null;
 let tempMalzemeler = [];
 let tempHataTurler = [];
@@ -1466,6 +1530,10 @@ let tempOnaylar = [];
 let tempOnayGorseller = [];
 let _onayDuzenleIdx = null;
 let _sahaOnaylariDesteklenmiyor = false;
+let _denetimciDesteklenmiyor = false;
+let _denetimSecimleriDesteklenmiyor = false;
+let formDenetimSecimleri = []; // [{id, vakit}] - forma o an eklenmiş denetimciler
+const VAKIT_ETIKETLERI = { sabah: '🌅 Sabah', ogle: '🌇 Öğleden Sonra', tumgun: '' };
 let tempHatalar = [];
 let tempFotograflar = [];
 let tempKmz = null;
@@ -1488,6 +1556,7 @@ function resetForm() {
   if (banner) banner.style.display = 'none';
   window._lastSavedEntryId = null;
   _hataduzenleIdx = null;
+  formDenetimSecimleri = [];
   const fBakimReset = document.getElementById('fBakim');
   if (fBakimReset) { fBakimReset.checked = false; }
   if (typeof bakimToggle === 'function') bakimToggle();
@@ -1496,6 +1565,8 @@ function resetForm() {
   if (typeof resetDosyaForm === 'function') resetDosyaForm();
   if (typeof renderEkipSelect === 'function') renderEkipSelect();
   if (typeof data !== 'undefined' && data.teams && data.teams.length === 0 && typeof loadTeams === 'function') loadTeams();
+  if (typeof renderDenetimciSelect === 'function') renderDenetimciSelect();
+  if (typeof data !== 'undefined' && data.denetimciler && data.denetimciler.length === 0 && typeof loadDenetimciler === 'function') loadDenetimciler();
 }
 
 function resetDosyaForm() {
@@ -1632,14 +1703,27 @@ async function saveEntry() {
   try {
   showLoading('Kaydediliyor...');
   const ekipId = document.getElementById('fEkip')?.value || null;
-  let { data: inserted, error } = await sb.from('kayitlar').insert({
+  const denetimciId = formDenetimSecimleri[0]?.id || null;
+  const insertObj = {
     proje_id: proj.id, tarih, kazi_metre: metre, ekip_id: ekipId, malzemeler: [], notlar, hata: { var: false }, hatalar: [], fotograflar: [], kmz: null, saha_onaylari: []
-  }).select().single();
+  };
+  if (!_denetimciDesteklenmiyor) insertObj.denetimci_id = denetimciId;
+  if (!_denetimSecimleriDesteklenmiyor) insertObj.denetim_secimleri = formDenetimSecimleri;
+  let { data: inserted, error } = await sb.from('kayitlar').insert(insertObj).select().single();
   if (error && error.message && error.message.includes('saha_onaylari')) {
     _sahaOnaylariDesteklenmiyor = true;
-    ({ data: inserted, error } = await sb.from('kayitlar').insert({
-      proje_id: proj.id, tarih, kazi_metre: metre, ekip_id: ekipId, malzemeler: [], notlar, hata: { var: false }, hatalar: [], fotograflar: [], kmz: null
-    }).select().single());
+    delete insertObj.saha_onaylari;
+    ({ data: inserted, error } = await sb.from('kayitlar').insert(insertObj).select().single());
+  }
+  if (error && error.message && error.message.includes('denetim_secimleri')) {
+    _denetimSecimleriDesteklenmiyor = true;
+    delete insertObj.denetim_secimleri;
+    ({ data: inserted, error } = await sb.from('kayitlar').insert(insertObj).select().single());
+  }
+  if (error && error.message && error.message.includes('denetimci_id')) {
+    _denetimciDesteklenmiyor = true;
+    delete insertObj.denetimci_id;
+    ({ data: inserted, error } = await sb.from('kayitlar').insert(insertObj).select().single());
   }
   if (error) { hideLoading(); islemBildir('Kayıt eklenemedi: ' + error.message, null, true); return; }
   if (tempFotograflar.length > 0 || tempKmz) {
@@ -1663,6 +1747,8 @@ async function saveEntry() {
   if (fNotlar) fNotlar.value = '';
   const fEkipReset = document.getElementById('fEkip');
   if (fEkipReset) fEkipReset.value = '';
+  formDenetimSecimleri = [];
+  renderFormDenetimciListe();
   const fBakimReset = document.getElementById('fBakim');
   if (fBakimReset) { fBakimReset.checked = false; bakimToggle(); }
   toast('✅ Kazı kaydı eklendi!');
@@ -1685,9 +1771,23 @@ async function updateEntry() {
   const tumFotograflar = [...(mevcutKayit?.fotograflar || []), ...dosyaUrls.fotograflar];
   const tumKmz = dosyaUrls.kmz || mevcutKayit?.kmz || null;
   const ekipId = document.getElementById('fEkip')?.value || null;
-  const { error } = await sb.from('kayitlar').update({
+  const denetimciId = formDenetimSecimleri[0]?.id || null;
+  const updateObj = {
     tarih, kazi_metre: metre, ekip_id: ekipId, malzemeler: tempMalzemeler, notlar, fotograflar: tumFotograflar, kmz: tumKmz
-  }).eq('id', editingId);
+  };
+  if (!_denetimciDesteklenmiyor) updateObj.denetimci_id = denetimciId;
+  if (!_denetimSecimleriDesteklenmiyor) updateObj.denetim_secimleri = formDenetimSecimleri;
+  let { error } = await sb.from('kayitlar').update(updateObj).eq('id', editingId);
+  if (error && error.message && error.message.includes('denetim_secimleri')) {
+    _denetimSecimleriDesteklenmiyor = true;
+    delete updateObj.denetim_secimleri;
+    ({ error } = await sb.from('kayitlar').update(updateObj).eq('id', editingId));
+  }
+  if (error && error.message && error.message.includes('denetimci_id')) {
+    _denetimciDesteklenmiyor = true;
+    delete updateObj.denetimci_id;
+    ({ error } = await sb.from('kayitlar').update(updateObj).eq('id', editingId));
+  }
   hideLoading();
   if (error) { islemBildir('Güncelleme hatası: ' + error.message, null, true); return; }
   editingId = null;
@@ -2023,14 +2123,29 @@ async function startEdit(id) {
   let entry = proj.entries.find(e => e.id === id);
   if (!entry) {
     showLoading('Yükleniyor...');
-    let { data, error } = await sb.from('kayitlar').select('id, tarih, kazi_metre, ekip_id, notlar, malzemeler, hatalar, hata, fotograflar, kmz, saha_onaylari').eq('id', id).single();
+    const kolonlarTek = () => {
+      let k = 'id, tarih, kazi_metre, ekip_id, notlar, malzemeler, hatalar, hata, fotograflar, kmz';
+      if (!_sahaOnaylariDesteklenmiyor) k += ', saha_onaylari';
+      if (!_denetimciDesteklenmiyor) k += ', denetimci_id';
+      if (!_denetimSecimleriDesteklenmiyor) k += ', denetim_secimleri';
+      return k;
+    };
+    let { data, error } = await sb.from('kayitlar').select(kolonlarTek()).eq('id', id).single();
     if (error && error.message && error.message.includes('saha_onaylari')) {
       _sahaOnaylariDesteklenmiyor = true;
-      ({ data, error } = await sb.from('kayitlar').select('id, tarih, kazi_metre, ekip_id, notlar, malzemeler, hatalar, hata, fotograflar, kmz').eq('id', id).single());
+      ({ data, error } = await sb.from('kayitlar').select(kolonlarTek()).eq('id', id).single());
+    }
+    if (error && error.message && error.message.includes('denetim_secimleri')) {
+      _denetimSecimleriDesteklenmiyor = true;
+      ({ data, error } = await sb.from('kayitlar').select(kolonlarTek()).eq('id', id).single());
+    }
+    if (error && error.message && error.message.includes('denetimci_id')) {
+      _denetimciDesteklenmiyor = true;
+      ({ data, error } = await sb.from('kayitlar').select(kolonlarTek()).eq('id', id).single());
     }
     hideLoading();
     if (!data) { islemBildir('Kayıt bulunamadı!', null, true); return; }
-    entry = { id: data.id, tarih: data.tarih, kaziMetre: parseFloat(data.kazi_metre), ekipId: data.ekip_id || null, malzemeler: data.malzemeler || [], notlar: data.notlar || '', hatalar: data.hatalar || [], fotograflar: data.fotograflar || [], kmz: data.kmz || null, sahaOnaylari: data.saha_onaylari || [] };
+    entry = { id: data.id, tarih: data.tarih, kaziMetre: parseFloat(data.kazi_metre), ekipId: data.ekip_id || null, denetimciId: data.denetimci_id || null, denetimSecimleri: data.denetim_secimleri || [], malzemeler: data.malzemeler || [], notlar: data.notlar || '', hatalar: data.hatalar || [], fotograflar: data.fotograflar || [], kmz: data.kmz || null, sahaOnaylari: data.saha_onaylari || [] };
   }
 
   editingId = id;
@@ -2048,6 +2163,9 @@ async function startEdit(id) {
   if (data.teams.length === 0) loadTeams();
   const fEkipEl = document.getElementById('fEkip');
   if (fEkipEl) fEkipEl.value = entry.ekipId || '';
+  formDenetimSecimleri = denetimSecimleriNormalize(entry.denetimSecimleri, entry.denetimciId).map(s => ({ ...s }));
+  renderDenetimciSelect();
+  if (data.denetimciler.length === 0) loadDenetimciler();
 
   const fotoDiv = document.getElementById('fotografOnizleme');
   fotoDiv.innerHTML = entry.fotograflar?.length > 0 ? entry.fotograflar.map((f, i) => `
@@ -2478,6 +2596,7 @@ function gunlukRaporPdf(entryId) {
   const tarihStr = tarihObj.toLocaleDateString('tr-TR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
   const olusturmaStr = new Date().toLocaleDateString('tr-TR');
   const ekip = e.ekipId ? data.teams.find(t => t.id === e.ekipId) : null;
+  const denetimciListesi = denetimciGorunumleri(e);
 
   const malzRows = (e.malzemeler || []).map(m => `<tr><td>${m.name}</td><td style="font-weight:700">${m.miktar} ${m.birim}</td></tr>`).join('') || '';
 
@@ -2538,7 +2657,7 @@ function gunlukRaporPdf(entryId) {
     @media print { body { padding: 0; } }
   </style></head><body>
   <h1>📋 Günlük Saha Raporu</h1>
-  <div class="meta">🏗 ${proj.name}${proj.location ? ' - ' + proj.location : ''} &nbsp;|&nbsp; 📅 ${tarihStr}${ekip ? ` &nbsp;|&nbsp; 👷 ${ekip.ad}` : ''} &nbsp;|&nbsp; Oluşturma: ${olusturmaStr}</div>
+  <div class="meta">🏗 ${proj.name}${proj.location ? ' - ' + proj.location : ''} &nbsp;|&nbsp; 📅 ${tarihStr}${ekip ? ` &nbsp;|&nbsp; 👷 ${ekip.ad}` : ''}${denetimciListesi.length > 0 ? ` &nbsp;|&nbsp; 🕵️ ${denetimciListesi.map(d => `${d.vakitEtiket ? d.vakitEtiket + ' ' : ''}${d.ad}${d.kurum ? ' (' + d.kurum + ')' : ''}`).join(', ')}` : ''} &nbsp;|&nbsp; Oluşturma: ${olusturmaStr}</div>
 
   <div class="stats">
     <div class="stat-box"><div class="stat-val">${bakimMi ? '🔧' : Number(e.kaziMetre).toLocaleString('tr-TR') + ' m'}</div><div class="stat-lbl">${bakimMi ? 'Bakım/Onarım' : 'Kazıldı'}</div></div>
@@ -3351,10 +3470,12 @@ async function verileriExcelYedekle() {
 
   showLoading('Excel hazırlanıyor...');
   try {
-    const [projelerRes, kayitlarRes, giderlerRes] = await Promise.all([
+    const [projelerRes, kayitlarRes, giderlerRes, ekiplerRes, denetimcilerRes] = await Promise.all([
       sb.from('projeler').select('*'),
       sb.from('kayitlar').select('*'),
-      sb.from('giderler').select('*')
+      sb.from('giderler').select('*'),
+      sb.from('ekipler').select('*'),
+      sb.from('denetimciler').select('*')
     ]);
 
     const wb = XLSX.utils.book_new();
@@ -3369,13 +3490,30 @@ async function verileriExcelYedekle() {
     // Kayıtlar sayfası
     const projMap = {};
     (projelerRes.data||[]).forEach(p => projMap[p.id] = p.ad);
+    const ekipMap = {};
+    (ekiplerRes.data||[]).forEach(t => ekipMap[t.id] = t.ad);
+    const denetimciMap = {};
+    (denetimcilerRes.data||[]).forEach(d => denetimciMap[d.id] = d.ad + (d.kurum ? ' (' + d.kurum + ')' : ''));
     const kayitData = (kayitlarRes.data||[]).map(k => ({
-      'Proje': projMap[k.proje_id]||'', 'Tarih': k.tarih, 'Kazı Metre': k.kazi_metre,
+      'Proje': projMap[k.proje_id]||'', 'Tarih': k.tarih, 'Ekip': k.ekip_id ? (ekipMap[k.ekip_id]||'') : '',
+      'Denetimci': denetimciRowMetni(k, denetimciMap), 'Kazı Metre': k.kazi_metre,
       'Notlar': k.notlar||'', 'Malzeme Sayısı': (k.malzemeler||[]).length,
       'Hata Sayısı': (k.hatalar||[]).length, 'Fotoğraf Sayısı': (k.fotograflar||[]).length,
       'KMZ': k.kmz?.name || ''
     }));
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(kayitData), '📋 Kayıtlar');
+
+    // Ekipler sayfası
+    if ((ekiplerRes.data||[]).length > 0) {
+      const ekipData = ekiplerRes.data.map(t => ({ 'Ekip Adı': t.ad }));
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(ekipData), '👷 Ekipler');
+    }
+
+    // Denetimciler sayfası
+    if ((denetimcilerRes.data||[]).length > 0) {
+      const denetimciData = denetimcilerRes.data.map(d => ({ 'Denetimci Adı': d.ad, 'Kurum / Firma': d.kurum||'' }));
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(denetimciData), '🕵️ Denetimciler');
+    }
 
     // Giderler sayfası
     const giderData = (giderlerRes.data||[]).map(g => ({
@@ -3399,17 +3537,20 @@ async function verileriExcelYedekle() {
 async function verileriPdfYedekle() {
   showLoading('PDF hazırlanıyor...');
   try {
-    const [projelerRes, kayitlarRes, giderlerRes, ekiplerRes] = await Promise.all([
+    const [projelerRes, kayitlarRes, giderlerRes, ekiplerRes, denetimcilerRes] = await Promise.all([
       sb.from('projeler').select('*'),
       sb.from('kayitlar').select('*'),
       sb.from('giderler').select('*'),
-      sb.from('ekipler').select('*')
+      sb.from('ekipler').select('*'),
+      sb.from('denetimciler').select('*')
     ]);
 
     const projMap = {};
     (projelerRes.data||[]).forEach(p => projMap[p.id] = p.ad);
     const ekipMap = {};
     (ekiplerRes.data||[]).forEach(t => ekipMap[t.id] = t.ad);
+    const denetimciMap = {};
+    (denetimcilerRes.data||[]).forEach(d => denetimciMap[d.id] = d.ad + (d.kurum ? ' (' + d.kurum + ')' : ''));
 
     const tarihStr = new Date().toLocaleDateString('tr-TR');
     let html = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>
@@ -3439,6 +3580,7 @@ async function verileriPdfYedekle() {
       <div><div class="v">${(kayitlarRes.data||[]).length}</div>Kayıt</div>
       <div><div class="v">${Math.round(toplamKazi).toLocaleString('tr-TR')} m</div>Toplam Kazı</div>
       <div><div class="v">${(ekiplerRes.data||[]).length}</div>Ekip</div>
+      <div><div class="v">${(denetimcilerRes.data||[]).length}</div>Denetimci</div>
       <div><div class="v">${Math.round(toplamGider).toLocaleString('tr-TR')} ₺</div>Toplam Gider</div>
     </div>`;
 
@@ -3450,9 +3592,9 @@ async function verileriPdfYedekle() {
     html += `</table>`;
 
     // Kayıtlar
-    html += `<h2>📋 Kayıtlar (${(kayitlarRes.data||[]).length})</h2><table><tr><th>Proje</th><th>Tarih</th><th>Ekip</th><th>Metre</th><th>Notlar</th></tr>`;
+    html += `<h2>📋 Kayıtlar (${(kayitlarRes.data||[]).length})</h2><table><tr><th>Proje</th><th>Tarih</th><th>Ekip</th><th>Denetimci</th><th>Metre</th><th>Notlar</th></tr>`;
     (kayitlarRes.data||[]).sort((a,b)=>a.tarih.localeCompare(b.tarih)).forEach(k => {
-      html += `<tr><td>${projMap[k.proje_id]||'-'}</td><td>${new Date(k.tarih).toLocaleDateString('tr-TR')}</td><td>${k.ekip_id ? (ekipMap[k.ekip_id]||'-') : '-'}</td><td>${k.kazi_metre} m</td><td>${(k.notlar||'').substring(0,60)}</td></tr>`;
+      html += `<tr><td>${projMap[k.proje_id]||'-'}</td><td>${new Date(k.tarih).toLocaleDateString('tr-TR')}</td><td>${k.ekip_id ? (ekipMap[k.ekip_id]||'-') : '-'}</td><td>${denetimciRowMetni(k, denetimciMap) || '-'}</td><td>${k.kazi_metre} m</td><td>${(k.notlar||'').substring(0,60)}</td></tr>`;
     });
     html += `</table>`;
 
@@ -3486,6 +3628,44 @@ async function verileriPdfYedekle() {
     if (ekipStats['__bos__']) {
       const s = ekipStats['__bos__'];
       html += `<h2 style="background:#fff3f3">⚠️ Ekip Atanmamış Kayıtlar</h2>
+        <table><tr><th>Toplam Kazı</th><th>Kayıt Sayısı</th><th>Çalışılan Projeler</th><th>İlk / Son Kazı</th></tr>
+        <tr><td style="font-weight:700">${Math.round(s.toplam).toLocaleString('tr-TR')} m</td><td>${s.sayi}</td><td>${[...s.projeler].join(', ')}</td><td>${new Date(s.ilk).toLocaleDateString('tr-TR')} → ${new Date(s.son).toLocaleDateString('tr-TR')}</td></tr></table>`;
+    }
+
+    // Denetimciler (detaylı)
+    const denetimciStats = {};
+    (kayitlarRes.data||[]).forEach(k => {
+      const idler = denetimciIdListesi(k);
+      const keys = idler.length > 0 ? idler : ['__bos__'];
+      keys.forEach(key => {
+        if (!denetimciStats[key]) denetimciStats[key] = { toplam: 0, sayi: 0, projeler: new Set(), ilk: null, son: null };
+        const s = denetimciStats[key];
+        s.toplam += parseFloat(k.kazi_metre || 0);
+        s.sayi += 1;
+        s.projeler.add(projMap[k.proje_id] || 'Bilinmeyen Proje');
+        if (!s.ilk || k.tarih < s.ilk) s.ilk = k.tarih;
+        if (!s.son || k.tarih > s.son) s.son = k.tarih;
+      });
+    });
+    html += `<h2>🕵️ Denetimciler (${(denetimcilerRes.data||[]).length})</h2>`;
+    if ((denetimcilerRes.data||[]).length === 0) {
+      html += `<p style="color:#999">Henüz denetimci tanımlanmamış.</p>`;
+    } else {
+      html += `<table><tr><th>Denetimci</th><th>Toplam Kazı</th><th>Kayıt Sayısı</th><th>Denetlediği Projeler</th><th>İlk / Son Kazı</th></tr>`;
+      denetimcilerRes.data.slice().sort((a,b)=>(denetimciStats[b.id]?.toplam||0)-(denetimciStats[a.id]?.toplam||0)).forEach(d => {
+        const s = denetimciStats[d.id];
+        const adKurum = d.ad + (d.kurum ? ' (' + d.kurum + ')' : '');
+        if (s) {
+          html += `<tr><td>🕵️ ${adKurum}</td><td style="font-weight:700">${Math.round(s.toplam).toLocaleString('tr-TR')} m</td><td>${s.sayi}</td><td>${[...s.projeler].join(', ')}</td><td>${new Date(s.ilk).toLocaleDateString('tr-TR')} → ${new Date(s.son).toLocaleDateString('tr-TR')}</td></tr>`;
+        } else {
+          html += `<tr><td>🕵️ ${adKurum}</td><td colspan="4" style="color:#999">Henüz kayıt yok</td></tr>`;
+        }
+      });
+      html += `</table>`;
+    }
+    if (denetimciStats['__bos__']) {
+      const s = denetimciStats['__bos__'];
+      html += `<h2 style="background:#fff3f3">⚠️ Denetimci Atanmamış Kayıtlar</h2>
         <table><tr><th>Toplam Kazı</th><th>Kayıt Sayısı</th><th>Çalışılan Projeler</th><th>İlk / Son Kazı</th></tr>
         <tr><td style="font-weight:700">${Math.round(s.toplam).toLocaleString('tr-TR')} m</td><td>${s.sayi}</td><td>${[...s.projeler].join(', ')}</td><td>${new Date(s.ilk).toLocaleDateString('tr-TR')} → ${new Date(s.son).toLocaleDateString('tr-TR')}</td></tr></table>`;
     }
@@ -3646,6 +3826,177 @@ function ekipSil(id) {
   });
 }
 
+// ─── DENETİMCİLER ─────────────────────────────────────────
+async function loadDenetimciler() {
+  try {
+    const { data: denetimciler, error } = await sb.from('denetimciler').select('*').order('ad', { ascending: true });
+    if (error) { console.warn('Denetimciler yüklenemedi:', error.message); return; }
+    data.denetimciler = denetimciler || [];
+    renderDenetimciSelect();
+    renderDenetimciler();
+    renderDenetimciFiltre();
+  } catch (e) { console.warn('Denetimciler yüklenemedi'); }
+}
+
+function renderDenetimciFiltre() {
+  ['aylikRaporDenetimciFiltre'].forEach(id => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    const secili = sel.value;
+    sel.innerHTML = '<option value="">Tüm Denetimciler</option>' + data.denetimciler.map(d => `<option value="${d.id}">${d.ad}${d.kurum ? ' — ' + d.kurum : ''}</option>`).join('') + '<option value="__bos__">Denetimci Atanmamış</option>';
+    if (secili) sel.value = secili;
+  });
+}
+
+function renderDenetimciSelect() {
+  const sel = document.getElementById('fDenetimciEkle');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">Denetimci seçin...</option>' + data.denetimciler.map(d => `<option value="${d.id}">${d.ad}${d.kurum ? ' — ' + d.kurum : ''}</option>`).join('');
+  renderFormDenetimciListe();
+}
+
+// ─── ÇOKLU DENETİMCİ SEÇİMİ (form içinde, vakitli) ─────────
+function denetimSecimleriNormalize(secimler, eskiDenetimciId) {
+  if (Array.isArray(secimler) && secimler.length > 0) return secimler;
+  if (eskiDenetimciId) return [{ id: eskiDenetimciId, vakit: 'tumgun' }];
+  return [];
+}
+
+// Ham bir supabase satırından (denetim_secimleri / denetimci_id) denetimci ID listesi çıkarır
+function denetimciIdListesi(row) {
+  return denetimSecimleriNormalize(row.denetim_secimleri, row.denetimci_id).map(s => s.id);
+}
+
+// Ham bir satır için, verilen id->isim haritasına göre görüntülenecek metni üretir (vakit etiketleriyle)
+function denetimciRowMetni(row, denetimciMap) {
+  const secimler = denetimSecimleriNormalize(row.denetim_secimleri, row.denetimci_id);
+  if (secimler.length === 0) return '';
+  return secimler.map(s => {
+    const isim = denetimciMap[s.id] || 'Bilinmeyen Denetimci';
+    const vakitEt = VAKIT_ETIKETLERI[s.vakit] || '';
+    return vakitEt ? `${vakitEt} ${isim}` : isim;
+  }).join(', ');
+}
+
+// Bir kayıt (entry) için ekranda gösterilecek denetimci bilgilerini döndürür
+function denetimciGorunumleri(e) {
+  const secimler = denetimSecimleriNormalize(e.denetimSecimleri, e.denetimciId);
+  return secimler.map(s => {
+    const d = data.denetimciler.find(x => x.id === s.id);
+    if (!d) return null;
+    return { ad: d.ad, kurum: d.kurum || '', vakitEtiket: VAKIT_ETIKETLERI[s.vakit] || '' };
+  }).filter(Boolean);
+}
+
+function formDenetimciSatirEkle() {
+  const vakit = document.getElementById('fDenetimciVakit')?.value || 'tumgun';
+  const id = document.getElementById('fDenetimciEkle')?.value || '';
+  if (!id) { toast('⚠️ Önce bir denetimci seçin', true); return; }
+  if (formDenetimSecimleri.some(s => s.id === id && s.vakit === vakit)) { toast('⚠️ Bu denetimci bu vakit için zaten eklendi', true); return; }
+  formDenetimSecimleri.push({ id, vakit });
+  document.getElementById('fDenetimciEkle').value = '';
+  renderFormDenetimciListe();
+}
+
+function formDenetimciSatirSil(index) {
+  formDenetimSecimleri.splice(index, 1);
+  renderFormDenetimciListe();
+}
+
+function renderFormDenetimciListe() {
+  const wrap = document.getElementById('fDenetimciSeciliListe');
+  if (!wrap) return;
+  if (formDenetimSecimleri.length === 0) { wrap.innerHTML = ''; return; }
+  wrap.innerHTML = formDenetimSecimleri.map((s, i) => {
+    const d = data.denetimciler.find(x => x.id === s.id);
+    const adKurum = d ? (d.ad + (d.kurum ? ' — ' + d.kurum : '')) : 'Bilinmeyen denetimci';
+    const vakitEt = VAKIT_ETIKETLERI[s.vakit] || '';
+    return `<div style="display:flex;align-items:center;gap:8px;background:rgba(6,182,212,0.08);border:1px solid rgba(6,182,212,0.3);border-radius:8px;padding:7px 10px">
+      ${vakitEt ? `<span style="font-size:11px;color:#67e8f9;flex-shrink:0;font-weight:800;white-space:nowrap">${vakitEt}</span>` : ''}
+      <span style="font-size:12.5px;color:var(--text);flex:1">🕵️ ${adKurum}</span>
+      <button type="button" onclick="formDenetimciSatirSil(${i})" style="background:none;border:none;color:var(--red);font-size:15px;cursor:pointer;padding:2px 6px;flex-shrink:0">×</button>
+    </div>`;
+  }).join('');
+}
+
+function denetimciYonetimAc() {
+  const adInput = document.getElementById('denetimciAdInput');
+  const kurumInput = document.getElementById('denetimciKurumInput');
+  if (adInput) { adInput.value = ''; delete adInput.dataset.editingId; }
+  if (kurumInput) kurumInput.value = '';
+  const btn = document.querySelector('#denetimciYonetimModal button[onclick="denetimciEkle()"]');
+  if (btn) { btn.textContent = '+'; btn.style.background = '#06b6d4'; }
+  renderDenetimciler();
+  document.getElementById('denetimciYonetimModal').style.display = 'flex';
+}
+
+function renderDenetimciler() {
+  const el = document.getElementById('denetimciListesi');
+  if (!el) return;
+  if (data.denetimciler.length === 0) {
+    el.innerHTML = '<div style="font-size:12px;color:var(--muted);text-align:center;padding:8px 0">Henüz denetimci eklenmedi.</div>';
+    return;
+  }
+  el.innerHTML = data.denetimciler.map(d => `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:rgba(6,182,212,0.06);border:1px solid rgba(6,182,212,0.2);border-radius:8px;margin-bottom:6px">
+      <div>
+        <div style="font-size:13px;color:var(--text);font-weight:600">🕵️ ${d.ad}</div>
+        ${d.kurum ? `<div style="font-size:11px;color:var(--sub);margin-top:1px">${d.kurum}</div>` : ''}
+      </div>
+      <div style="display:flex;align-items:center;gap:4px">
+        <button onclick="denetimciDuzenle('${d.id}')" style="background:none;border:none;color:var(--blue);font-size:14px;cursor:pointer;padding:2px 6px">✎</button>
+        <button onclick="denetimciSil('${d.id}')" style="background:none;border:none;color:var(--red);font-size:16px;cursor:pointer;padding:2px 6px">×</button>
+      </div>
+    </div>`).join('');
+}
+
+async function denetimciDuzenle(id) {
+  const d = data.denetimciler.find(x => x.id === id);
+  if (!d) return;
+  const adInput = document.getElementById('denetimciAdInput');
+  const kurumInput = document.getElementById('denetimciKurumInput');
+  const btn = document.querySelector('#denetimciYonetimModal button[onclick="denetimciEkle()"]');
+  adInput.value = d.ad;
+  kurumInput.value = d.kurum || '';
+  adInput.focus();
+  adInput.dataset.editingId = id;
+  if (btn) { btn.textContent = '✓'; btn.style.background = '#10b981'; }
+}
+
+async function denetimciEkle() {
+  const adInput = document.getElementById('denetimciAdInput');
+  const kurumInput = document.getElementById('denetimciKurumInput');
+  const ad = adInput?.value.trim();
+  const kurum = kurumInput?.value.trim() || null;
+  if (!ad) { toast('⚠️ Denetimci adı girin', true); return; }
+  const editingId = adInput.dataset.editingId;
+  showLoading(editingId ? 'Güncelleniyor...' : 'Ekleniyor...');
+  const { error } = editingId
+    ? await sb.from('denetimciler').update({ ad, kurum }).eq('id', editingId)
+    : await sb.from('denetimciler').insert({ ad, kurum });
+  hideLoading();
+  if (error) { toast('⚠️ ' + error.message, true); return; }
+  adInput.value = '';
+  kurumInput.value = '';
+  delete adInput.dataset.editingId;
+  const btn = document.querySelector('#denetimciYonetimModal button[onclick="denetimciEkle()"]');
+  if (btn) { btn.textContent = '+'; btn.style.background = '#06b6d4'; }
+  toast(editingId ? '✅ Denetimci güncellendi' : '✅ Denetimci eklendi');
+  await loadDenetimciler();
+}
+
+function denetimciSil(id) {
+  const d = data.denetimciler.find(x => x.id === id);
+  silOnayla(`"${d?.ad || 'Bu denetimci'}" silinsin mi? Bu denetimciye atanmış kayıtlarda denetimci bilgisi boşalır.`, async () => {
+    showLoading('Siliniyor...');
+    const { error } = await sb.from('denetimciler').delete().eq('id', id);
+    hideLoading();
+    if (error) { toast('⚠️ ' + error.message, true); return; }
+    toast('🗑 Denetimci silindi');
+    await loadDenetimciler();
+  });
+}
+
 let _entryPage = 0;
 const ENTRY_PAGE_SIZE = 30;
 let _entryHasMore = false;
@@ -3656,8 +4007,15 @@ async function loadEntries(projeId, sessiz = false, sayfa = 0) {
   try {
     const from = sayfa * ENTRY_PAGE_SIZE;
     const to = from + ENTRY_PAGE_SIZE - 1;
+    const kolonlar = () => {
+      let k = 'id, tarih, kazi_metre, ekip_id, notlar, malzemeler, hatalar, hata, fotograflar, kmz';
+      if (!_sahaOnaylariDesteklenmiyor) k += ', saha_onaylari';
+      if (!_denetimciDesteklenmiyor) k += ', denetimci_id';
+      if (!_denetimSecimleriDesteklenmiyor) k += ', denetim_secimleri';
+      return k;
+    };
     let { data: kayitlar, error, count } = await sb.from('kayitlar')
-      .select('id, tarih, kazi_metre, ekip_id, notlar, malzemeler, hatalar, hata, fotograflar, kmz, saha_onaylari', { count: 'exact' })
+      .select(kolonlar(), { count: 'exact' })
       .eq('proje_id', projeId)
       .order('tarih', { ascending: false })
       .range(from, to);
@@ -3665,7 +4023,25 @@ async function loadEntries(projeId, sessiz = false, sayfa = 0) {
     if (error && error.message && error.message.includes('saha_onaylari')) {
       _sahaOnaylariDesteklenmiyor = true;
       ({ data: kayitlar, error, count } = await sb.from('kayitlar')
-        .select('id, tarih, kazi_metre, ekip_id, notlar, malzemeler, hatalar, hata, fotograflar, kmz', { count: 'exact' })
+        .select(kolonlar(), { count: 'exact' })
+        .eq('proje_id', projeId)
+        .order('tarih', { ascending: false })
+        .range(from, to));
+    }
+    // "denetim_secimleri" sütunu henüz Supabase'de yoksa onsuz tekrar dene
+    if (error && error.message && error.message.includes('denetim_secimleri')) {
+      _denetimSecimleriDesteklenmiyor = true;
+      ({ data: kayitlar, error, count } = await sb.from('kayitlar')
+        .select(kolonlar(), { count: 'exact' })
+        .eq('proje_id', projeId)
+        .order('tarih', { ascending: false })
+        .range(from, to));
+    }
+    // "denetimci_id" sütunu henüz Supabase'de yoksa onsuz tekrar dene
+    if (error && error.message && error.message.includes('denetimci_id')) {
+      _denetimciDesteklenmiyor = true;
+      ({ data: kayitlar, error, count } = await sb.from('kayitlar')
+        .select(kolonlar(), { count: 'exact' })
         .eq('proje_id', projeId)
         .order('tarih', { ascending: false })
         .range(from, to));
@@ -3676,6 +4052,8 @@ async function loadEntries(projeId, sessiz = false, sayfa = 0) {
     if (proj) {
       const yeniKayitlar = kayitlar.map(k => ({
         id: k.id, tarih: k.tarih, kaziMetre: parseFloat(k.kazi_metre), ekipId: k.ekip_id || null,
+        denetimciId: k.denetimci_id || null,
+        denetimSecimleri: k.denetim_secimleri || [],
         malzemeler: k.malzemeler || [], notlar: k.notlar || '',
         hata: k.hata || { var: false }, hatalar: k.hatalar || [],
         fotograflar: k.fotograflar || [], kmz: k.kmz || null,
@@ -4585,16 +4963,21 @@ function renderDashboard() {
 
   list.innerHTML = sorted.map(e => {
     const ekipAdi = e.ekipId ? (data.teams.find(t => t.id === e.ekipId)?.ad || '') : '';
+    const denetimciListesi = denetimciGorunumleri(e);
     const hataVar = e.hatalar?.length > 0 || e.hata?.var;
     const tarihKisa = new Date(e.tarih).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
     const gunKisa = new Date(e.tarih).toLocaleDateString('tr-TR', { weekday: 'short' });
 
-    const meta = [];
-    if (e.malzemeler?.length > 0) meta.push(`🧱 ${e.malzemeler.length}`);
-    if (e.fotograflar?.length > 0) meta.push(`📷 ${e.fotograflar.length}`);
-    if (e.kmz) meta.push(`📁 KMZ`);
-    if (e.notlar) meta.push(`📝`);
-    if (hataVar) meta.push(`⚠️ ${e.hatalar?.length > 0 ? e.hatalar.length : ''}`);
+    const ustMeta = [];
+    if (e.malzemeler?.length > 0) ustMeta.push(`🧱 ${e.malzemeler.length}`);
+    if (e.fotograflar?.length > 0) ustMeta.push(`📷 ${e.fotograflar.length}`);
+    if (e.kmz) ustMeta.push(`📁 KMZ`);
+    if (e.notlar) ustMeta.push(`📝`);
+    if (hataVar) ustMeta.push(`⚠️ ${e.hatalar?.length > 0 ? e.hatalar.length : ''}`);
+
+    const altMeta = [];
+    if (ekipAdi) altMeta.push(`👷 ${ekipAdi}`);
+    denetimciListesi.forEach(d => altMeta.push(`🕵️ ${d.vakitEtiket ? d.vakitEtiket + ' ' : ''}${d.ad}`));
     const cizgiRengi = hataVar ? 'var(--red)' : 'var(--border)';
 
     return `
@@ -4605,11 +4988,13 @@ function renderDashboard() {
         <div style="height:4px;background:${cizgiRengi}"></div>
         <div style="padding:10px 12px;position:relative">
           <span id="tog-${e.id}" style="position:absolute;top:9px;right:10px;color:var(--muted);font-size:11px">▼</span>
-          <div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding-right:16px">
-            <span style="font-size:14px;font-weight:700;color:var(--text)">${gunKisa} ${tarihKisa}${ekipAdi ? ` <span style="font-size:12.5px;font-weight:600;color:var(--muted)">· ${ekipAdi}</span>` : ''}</span>
+          <div style="padding-right:16px">
+            <span style="font-size:14px;font-weight:700;color:var(--text)">${gunKisa} ${tarihKisa}</span>${ustMeta.length > 0 ? ` <span style="font-size:10.5px;font-weight:600;color:var(--muted)">· ${ustMeta.join('&nbsp;&nbsp;')}</span>` : ''}
+          </div>
+          <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:8px;margin-top:6px">
+            <div>${altMeta.length > 0 ? `<span style="font-size:10.5px;color:var(--muted)">${altMeta.join('&nbsp;&nbsp;')}</span>` : ''}</div>
             <span style="font-size:16px;font-weight:900;color:${Number(e.kaziMetre) === 0 ? '#a78bfa' : 'var(--yellow)'};white-space:nowrap">${Number(e.kaziMetre) === 0 ? '🔧 Bakım' : `⛏ ${e.kaziMetre} m`}</span>
           </div>
-          ${meta.length > 0 ? `<div style="margin-top:6px"><span style="font-size:10.5px;color:var(--muted)">${meta.join('&nbsp;&nbsp;')}</span></div>` : ''}
         </div>
       </div>
 
@@ -4705,6 +5090,9 @@ function toggleDetay(id) {
   if (onaySayisi > 0) chips.push(`<span class="detay-chip">✅ <b style="color:#10b981">${onaySayisi}</b> onay</span>`);
   if (e.kmz) chips.push(`<span class="detay-chip">📁 KMZ</span>`);
   if (e.ekipId && data.teams.find(t => t.id === e.ekipId)) chips.push(`<span class="detay-chip">👷 <b>${data.teams.find(t => t.id === e.ekipId).ad}</b></span>`);
+  denetimciGorunumleri(e).forEach(den => {
+    chips.push(`<span class="detay-chip">🕵️ ${den.vakitEtiket ? den.vakitEtiket + ' ' : ''}<b>${den.ad}</b>${den.kurum ? ' · ' + den.kurum : ''}</span>`);
+  });
   const chipRow = document.getElementById('detayChipRow');
   chipRow.innerHTML = chips.join('');
   chipRow.style.display = chips.length > 0 ? 'flex' : 'none';
@@ -4983,6 +5371,7 @@ async function renderAylikRapor() {
   const input = document.getElementById('aylikRaporAyInput');
   if (input) input.value = `${yil}-${String(ay).padStart(2, '0')}`;
   renderEkipFiltre();
+  renderDenetimciFiltre();
 
   const tumZamanlar = _aylikRaporPeriyot === 'tum';
   const aralikMi = _aylikRaporPeriyot === 'aralik';
@@ -5001,9 +5390,16 @@ async function renderAylikRapor() {
   showLoading('Yükleniyor...');
   let kayitlar = [];
   try {
-    let sorgu = sb.from('kayitlar').select('proje_id, tarih, kazi_metre, ekip_id').order('tarih', { ascending: false });
+    const aylikKolonlar = () => `proje_id, tarih, kazi_metre, ekip_id, denetimci_id${!_denetimSecimleriDesteklenmiyor ? ', denetim_secimleri' : ''}`;
+    let sorgu = sb.from('kayitlar').select(aylikKolonlar()).order('tarih', { ascending: false });
     if (!tumZamanlar) sorgu = sorgu.gte('tarih', basStr).lte('tarih', bitStr);
-    const kayitRes = await sorgu;
+    let kayitRes = await sorgu;
+    if (kayitRes.error && kayitRes.error.message && kayitRes.error.message.includes('denetim_secimleri')) {
+      _denetimSecimleriDesteklenmiyor = true;
+      let sorgu2 = sb.from('kayitlar').select(aylikKolonlar()).order('tarih', { ascending: false });
+      if (!tumZamanlar) sorgu2 = sorgu2.gte('tarih', basStr).lte('tarih', bitStr);
+      kayitRes = await sorgu2;
+    }
     if (kayitRes.error) throw kayitRes.error;
     kayitlar = kayitRes.data || [];
   } catch (err) {
@@ -5020,11 +5416,19 @@ async function renderAylikRapor() {
   const tumEkipler = {};
   data.teams.forEach(t => tumEkipler[t.id] = t.ad);
 
+  const tumDenetimciler = {};
+  data.denetimciler.forEach(d => tumDenetimciler[d.id] = d.ad + (d.kurum ? ' (' + d.kurum + ')' : ''));
+
   // Ekip filtresi uygula
   const ekipFiltre = document.getElementById('aylikRaporEkipFiltre')?.value || '';
   let filtreli = kayitlar;
   if (ekipFiltre === '__bos__') filtreli = kayitlar.filter(k => !k.ekip_id);
   else if (ekipFiltre) filtreli = kayitlar.filter(k => k.ekip_id === ekipFiltre);
+
+  // Denetimci filtresi uygula
+  const denetimciFiltre = document.getElementById('aylikRaporDenetimciFiltre')?.value || '';
+  if (denetimciFiltre === '__bos__') filtreli = filtreli.filter(k => denetimciIdListesi(k).length === 0);
+  else if (denetimciFiltre) filtreli = filtreli.filter(k => denetimciIdListesi(k).includes(denetimciFiltre));
 
   const toplamMetre = filtreli.reduce((s, k) => s + parseFloat(k.kazi_metre || 0), 0);
   const projeSet = new Set(filtreli.map(k => k.proje_id));
@@ -5088,6 +5492,25 @@ async function renderAylikRapor() {
     ).join('');
   } else { ekipOzetCard.style.display = 'none'; }
 
+  const denetimciMap = {};
+  filtreli.forEach(k => {
+    const idler = denetimciIdListesi(k);
+    const keys = idler.length > 0 ? idler : ['__bos__'];
+    keys.forEach(key => {
+      if (!denetimciMap[key]) denetimciMap[key] = { toplam: 0, sayi: 0 };
+      denetimciMap[key].toplam += parseFloat(k.kazi_metre || 0);
+      if (parseFloat(k.kazi_metre || 0) > 0) denetimciMap[key].sayi += 1;
+    });
+  });
+  const denetimciOzetGiris = Object.entries(denetimciMap).sort((a, b) => b[1].toplam - a[1].toplam);
+  const denetimciOzetCard = document.getElementById('aylikDenetimciOzetCard');
+  if (denetimciOzetGiris.length > 0) {
+    denetimciOzetCard.style.display = 'block';
+    document.getElementById('aylikDenetimciOzetBody').innerHTML = denetimciOzetGiris.map(([did, v]) =>
+      `<tr><td>${did === '__bos__' ? 'Denetimci Atanmamış' : (tumDenetimciler[did] || 'Bilinmeyen Denetimci')}</td><td style="color:var(--yellow);font-weight:700">${v.toplam.toLocaleString('tr-TR', { maximumFractionDigits: 0 })} m</td><td>${v.sayi}</td></tr>`
+    ).join('');
+  } else { denetimciOzetCard.style.display = 'none'; }
+
   const body = document.getElementById('aylikRaporBody');
   const bos = document.getElementById('aylikRaporBos');
   if (filtreli.length === 0) {
@@ -5097,11 +5520,11 @@ async function renderAylikRapor() {
   } else {
     bos.style.display = 'none';
     body.innerHTML = filtreli.map(k =>
-      `<tr><td>${new Date(k.tarih).toLocaleDateString('tr-TR')}</td><td>${tumProjeler[k.proje_id] || 'Bilinmeyen Proje'}</td><td>${k.ekip_id ? (tumEkipler[k.ekip_id] || 'Bilinmeyen Ekip') : '-'}</td><td style="color:${Number(k.kazi_metre) === 0 ? '#a78bfa' : 'var(--yellow)'};font-weight:700">${Number(k.kazi_metre) === 0 ? '🔧 Bakım' : Number(k.kazi_metre).toLocaleString('tr-TR', { maximumFractionDigits: 0 }) + ' m'}</td></tr>`
+      `<tr><td>${new Date(k.tarih).toLocaleDateString('tr-TR')}</td><td>${tumProjeler[k.proje_id] || 'Bilinmeyen Proje'}</td><td>${k.ekip_id ? (tumEkipler[k.ekip_id] || 'Bilinmeyen Ekip') : '-'}</td><td>${denetimciRowMetni(k, tumDenetimciler) || '-'}</td><td style="color:${Number(k.kazi_metre) === 0 ? '#a78bfa' : 'var(--yellow)'};font-weight:700">${Number(k.kazi_metre) === 0 ? '🔧 Bakım' : Number(k.kazi_metre).toLocaleString('tr-TR', { maximumFractionDigits: 0 }) + ' m'}</td></tr>`
     ).join('');
   }
 
-  window._aylikRaporVeri = { yil, ay, tumZamanlar, aralikMi, basStr, bitStr, kayitlar: filtreli, kaziKayitSayisi: kaziKayitlari.length, tumProjeler, tumEkipler, toplamMetre, ozetGiris, ekipOzetGiris, calisilanGunSayisi, ortCalisilanGun, takvimGunSayisi, ortTakvimGun, ekipFiltreAd: ekipFiltre === '__bos__' ? 'Ekip Atanmamış' : (ekipFiltre ? (tumEkipler[ekipFiltre] || '') : '') };
+  window._aylikRaporVeri = { yil, ay, tumZamanlar, aralikMi, basStr, bitStr, kayitlar: filtreli, kaziKayitSayisi: kaziKayitlari.length, tumProjeler, tumEkipler, tumDenetimciler, toplamMetre, ozetGiris, ekipOzetGiris, denetimciOzetGiris, calisilanGunSayisi, ortCalisilanGun, takvimGunSayisi, ortTakvimGun, ekipFiltreAd: ekipFiltre === '__bos__' ? 'Ekip Atanmamış' : (ekipFiltre ? (tumEkipler[ekipFiltre] || '') : ''), denetimciFiltreAd: denetimciFiltre === '__bos__' ? 'Denetimci Atanmamış' : (denetimciFiltre ? (tumDenetimciler[denetimciFiltre] || '') : '') };
 }
 
 function aylikRaporPaylas() {
@@ -5109,7 +5532,7 @@ function aylikRaporPaylas() {
   if (!veri || veri.kayitlar.length === 0) { toast('⚠️ Kayıt yok', true); return; }
   const donemAdi = veri.tumZamanlar ? 'Tüm Zamanlar' : (veri.aralikMi ? `${new Date(veri.basStr).toLocaleDateString('tr-TR')} – ${new Date(veri.bitStr).toLocaleDateString('tr-TR')}` : new Date(veri.yil, veri.ay - 1, 1).toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' }));
   const baslikMetin = veri.tumZamanlar ? 'TÜM ZAMANLAR KAZI RAPORU' : (veri.aralikMi ? 'ÖZEL TARİH ARALIĞI RAPORU' : 'AYLIK KAZI RAPORU');
-  const filtreStr = veri.ekipFiltreAd ? `\n👷 Ekip: ${veri.ekipFiltreAd}` : '';
+  const filtreStr = (veri.ekipFiltreAd ? `\n👷 Ekip: ${veri.ekipFiltreAd}` : '') + (veri.denetimciFiltreAd ? `\n🕵️ Denetimci: ${veri.denetimciFiltreAd}` : '');
   const satirlar = veri.ozetGiris.map(([pid, v]) => `${veri.tumProjeler[pid] || 'Bilinmeyen Proje'}: ${v.toplam.toLocaleString('tr-TR', { maximumFractionDigits: 0 })} m (${v.sayi} kayıt)`);
   const ortStr = veri.calisilanGunSayisi > 0 ? `\n📈 Günlük Ort.: ${veri.ortCalisilanGun.toLocaleString('tr-TR', { maximumFractionDigits: 1 })} m (çalışılan gün) / ${veri.ortTakvimGun.toLocaleString('tr-TR', { maximumFractionDigits: 1 })} m (takvim günü)` : '';
   const metin = `🗓️ *${baslikMetin}*\n📅 ${donemAdi}${filtreStr}${ortStr}\n\n${satirlar.join('\n')}\n\nTOPLAM: ${veri.toplamMetre.toLocaleString('tr-TR', { maximumFractionDigits: 0 })} m (${veri.kaziKayitSayisi} kayıt)`;
@@ -5130,9 +5553,13 @@ function aylikRaporPdf() {
     `<tr><td>${eid === '__bos__' ? 'Ekip Atanmamış' : (veri.tumEkipler[eid] || 'Bilinmeyen Ekip')}</td><td style="font-weight:700">${v.toplam.toLocaleString('tr-TR', { maximumFractionDigits: 0 })} m</td><td>${v.sayi}</td></tr>`
   ).join('') || '<tr><td colspan="3" style="color:#999">Kayıt yok</td></tr>';
 
+  const denetimciRows = veri.denetimciOzetGiris.map(([did, v]) =>
+    `<tr><td>${did === '__bos__' ? 'Denetimci Atanmamış' : (veri.tumDenetimciler[did] || 'Bilinmeyen Denetimci')}</td><td style="font-weight:700">${v.toplam.toLocaleString('tr-TR', { maximumFractionDigits: 0 })} m</td><td>${v.sayi}</td></tr>`
+  ).join('') || '<tr><td colspan="3" style="color:#999">Kayıt yok</td></tr>';
+
   const sorted = [...veri.kayitlar].sort((a, b) => new Date(a.tarih) - new Date(b.tarih));
   const detayRows = sorted.map(k =>
-    `<tr><td>${new Date(k.tarih).toLocaleDateString('tr-TR')}</td><td>${veri.tumProjeler[k.proje_id] || 'Bilinmeyen Proje'}</td><td>${k.ekip_id ? (veri.tumEkipler[k.ekip_id] || '-') : '-'}</td><td style="font-weight:700">${Number(k.kazi_metre) === 0 ? '🔧 Bakım' : Number(k.kazi_metre).toLocaleString('tr-TR', { maximumFractionDigits: 0 }) + ' m'}</td></tr>`
+    `<tr><td>${new Date(k.tarih).toLocaleDateString('tr-TR')}</td><td>${veri.tumProjeler[k.proje_id] || 'Bilinmeyen Proje'}</td><td>${k.ekip_id ? (veri.tumEkipler[k.ekip_id] || '-') : '-'}</td><td>${denetimciRowMetni(k, veri.tumDenetimciler) || '-'}</td><td style="font-weight:700">${Number(k.kazi_metre) === 0 ? '🔧 Bakım' : Number(k.kazi_metre).toLocaleString('tr-TR', { maximumFractionDigits: 0 }) + ' m'}</td></tr>`
   ).join('');
 
   const html = `<!DOCTYPE html><html lang="tr"><head><meta charset="utf-8">
@@ -5158,7 +5585,7 @@ function aylikRaporPdf() {
     @media print { body { padding: 10px; } }
   </style></head><body>
   <h1>${veri.tumZamanlar ? '♾️ Tüm Zamanlar Kazı Raporu' : (veri.aralikMi ? '📆 Özel Tarih Aralığı Raporu' : '🗓️ Aylık Kazı Raporu')}</h1>
-  <div class="meta">📅 ${donemAdi} &nbsp;|&nbsp; Oluşturma: ${tarihStr}${veri.ekipFiltreAd ? ` &nbsp;|&nbsp; 👷 Ekip Filtresi: ${veri.ekipFiltreAd}` : ''}</div>
+  <div class="meta">📅 ${donemAdi} &nbsp;|&nbsp; Oluşturma: ${tarihStr}${veri.ekipFiltreAd ? ` &nbsp;|&nbsp; 👷 Ekip Filtresi: ${veri.ekipFiltreAd}` : ''}${veri.denetimciFiltreAd ? ` &nbsp;|&nbsp; 🕵️ Denetimci Filtresi: ${veri.denetimciFiltreAd}` : ''}</div>
 
   <div class="stats">
     <div class="stat-box"><div class="stat-val">${veri.toplamMetre.toLocaleString('tr-TR', { maximumFractionDigits: 0 })} m</div><div class="stat-lbl">Toplam Kazı</div></div>
@@ -5180,9 +5607,15 @@ function aylikRaporPdf() {
     ${ekipRows}
   </table>
 
+  <h2>🕵️ Denetimcilere Göre Toplam</h2>
+  <table>
+    <tr><th>Denetimci</th><th>Toplam</th><th>Kayıt</th></tr>
+    ${denetimciRows}
+  </table>
+
   <h2>📋 Kazı Detayları</h2>
   <table>
-    <tr><th>Tarih</th><th>Proje</th><th>Ekip</th><th>Kazı (m)</th></tr>
+    <tr><th>Tarih</th><th>Proje</th><th>Ekip</th><th>Denetimci</th><th>Kazı (m)</th></tr>
     ${detayRows}
   </table>
 
@@ -5915,6 +6348,114 @@ async function switchProject(id) {
   } catch(e) { toast('⚠️ Proje değiştirilemedi!', true); }
 }
 
+async function projeDetayAc(id) {
+  const p = data.projects.find(x => x.id === id);
+  if (!p) return;
+  const modal = document.getElementById('projeDetayModal');
+  const icerik = document.getElementById('projeDetayIcerik');
+  const aktifBtn = document.getElementById('projeDetayAktifBtn');
+  icerik.innerHTML = '<div style="text-align:center;color:var(--muted);padding:20px 0">Yükleniyor...</div>';
+  modal.style.display = 'flex';
+
+  const kodMap = {};
+  data.projects.forEach((pr, i) => { kodMap[pr.id] = 'P-' + String(i + 1).padStart(2, '0'); });
+
+  let kayitlar = [];
+  try {
+    let { data: rows, error } = await sb.from('kayitlar').select('tarih, kazi_metre, ekip_id, denetimci_id, denetim_secimleri').eq('proje_id', id).order('tarih', { ascending: false });
+    if (error && error.message && error.message.includes('denetim_secimleri')) {
+      _denetimSecimleriDesteklenmiyor = true;
+      ({ data: rows, error } = await sb.from('kayitlar').select('tarih, kazi_metre, ekip_id, denetimci_id').eq('proje_id', id).order('tarih', { ascending: false }));
+    }
+    if (error) throw error;
+    kayitlar = rows || [];
+  } catch (e) {
+    icerik.innerHTML = '<div style="text-align:center;color:var(--red);padding:20px 0">⚠️ Kayıtlar yüklenemedi</div>';
+    return;
+  }
+
+  const bitti = p.bitti === true;
+  const isActive = p.id === data.activeProjectId;
+  const kaziKayitlari = kayitlar.filter(k => parseFloat(k.kazi_metre || 0) > 0);
+  const toplam = kayitlar.reduce((s, k) => s + parseFloat(k.kazi_metre || 0), 0);
+  const kayitSayisi = kaziKayitlari.length;
+  const yuzde = p.hedefMetre > 0 ? Math.min(100, (toplam / p.hedefMetre) * 100) : 0;
+  const calisilanGunler = new Set(kaziKayitlari.map(k => k.tarih));
+  const gunlukOrt = calisilanGunler.size > 0 ? toplam / calisilanGunler.size : 0;
+  const kalan = p.hedefMetre > 0 ? Math.max(0, p.hedefMetre - toplam) : 0;
+  const tahminiGun = (gunlukOrt > 0 && kalan > 0) ? Math.ceil(kalan / gunlukOrt) : 0;
+
+  const durum = bitti
+    ? `<span class="scard-durum tamam-rozet">✓ TAMAMLANDI</span>`
+    : isActive
+      ? `<span class="scard-durum canli"><span class="dot"></span>SAHADA</span>`
+      : `<span class="scard-durum">DEVAM EDİYOR</span>`;
+
+  const ruler = p.hedefMetre > 0
+    ? `<div class="scard-ruler" style="margin-top:10px"><div class="scard-ruler-fill" style="width:${yuzde}%"></div></div>
+       <div class="scard-ruler-labels"><span>0m</span><span class="scard-ruler-pct">%${yuzde.toFixed(0)}</span><span>${p.hedefMetre.toLocaleString('tr-TR')}m</span></div>`
+    : '';
+
+  const sonKayitlar = kayitlar.slice(0, 15).map(k => {
+    const ekip = k.ekip_id ? data.teams.find(t => t.id === k.ekip_id) : null;
+    const denetimciListesi = denetimSecimleriNormalize(k.denetim_secimleri, k.denetimci_id)
+      .map(s => data.denetimciler.find(d => d.id === s.id))
+      .filter(Boolean)
+      .map(d => '🕵️ ' + d.ad);
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px dashed var(--border);font-size:12px">
+      <div>
+        <div style="color:var(--text)">${new Date(k.tarih).toLocaleDateString('tr-TR')}</div>
+        <div style="color:var(--sub);font-size:11px">${[ekip ? '👷 ' + ekip.ad : '', ...denetimciListesi].filter(Boolean).join(' · ') || '-'}</div>
+      </div>
+      <div style="color:${Number(k.kazi_metre) === 0 ? '#a78bfa' : 'var(--yellow)'};font-weight:700">${Number(k.kazi_metre) === 0 ? '🔧 Bakım' : Number(k.kazi_metre).toLocaleString('tr-TR', { maximumFractionDigits: 0 }) + ' m'}</div>
+    </div>`;
+  }).join('') || '<div style="text-align:center;color:var(--muted);padding:14px 0">Henüz kayıt yok.</div>';
+
+  icerik.innerHTML = `
+    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:6px">
+      <span class="scard-kod">${kodMap[p.id] || ''}</span>
+      ${durum}
+    </div>
+    <div style="font-size:16px;font-weight:800;text-transform:uppercase;color:${bitti ? 'var(--text)' : 'var(--yellow)'}">${p.name}</div>
+    ${p.location ? `<div style="font-size:12px;color:var(--sub);margin-top:2px">📍 ${p.location}</div>` : ''}
+    ${ruler}
+    <div class="stats-row" style="margin-top:12px">
+      <div class="stat-card" style="border-top-color:#f59e0b">
+        <div class="stat-icon">⛏</div>
+        <div class="stat-value" style="color:#f59e0b">${Math.round(toplam).toLocaleString('tr-TR')} m</div>
+        <div class="stat-label">Toplam Kazı</div>
+      </div>
+      <div class="stat-card" style="border-top-color:#3b82f6">
+        <div class="stat-icon">📅</div>
+        <div class="stat-value" style="color:#3b82f6">${kayitSayisi}</div>
+        <div class="stat-label">Kayıt Sayısı</div>
+      </div>
+      ${!bitti && tahminiGun > 0 ? `<div class="stat-card" style="border-top-color:#8b5cf6">
+        <div class="stat-icon">📈</div>
+        <div class="stat-value" style="color:#8b5cf6">≈${tahminiGun}</div>
+        <div class="stat-label">Gün Kaldı</div>
+      </div>` : ''}
+    </div>
+    <div class="card-title" style="margin-top:14px;margin-bottom:6px;font-size:13px">📋 Son Kayıtlar</div>
+    <div>${sonKayitlar}</div>
+  `;
+
+  if (bitti) {
+    aktifBtn.style.display = 'none';
+  } else {
+    aktifBtn.style.display = 'block';
+    aktifBtn.textContent = isActive ? '✓ Şu An Aktif Proje' : '🔄 Bu Projeyi Aktif Yap';
+    aktifBtn.disabled = isActive;
+    aktifBtn.style.opacity = isActive ? '0.6' : '1';
+    aktifBtn.onclick = async () => {
+      if (isActive) return;
+      await switchProject(id);
+      modal.style.display = 'none';
+      toast('✅ Aktif proje değiştirildi: ' + p.name);
+    };
+  }
+}
+
 function renderModalProjList() {
   const list = document.getElementById('modalProjList');
   list.innerHTML = data.projects.map(p => {
@@ -5984,7 +6525,7 @@ function renderProjeler() {
               <button class="scard-icobtn sil" onclick="silOnayla('Bu projeyi silmek istediğine emin misin?', async () => { await deleteProject('${p.id}'); })" title="Sil">✕</button>
             </div>
           </div>
-          <div onclick="${bitti ? '' : `switchProject('${p.id}')`}">
+          <div onclick="projeDetayAc('${p.id}')">
             <div class="scard-isim">${p.name}</div>
             ${p.location ? `<div class="scard-konum">📍 ${p.location}</div>` : ''}
           </div>
