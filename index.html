@@ -175,6 +175,44 @@
     .stat-value { font-size: 16px; font-weight: 900; margin: 4px 0 2px; }
     .stat-label { font-size: 9px; color: var(--muted); }
 
+    /* RAPOR — bölüm başlıkları ve araç çubuğu (daha sade/profesyonel görünüm) */
+    .rp-eyebrow {
+      display: flex; align-items: center; gap: 8px; margin: 22px 0 10px;
+      font-size: 10.5px; font-weight: 800; letter-spacing: 1.5px; color: var(--muted); text-transform: uppercase;
+    }
+    .rp-eyebrow:first-child { margin-top: 2px; }
+    .rp-eyebrow::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    .rp-summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    @media (max-width: 380px) { .rp-summary-grid { grid-template-columns: 1fr; } }
+    .rp-summary-card {
+      background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 12px 13px;
+    }
+    .rp-summary-head {
+      display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;
+    }
+    .rp-summary-head-title { font-size: 12px; font-weight: 800; color: var(--text); display: flex; align-items: center; gap: 6px; }
+    .rp-summary-head-count { font-size: 10px; color: var(--muted); background: var(--bg); border: 1px solid var(--border); border-radius: 20px; padding: 1px 8px; }
+    .rp-summary-row {
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+      padding: 7px 0; border-top: 1px dashed var(--border); font-size: 12.5px;
+    }
+    .rp-summary-row:first-of-type { border-top: none; }
+    .rp-summary-name { color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+    .rp-summary-val { color: var(--yellow); font-weight: 800; white-space: nowrap; flex-shrink: 0; }
+    .rp-summary-empty { text-align: center; color: var(--muted); font-size: 12px; padding: 10px 0; }
+    .rp-toolbar { display: flex; gap: 8px; margin: 4px 0 8px; }
+    .rp-toolbar-btn {
+      flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
+      background: var(--card); border: 1.5px solid var(--border); border-radius: 10px;
+      padding: 11px 4px; cursor: pointer; font-family: inherit; color: var(--text);
+      font-size: 10.5px; font-weight: 700; transition: border-color .15s, background .15s;
+    }
+    .rp-toolbar-btn .ico { font-size: 18px; }
+    .rp-toolbar-btn.excel { color: #16a34a; border-color: rgba(22,163,74,.35); }
+    .rp-toolbar-btn.pdf { color: #ef4444; border-color: rgba(239,68,68,.35); }
+    .rp-toolbar-btn.share { color: #10b981; border-color: rgba(16,185,129,.35); }
+    .rp-filter-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px 14px 4px; margin-bottom: 12px; }
+
     /* FORM */
     label.field-label {
       display: block; font-size: 11px; color: var(--sub);
@@ -760,14 +798,14 @@
             <div class="stat-value" id="rStatGun" style="color:#3b82f6">0</div>
             <div class="stat-label">Toplam Gün</div>
           </div>
+        </div>
+        <div class="stats-row">
           <div class="stat-card" style="border-top-color:#10b981">
             <div class="stat-icon">📈</div>
             <div class="stat-value" id="rStatOrt" style="color:#10b981">-</div>
             <div class="stat-label">Günlük Ort. (çalışılan gün)</div>
           </div>
-        </div>
-        <div class="stats-row">
-          <div class="stat-card" style="border-top-color:#ec4899;flex:1">
+          <div class="stat-card" style="border-top-color:#ec4899">
             <div class="stat-icon">📊</div>
             <div class="stat-value" id="rStatOrtTakvim" style="color:#ec4899">-</div>
             <div class="stat-label">Günlük Ort. (takvim günü)</div>
@@ -789,6 +827,20 @@
           </div>
         </div>
       </div>
+
+      <div class="rp-eyebrow">👷 Ekip &amp; Denetim</div>
+      <div class="rp-summary-grid">
+        <div class="rp-summary-card">
+          <div class="rp-summary-head"><span class="rp-summary-head-title">👷 Ekipler</span><span class="rp-summary-head-count" id="rEkipSayacBadge">0</span></div>
+          <div id="rEkipOzetBody"><div class="rp-summary-empty">Kayıt yok</div></div>
+        </div>
+        <div class="rp-summary-card">
+          <div class="rp-summary-head"><span class="rp-summary-head-title">🕵️ Denetimciler</span><span class="rp-summary-head-count" id="rDenetimciSayacBadge">0</span></div>
+          <div id="rDenetimciOzetBody"><div class="rp-summary-empty">Kayıt yok</div></div>
+        </div>
+      </div>
+
+      <div class="rp-eyebrow">🧱 Malzeme &amp; Kalite</div>
       <div class="card" id="malzemeOzetCard" style="display:none">
         <div class="card-title">🧱 Malzeme Özeti</div>
         <table class="tbl">
@@ -803,20 +855,23 @@
           <tbody id="hataOzetBody"></tbody>
         </table>
       </div>
-      <div class="card">
-        <div class="card-title">📅 Günlük Kazı Geçmişi</div>
+
+      <div class="rp-eyebrow">📅 Günlük Geçmiş</div>
+      <div class="card" style="overflow-x:auto">
         <table class="tbl">
-          <thead><tr><th>Tarih</th><th>Kazı (m)</th><th>Malzeme</th></tr></thead>
+          <thead><tr><th>Tarih</th><th>Ekip</th><th>Denetimci</th><th>Kazı (m)</th><th>Malzeme</th></tr></thead>
           <tbody id="raporEntryBody"></tbody>
         </table>
       </div>
-      <div style="margin-top:4px;display:flex;gap:8px;margin-bottom:8px">
-        <button class="btn-primary" style="background:#16a34a;flex:1" onclick="exportExcel()">📥 Excel</button>
-        <button class="btn-primary" style="background:#ef4444;flex:1" onclick="projeRaporPdf()">📄 PDF</button>
-        <button class="btn-primary" style="background:#10b981;flex:1" onclick="projeRaporPaylas()">📤 Paylaş</button>
+
+      <div class="rp-toolbar">
+        <button class="rp-toolbar-btn excel" onclick="exportExcel()"><span class="ico">📥</span>Excel</button>
+        <button class="rp-toolbar-btn pdf" onclick="projeRaporPdf()"><span class="ico">📄</span>PDF</button>
+        <button class="rp-toolbar-btn share" onclick="projeRaporPaylas()"><span class="ico">📤</span>Paylaş</button>
       </div>
 
       <!-- GRAFİKLER -->
+      <div class="rp-eyebrow">📈 Grafikler</div>
       <div class="card" style="margin-top:4px">
         <div style="display:flex;gap:6px;margin-bottom:14px">
           <button id="grafTabGunluk" onclick="grafTab('gunluk')" style="flex:1;padding:8px;border:1.5px solid var(--yellow);background:var(--yellow);color:#0f172a;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">📅 Günlük</button>
@@ -831,8 +886,8 @@
 
     <!-- AYLIK RAPOR TAB (Tüm projeler, seçilen aya göre) -->
     <div id="raporAylikTab" style="display:none">
-      <div class="card">
-        <div class="card-title" id="aylikRaporBaslik">🗓️ Aylık Kazı Raporu</div>
+      <div class="rp-filter-card">
+        <div class="card-title" id="aylikRaporBaslik" style="margin-bottom:10px">🗓️ Aylık Kazı Raporu</div>
         <div style="display:flex;gap:6px;margin-bottom:12px">
           <button id="aylikPeriyotBtnAy" onclick="aylikRaporPeriyotDegis('ay')" style="flex:1;padding:9px;border:1.5px solid var(--yellow);background:var(--yellow);color:#0f172a;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">🗓️ Aylık</button>
           <button id="aylikPeriyotBtnAralik" onclick="aylikRaporPeriyotDegis('aralik')" style="flex:1;padding:9px;border:1.5px solid var(--border);background:none;color:var(--muted);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">📆 Tarih Seç</button>
@@ -865,7 +920,7 @@
         </select>
       </div>
 
-
+      <div class="rp-eyebrow">📊 Genel Durum</div>
       <div class="stats-row">
         <div class="stat-card" style="border-top-color:#f59e0b">
           <div class="stat-icon">📏</div>
@@ -897,32 +952,25 @@
         </div>
       </div>
 
-      <div class="card" id="aylikProjeOzetCard" style="display:none">
-        <div class="card-title">🏗 Projelere Göre Toplam</div>
-        <table class="tbl">
-          <thead><tr><th>Proje</th><th>Toplam</th><th>Kayıt</th></tr></thead>
-          <tbody id="aylikProjeOzetBody"></tbody>
-        </table>
+      <div class="rp-eyebrow">🏗 Dağılım</div>
+      <div class="rp-summary-card" id="aylikProjeOzetCard" style="display:none;margin-bottom:8px">
+        <div class="rp-summary-head"><span class="rp-summary-head-title">🏗 Projelere Göre Toplam</span></div>
+        <div id="aylikProjeOzetBody"></div>
       </div>
 
-      <div class="card" id="aylikEkipOzetCard" style="display:none">
-        <div class="card-title">👷 Ekiplere Göre Toplam</div>
-        <table class="tbl">
-          <thead><tr><th>Ekip</th><th>Toplam</th><th>Kayıt</th></tr></thead>
-          <tbody id="aylikEkipOzetBody"></tbody>
-        </table>
+      <div class="rp-summary-grid">
+        <div class="rp-summary-card" id="aylikEkipOzetCard" style="display:none">
+          <div class="rp-summary-head"><span class="rp-summary-head-title">👷 Ekipler</span></div>
+          <div id="aylikEkipOzetBody"></div>
+        </div>
+        <div class="rp-summary-card" id="aylikDenetimciOzetCard" style="display:none">
+          <div class="rp-summary-head"><span class="rp-summary-head-title">🕵️ Denetimciler</span></div>
+          <div id="aylikDenetimciOzetBody"></div>
+        </div>
       </div>
 
-      <div class="card" id="aylikDenetimciOzetCard" style="display:none">
-        <div class="card-title">🕵️ Denetimcilere Göre Toplam</div>
-        <table class="tbl">
-          <thead><tr><th>Denetimci</th><th>Toplam</th><th>Kayıt</th></tr></thead>
-          <tbody id="aylikDenetimciOzetBody"></tbody>
-        </table>
-      </div>
-
-      <div class="card">
-        <div class="card-title">📋 Kazı Detayları</div>
+      <div class="rp-eyebrow">📋 Kazı Detayları</div>
+      <div class="card" style="overflow-x:auto">
         <table class="tbl">
           <thead><tr><th>Tarih</th><th>Proje</th><th>Ekip</th><th>Denetimci</th><th>Kazı (m)</th></tr></thead>
           <tbody id="aylikRaporBody"></tbody>
@@ -930,9 +978,9 @@
         <div id="aylikRaporBos" style="display:none;padding:20px 0;text-align:center;color:var(--muted);font-size:13px">Bu ayda kayıt bulunamadı.</div>
       </div>
 
-      <div style="display:flex;gap:8px;margin-top:4px;margin-bottom:8px">
-        <button class="btn-primary" style="flex:1;background:#10b981" onclick="aylikRaporPaylas()">📤 Paylaş</button>
-        <button class="btn-primary" style="flex:1;background:var(--red)" onclick="aylikRaporPdf()">📄 PDF</button>
+      <div class="rp-toolbar">
+        <button class="rp-toolbar-btn share" onclick="aylikRaporPaylas()"><span class="ico">📤</span>Paylaş</button>
+        <button class="rp-toolbar-btn pdf" onclick="aylikRaporPdf()"><span class="ico">📄</span>PDF</button>
       </div>
     </div>
   </div>
@@ -1299,6 +1347,16 @@
   </div>
 </div>
 
+<!-- KAYIT DÜZENLEME OVERLAY - Özet'ten "Düzenle" seçilince ayrı sayfa gibi açılır -->
+<div id="editKayitOverlay" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:450;overflow-y:auto">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--card);border-bottom:1px solid var(--blue);position:sticky;top:0;z-index:2">
+    <button onclick="editOverlayGeriDon()" style="background:none;border:1px solid var(--border);color:var(--blue);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:13px;font-weight:700;font-family:inherit;display:flex;align-items:center;gap:5px">← Geri Dön</button>
+    <span style="font-size:14px;font-weight:800;color:var(--text)">✏️ Kaydı Düzenle</span>
+    <button onclick="editOverlayKapat()" style="background:none;border:1px solid var(--border);color:var(--sub);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:13px;font-family:inherit">✕ Kapat</button>
+  </div>
+  <div id="editKayitOverlayIcerik" style="padding:14px 14px 24px"></div>
+</div>
+
 <!-- BOTTOM NAV -->
 <nav class="bottom-nav" id="appNav" style="display:none">
   <button class="nav-btn active" id="nav-dashboard" onclick="showView('dashboard')">
@@ -1534,6 +1592,8 @@ let _denetimciDesteklenmiyor = false;
 let _denetimSecimleriDesteklenmiyor = false;
 let formDenetimSecimleri = []; // [{id, vakit}] - forma o an eklenmiş denetimciler
 const VAKIT_ETIKETLERI = { sabah: '🌅 Sabah', ogle: '🌇 Öğleden Sonra', tumgun: '' };
+let _editOverlayAcik = false;
+let _editOverlayOrijinalYer = null; // { parent, next } - form elemanının normal yeri
 let tempHatalar = [];
 let tempFotograflar = [];
 let tempKmz = null;
@@ -1734,6 +1794,7 @@ async function saveEntry() {
   hideLoading();
   resetDosyaForm();
   await yenile();
+  editOverlayKapatOrtak();
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('view-dashboard').classList.add('active');
@@ -1793,6 +1854,7 @@ async function updateEntry() {
   editingId = null;
   resetDosyaForm();
   await yenile();
+  editOverlayKapatOrtak();
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('view-dashboard').classList.add('active');
@@ -2060,7 +2122,51 @@ async function deleteEntry(id) {
   });
 }
 
+// ─── KAYIT DÜZENLEME OVERLAY'İ (ayrı sayfa gibi açılır) ────
+function editOverlayAc() {
+  if (_editOverlayAcik) return;
+  const form = document.getElementById('kaziFormWrap');
+  const hedef = document.getElementById('editKayitOverlayIcerik');
+  const overlay = document.getElementById('editKayitOverlay');
+  if (!form || !hedef || !overlay) return;
+  _editOverlayOrijinalYer = { parent: form.parentNode, next: form.nextSibling };
+  hedef.appendChild(form);
+  form.style.display = 'block';
+  overlay.style.display = 'block';
+  document.body.style.overflow = 'hidden';
+  _editOverlayAcik = true;
+  // Form içindeki "Kayıt Düzenleniyor" banner'ı overlay başlığıyla tekrar ediyor, gizle
+  const banner = document.getElementById('editBanner');
+  if (banner) banner.style.display = 'none';
+}
+
+function editOverlayKapatOrtak() {
+  if (!_editOverlayAcik) return;
+  const form = document.getElementById('kaziFormWrap');
+  const overlay = document.getElementById('editKayitOverlay');
+  if (form && _editOverlayOrijinalYer) {
+    if (_editOverlayOrijinalYer.next) {
+      _editOverlayOrijinalYer.parent.insertBefore(form, _editOverlayOrijinalYer.next);
+    } else {
+      _editOverlayOrijinalYer.parent.appendChild(form);
+    }
+  }
+  if (overlay) overlay.style.display = 'none';
+  document.body.style.overflow = '';
+  _editOverlayAcik = false;
+  _editOverlayOrijinalYer = null;
+}
+
+function editOverlayGeriDon() {
+  cancelEdit();
+}
+
+function editOverlayKapat() {
+  cancelEdit();
+}
+
 function cancelEdit() {
+  editOverlayKapatOrtak();
   editingId = null;
   window._lastSavedEntryId = null;
   resetForm();
@@ -2106,14 +2212,10 @@ function handleSave() {
 }
 
 async function startEdit(id) {
-  // Önce view'i aç
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('view-kayit').classList.add('active');
-  document.getElementById('nav-kayit').classList.add('active');
-  document.getElementById('geriBtn').style.display = 'block';
-  document.getElementById('kaziFormWrap').style.display = 'block';
+  // Formu düzenleme moduna al ve ayrı bir sayfa gibi (overlay) aç
   document.getElementById('detayEkleWrap').style.display = 'none';
+  document.getElementById('kaziFormWrap').style.display = 'block';
+  editOverlayAc();
   const projSel = document.getElementById('projSelector');
   if (projSel) projSel.style.display = 'flex';
 
@@ -2579,10 +2681,14 @@ function gunlukRaporPaylas(entryId) {
   const entry = proj?.entries.find(e => e.id === entryId);
   if (!entry) return;
   const tarih = new Date(entry.tarih).toLocaleDateString('tr-TR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  const ekip = entry.ekipId ? data.teams.find(t => t.id === entry.ekipId) : null;
+  const denetimciListesi = denetimciGorunumleri(entry);
+  const ekipStr = ekip ? `\n👷 Ekip: ${ekip.ad}` : '';
+  const denStr = denetimciListesi.length > 0 ? `\n🕵️ Denetimci: ${denetimciListesi.map(d => `${d.vakitEtiket ? d.vakitEtiket + ' ' : ''}${d.ad}${d.kurum ? ' (' + d.kurum + ')' : ''}`).join(', ')}` : '';
   const malzStr = entry.malzemeler?.length > 0 ? entry.malzemeler.map(m => `   • ${m.name}: ${m.miktar} ${m.birim}`).join('\n') : '   • Yok';
   const hataStr = entry.hatalar?.length > 0 ? entry.hatalar.map((h, i) => `   #${i+1} ${h.turler?.join(', ') || ''} - ${h.aciklama || ''}${h.giderildi ? ' ✅ GİDERİLDİ' : ''}`).join('\n') : '   • Yok';
   const notStr = entry.notlar ? `\n📝 Not: ${entry.notlar}` : '';
-  const metin = `📋 *GÜNLÜK KAZI RAPORU*\n📅 ${tarih}\n🏗 Proje: ${proj.name}${proj.location ? ' - ' + proj.location : ''}\n\n⛏ Günlük Kazı: *${entry.kaziMetre} m*${notStr}\n\n🧱 Malzeme:\n${malzStr}\n\n⚠️ Hata/Eksik:\n${hataStr}`;
+  const metin = `📋 *GÜNLÜK KAZI RAPORU*\n📅 ${tarih}\n🏗 Proje: ${proj.name}${proj.location ? ' - ' + proj.location : ''}${ekipStr}${denStr}\n\n⛏ Günlük Kazı: *${entry.kaziMetre} m*${notStr}\n\n🧱 Malzeme:\n${malzStr}\n\n⚠️ Hata/Eksik:\n${hataStr}`;
   paylas(metin, 'Günlük Kazı Raporu');
 }
 
@@ -2712,14 +2818,42 @@ function projeRaporPdf() {
     `<tr><td>${n}</td><td>${t}</td></tr>`
   ).join('') || '<tr><td colspan="2" style="color:#999">Malzeme kaydı yok</td></tr>';
 
+  // Ekip / Denetimci özetleri
+  const ekipMapPdf = {};
+  proj.entries.forEach(e => {
+    const key = e.ekipId || '__bos__';
+    if (!ekipMapPdf[key]) ekipMapPdf[key] = 0;
+    ekipMapPdf[key] += parseFloat(e.kaziMetre || 0);
+  });
+  const ekipRowsPdf = Object.entries(ekipMapPdf).sort((a, b) => b[1] - a[1]).map(([eid, toplam]) => {
+    const isim = eid === '__bos__' ? 'Ekip Atanmamış' : (data.teams.find(t => t.id === eid)?.ad || 'Bilinmeyen Ekip');
+    return `<tr><td>${isim}</td><td style="font-weight:700">${toplam.toLocaleString('tr-TR', { maximumFractionDigits: 0 })} m</td></tr>`;
+  }).join('') || '<tr><td colspan="2" style="color:#999">Kayıt yok</td></tr>';
+
+  const denMapPdf = {};
+  proj.entries.forEach(e => {
+    const secimler = denetimSecimleriNormalize(e.denetimSecimleri, e.denetimciId);
+    const keys = secimler.length > 0 ? secimler.map(s => s.id) : ['__bos__'];
+    keys.forEach(key => { denMapPdf[key] = (denMapPdf[key] || 0) + parseFloat(e.kaziMetre || 0); });
+  });
+  const denRowsPdf = Object.entries(denMapPdf).sort((a, b) => b[1] - a[1]).map(([did, toplam]) => {
+    const d = data.denetimciler.find(x => x.id === did);
+    const isim = did === '__bos__' ? 'Denetimci Atanmamış' : (d ? d.ad + (d.kurum ? ' (' + d.kurum + ')' : '') : 'Bilinmeyen Denetimci');
+    return `<tr><td>${isim}</td><td style="font-weight:700">${toplam.toLocaleString('tr-TR', { maximumFractionDigits: 0 })} m</td></tr>`;
+  }).join('') || '<tr><td colspan="2" style="color:#999">Kayıt yok</td></tr>';
+
   // Günlük kazı geçmişi
   const sortedEntries = [...proj.entries].sort((a, b) => new Date(a.tarih) - new Date(b.tarih));
   const entryRows = sortedEntries.map(e => {
     const hataVar = e.hatalar?.length > 0 || e.hata?.var;
     const malzStr = (e.malzemeler || []).map(m => `${m.name} ${m.miktar} ${m.birim}`).join(', ') || '-';
+    const ekipAdi = e.ekipId ? (data.teams.find(t => t.id === e.ekipId)?.ad || '-') : '-';
+    const denStr = denetimciGorunumleri(e).map(d => d.ad).join(', ') || '-';
     return `<tr${hataVar ? ' style="background:#fff5f5"' : ''}>
       <td>${new Date(e.tarih).toLocaleDateString('tr-TR')}</td>
       <td style="font-weight:700">${Number(e.kaziMetre) === 0 ? '🔧 Bakım' : e.kaziMetre + ' m'}</td>
+      <td>${ekipAdi}</td>
+      <td>${denStr}</td>
       <td>${malzStr}</td>
       <td>${hataVar ? '⚠️' : ''} ${(e.notlar || '').substring(0, 60)}</td>
     </tr>`;
@@ -2777,9 +2911,21 @@ function projeRaporPdf() {
     ${malzRows}
   </table>
 
+  <h2>👷 Ekiplere Göre Toplam</h2>
+  <table>
+    <tr><th>Ekip</th><th>Toplam</th></tr>
+    ${ekipRowsPdf}
+  </table>
+
+  <h2>🕵️ Denetimcilere Göre Toplam</h2>
+  <table>
+    <tr><th>Denetimci</th><th>Toplam</th></tr>
+    ${denRowsPdf}
+  </table>
+
   <h2>📅 Günlük Kazı Geçmişi</h2>
   <table>
-    <tr><th>Tarih</th><th>Kazı (m)</th><th>Malzeme</th><th>Not / Durum</th></tr>
+    <tr><th>Tarih</th><th>Kazı (m)</th><th>Ekip</th><th>Denetimci</th><th>Malzeme</th><th>Not / Durum</th></tr>
     ${entryRows}
   </table>
 
@@ -2810,6 +2956,23 @@ function projeRaporPaylas() {
   const malzMap = {};
   proj.entries.forEach(e => (e.malzemeler || []).forEach(m => { malzMap[m.name] = (malzMap[m.name] || 0) + parseFloat(m.miktar || 0); }));
   const malzStr = Object.entries(malzMap).length > 0 ? Object.entries(malzMap).map(([n, t]) => `   • ${n}: ${t}`).join('\n') : '   • Yok';
+  const ekipMapP = {};
+  proj.entries.forEach(e => { const key = e.ekipId || '__bos__'; ekipMapP[key] = (ekipMapP[key] || 0) + parseFloat(e.kaziMetre || 0); });
+  const ekipStrP = Object.entries(ekipMapP).sort((a, b) => b[1] - a[1]).map(([eid, t]) => {
+    const isim = eid === '__bos__' ? 'Ekip Atanmamış' : (data.teams.find(x => x.id === eid)?.ad || 'Bilinmeyen Ekip');
+    return `   • ${isim}: ${t.toLocaleString('tr-TR', { maximumFractionDigits: 0 })} m`;
+  }).join('\n') || '   • Yok';
+  const denMapP = {};
+  proj.entries.forEach(e => {
+    const secimler = denetimSecimleriNormalize(e.denetimSecimleri, e.denetimciId);
+    const keys = secimler.length > 0 ? secimler.map(s => s.id) : ['__bos__'];
+    keys.forEach(key => { denMapP[key] = (denMapP[key] || 0) + parseFloat(e.kaziMetre || 0); });
+  });
+  const denStrP = Object.entries(denMapP).sort((a, b) => b[1] - a[1]).map(([did, t]) => {
+    const d = data.denetimciler.find(x => x.id === did);
+    const isim = did === '__bos__' ? 'Denetimci Atanmamış' : (d ? d.ad + (d.kurum ? ' (' + d.kurum + ')' : '') : 'Bilinmeyen Denetimci');
+    return `   • ${isim}: ${t.toLocaleString('tr-TR', { maximumFractionDigits: 0 })} m`;
+  }).join('\n') || '   • Yok';
   const hataEntries = proj.entries.filter(e => e.hatalar?.length > 0 || e.hata?.var);
   const hataStr = hataEntries.length > 0 ? hataEntries.map(e => {
     const tarih = new Date(e.tarih).toLocaleDateString('tr-TR');
@@ -2818,7 +2981,7 @@ function projeRaporPaylas() {
       : `      - ${e.hata?.turler?.join(', ') || 'Belirtilmemiş'}${e.hata?.aciklama ? ': ' + e.hata.aciklama : ''}`;
     return `   📅 ${tarih}\n${hatalar}`;
   }).join('\n') : '   • Yok';
-  const metin = `📊 *PROJE RAPORU*\n🏗 ${proj.name}${proj.location ? ' - ' + proj.location : ''}\n\n📅 ${ilk} → ${son}\n⛏ Toplam Kazı: *${toplam.toLocaleString("tr-TR",{maximumFractionDigits:0})} m*\n📈 Günlük Ort. (çalışılan gün): ${ort} m\n📊 Günlük Ort. (takvim günü): ${ortTakvim} m\n📅 Kazı Günü: ${kaziEntries.length} gün${hedefStr}\n⚠️ Hatalı Gün: ${hataCount}\n\n🧱 Toplam Malzeme:\n${malzStr}\n\n⚠️ Hata Detayları:\n${hataStr}`;
+  const metin = `📊 *PROJE RAPORU*\n🏗 ${proj.name}${proj.location ? ' - ' + proj.location : ''}\n\n📅 ${ilk} → ${son}\n⛏ Toplam Kazı: *${toplam.toLocaleString("tr-TR",{maximumFractionDigits:0})} m*\n📈 Günlük Ort. (çalışılan gün): ${ort} m\n📊 Günlük Ort. (takvim günü): ${ortTakvim} m\n📅 Kazı Günü: ${kaziEntries.length} gün${hedefStr}\n⚠️ Hatalı Gün: ${hataCount}\n\n👷 Ekiplere Göre:\n${ekipStrP}\n\n🕵️ Denetimcilere Göre:\n${denStrP}\n\n🧱 Toplam Malzeme:\n${malzStr}\n\n⚠️ Hata Detayları:\n${hataStr}`;
   paylas(metin, 'Proje Raporu');
 }
 
@@ -5274,9 +5437,51 @@ function renderRapor() {
   } else ozCard.style.display = 'none';
 
   const sorted = [...proj.entries].sort((a, b) => new Date(b.tarih) - new Date(a.tarih));
-  document.getElementById('raporEntryBody').innerHTML = sorted.map(e =>
-    `<tr><td>${new Date(e.tarih).toLocaleDateString('tr-TR')}</td><td style="color:${Number(e.kaziMetre) === 0 ? '#a78bfa' : 'var(--yellow)'};font-weight:700">${Number(e.kaziMetre) === 0 ? '🔧 Bakım' : Number(e.kaziMetre).toLocaleString('tr-TR', {maximumFractionDigits:0}) + ' m'}</td><td>${e.malzemeler.length} çeşit</td></tr>`
-  ).join('');
+  document.getElementById('raporEntryBody').innerHTML = sorted.map(e => {
+    const ekipAdi = e.ekipId ? (data.teams.find(t => t.id === e.ekipId)?.ad || '-') : '-';
+    const denStr = denetimciGorunumleri(e).map(d => d.ad).join(', ') || '-';
+    return `<tr><td>${new Date(e.tarih).toLocaleDateString('tr-TR')}</td><td>${ekipAdi}</td><td>${denStr}</td><td style="color:${Number(e.kaziMetre) === 0 ? '#a78bfa' : 'var(--yellow)'};font-weight:700">${Number(e.kaziMetre) === 0 ? '🔧 Bakım' : Number(e.kaziMetre).toLocaleString('tr-TR', {maximumFractionDigits:0}) + ' m'}</td><td>${e.malzemeler.length} çeşit</td></tr>`;
+  }).join('');
+
+  // Ekiplere göre toplam
+  const ekipMapR = {};
+  proj.entries.forEach(e => {
+    const key = e.ekipId || '__bos__';
+    if (!ekipMapR[key]) ekipMapR[key] = { toplam: 0 };
+    ekipMapR[key].toplam += parseFloat(e.kaziMetre || 0);
+  });
+  const ekipGirisR = Object.entries(ekipMapR).sort((a, b) => b[1].toplam - a[1].toplam);
+  const ekipBodyR = document.getElementById('rEkipOzetBody');
+  if (ekipBodyR) {
+    ekipBodyR.innerHTML = ekipGirisR.length > 0 ? ekipGirisR.map(([eid, v]) => {
+      const isim = eid === '__bos__' ? 'Ekip Atanmamış' : (data.teams.find(t => t.id === eid)?.ad || 'Bilinmeyen Ekip');
+      return `<div class="rp-summary-row"><span class="rp-summary-name">${isim}</span><span class="rp-summary-val">${v.toplam.toLocaleString('tr-TR', {maximumFractionDigits:0})} m</span></div>`;
+    }).join('') : '<div class="rp-summary-empty">Kayıt yok</div>';
+  }
+  const badgeEkipR = document.getElementById('rEkipSayacBadge');
+  if (badgeEkipR) badgeEkipR.textContent = ekipGirisR.length;
+
+  // Denetimcilere göre toplam
+  const denMapR = {};
+  proj.entries.forEach(e => {
+    const secimler = denetimSecimleriNormalize(e.denetimSecimleri, e.denetimciId);
+    const keys = secimler.length > 0 ? secimler.map(s => s.id) : ['__bos__'];
+    keys.forEach(key => {
+      if (!denMapR[key]) denMapR[key] = { toplam: 0 };
+      denMapR[key].toplam += parseFloat(e.kaziMetre || 0);
+    });
+  });
+  const denGirisR = Object.entries(denMapR).sort((a, b) => b[1].toplam - a[1].toplam);
+  const denBodyR = document.getElementById('rDenetimciOzetBody');
+  if (denBodyR) {
+    denBodyR.innerHTML = denGirisR.length > 0 ? denGirisR.map(([did, v]) => {
+      const d = data.denetimciler.find(x => x.id === did);
+      const isim = did === '__bos__' ? 'Denetimci Atanmamış' : (d ? d.ad + (d.kurum ? ' (' + d.kurum + ')' : '') : 'Bilinmeyen Denetimci');
+      return `<div class="rp-summary-row"><span class="rp-summary-name">${isim}</span><span class="rp-summary-val">${v.toplam.toLocaleString('tr-TR', {maximumFractionDigits:0})} m</span></div>`;
+    }).join('') : '<div class="rp-summary-empty">Kayıt yok</div>';
+  }
+  const badgeDenR = document.getElementById('rDenetimciSayacBadge');
+  if (badgeDenR) badgeDenR.textContent = denGirisR.length;
 }
 
 // ─── AYLIK RAPOR (Tüm projeler, seçilen aya göre) ─────────
@@ -5472,7 +5677,7 @@ async function renderAylikRapor() {
   if (ozetGiris.length > 0) {
     ozetCard.style.display = 'block';
     document.getElementById('aylikProjeOzetBody').innerHTML = ozetGiris.map(([pid, v]) =>
-      `<tr><td>${tumProjeler[pid] || 'Bilinmeyen Proje'}</td><td style="color:var(--yellow);font-weight:700">${v.toplam.toLocaleString('tr-TR', { maximumFractionDigits: 0 })} m</td><td>${v.sayi}</td></tr>`
+      `<div class="rp-summary-row"><span class="rp-summary-name">${tumProjeler[pid] || 'Bilinmeyen Proje'}</span><span class="rp-summary-val">${v.toplam.toLocaleString('tr-TR', { maximumFractionDigits: 0 })} m</span></div>`
     ).join('');
   } else { ozetCard.style.display = 'none'; }
 
@@ -5488,7 +5693,7 @@ async function renderAylikRapor() {
   if (ekipOzetGiris.length > 0) {
     ekipOzetCard.style.display = 'block';
     document.getElementById('aylikEkipOzetBody').innerHTML = ekipOzetGiris.map(([eid, v]) =>
-      `<tr><td>${eid === '__bos__' ? 'Ekip Atanmamış' : (tumEkipler[eid] || 'Bilinmeyen Ekip')}</td><td style="color:var(--yellow);font-weight:700">${v.toplam.toLocaleString('tr-TR', { maximumFractionDigits: 0 })} m</td><td>${v.sayi}</td></tr>`
+      `<div class="rp-summary-row"><span class="rp-summary-name">${eid === '__bos__' ? 'Ekip Atanmamış' : (tumEkipler[eid] || 'Bilinmeyen Ekip')}</span><span class="rp-summary-val">${v.toplam.toLocaleString('tr-TR', { maximumFractionDigits: 0 })} m</span></div>`
     ).join('');
   } else { ekipOzetCard.style.display = 'none'; }
 
@@ -5507,7 +5712,7 @@ async function renderAylikRapor() {
   if (denetimciOzetGiris.length > 0) {
     denetimciOzetCard.style.display = 'block';
     document.getElementById('aylikDenetimciOzetBody').innerHTML = denetimciOzetGiris.map(([did, v]) =>
-      `<tr><td>${did === '__bos__' ? 'Denetimci Atanmamış' : (tumDenetimciler[did] || 'Bilinmeyen Denetimci')}</td><td style="color:var(--yellow);font-weight:700">${v.toplam.toLocaleString('tr-TR', { maximumFractionDigits: 0 })} m</td><td>${v.sayi}</td></tr>`
+      `<div class="rp-summary-row"><span class="rp-summary-name">${did === '__bos__' ? 'Denetimci Atanmamış' : (tumDenetimciler[did] || 'Bilinmeyen Denetimci')}</span><span class="rp-summary-val">${v.toplam.toLocaleString('tr-TR', { maximumFractionDigits: 0 })} m</span></div>`
     ).join('');
   } else { denetimciOzetCard.style.display = 'none'; }
 
@@ -5817,9 +6022,9 @@ function exportExcel(filtreliKayitlar, dosyaEki) {
   // SAYFA 2 — GÜNLÜK KAYITLAR
   // ══════════════════════════════════════════════════════
   const wsKayit = {};
-  const kBasliklar = ['No', 'Tarih', 'Kazı (m)', 'Malzemeler', 'Notlar', 'Hatalı?', 'Hata Türü', 'Hata Açıklaması'];
-  const kCols = 'ABCDEFGH';
-  wsKayit['!cols'] = [{ wch: 5 }, { wch: 13 }, { wch: 10 }, { wch: 42 }, { wch: 32 }, { wch: 10 }, { wch: 22 }, { wch: 40 }];
+  const kBasliklar = ['No', 'Tarih', 'Kazı (m)', 'Ekip', 'Denetimci', 'Malzemeler', 'Notlar', 'Hatalı?', 'Hata Türü', 'Hata Açıklaması'];
+  const kCols = 'ABCDEFGHIJ';
+  wsKayit['!cols'] = [{ wch: 5 }, { wch: 13 }, { wch: 10 }, { wch: 18 }, { wch: 24 }, { wch: 42 }, { wch: 32 }, { wch: 10 }, { wch: 22 }, { wch: 40 }];
   wsKayit['!rows'] = [{ hpt: 24 }];
 
   // Başlık satırı
@@ -5844,10 +6049,15 @@ function exportExcel(filtreliKayitlar, dosyaEki) {
 
     wsKayit['!rows'].push({ hpt: 18 });
 
+    const ekipAdiXls = e.ekipId ? (data.teams.find(t => t.id === e.ekipId)?.ad || '-') : '-';
+    const denStrXls = denetimciGorunumleri(e).map(d => `${d.vakitEtiket ? d.vakitEtiket + ' ' : ''}${d.ad}`).join(', ') || '-';
+
     const satirVeriler = [
       i + 1,
       new Date(e.tarih).toLocaleDateString('tr-TR'),
       e.kaziMetre,
+      ekipAdiXls,
+      denStrXls,
       e.malzemeler.map(m => `${m.name}: ${m.miktar} ${m.birim}`).join(' | ') || '-',
       e.notlar || '-',
       isHata ? '⚠ EVET' : '✓ Hayır',
@@ -5859,7 +6069,7 @@ function exportExcel(filtreliKayitlar, dosyaEki) {
       const col = kCols[j];
       const ref = `${col}${row}`;
       const isKazi = col === 'C';
-      const isHataCol = col === 'F';
+      const isHataCol = col === 'H';
       hucreYaz(wsKayit, ref, v, stil(
         {
           sz: 10,
@@ -5867,13 +6077,13 @@ function exportExcel(filtreliKayitlar, dosyaEki) {
           color: { rgb: isKazi ? 'D97706' : isHataCol && isHata ? 'DC2626' : isHataCol ? '16A34A' : '1E293B' }
         },
         { rgb: bg },
-        { horizontal: (col === 'A' || col === 'C' || col === 'F') ? 'center' : 'left' },
+        { horizontal: (col === 'A' || col === 'C' || col === 'H') ? 'center' : 'left' },
         true
       ));
     });
   });
 
-  wsKayit['!ref'] = `A1:H${sorted.length + 1}`;
+  wsKayit['!ref'] = `A1:J${sorted.length + 1}`;
   XLSX.utils.book_append_sheet(wb, wsKayit, '📋 Günlük Kayıtlar');
 
   // ══════════════════════════════════════════════════════
