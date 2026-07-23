@@ -1225,6 +1225,9 @@
         <div style="font-size:13px;font-weight:700;color:var(--blue)">🧱 Malzemeler</div>
         <span id="malzemeSayacBadge" style="font-size:11px;color:var(--muted)"></span>
       </div>
+      <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
+        <button type="button" onclick="malzemeYonetimAc()" style="flex-shrink:0;display:flex;align-items:center;gap:5px;background:rgba(59,130,246,0.12);border:1.5px solid var(--blue);color:#93c5fd;font-size:11.5px;font-weight:800;cursor:pointer;font-family:inherit;padding:6px 11px;border-radius:20px">🧱 Malzeme Türlerini Yönet</button>
+      </div>
 
       <!-- Mevcut malzemeler listesi -->
       <div id="mevcutMalzemeList" style="margin-bottom:10px"></div>
@@ -1236,11 +1239,10 @@
       <div id="yeniMalzemeForm" style="display:none;margin-top:10px;background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.2);border-radius:8px;padding:10px">
         <select id="fMalzemeSelect" style="margin-bottom:6px" onchange="malzemeSecDegis()">
           <option value="">Malzeme Seç</option>
-          <option>Boru</option><option>9'luk Mehol</option><option>15'lik Mehol</option>
-          <option>16'lık Mehol</option><option>12'lik Mehol</option><option>Bant</option><option>Diğer</option>
         </select>
         <div id="malzemeOzelWrap" style="display:none;margin-bottom:6px">
-          <input type="text" id="fMalzemeOzel" placeholder="Malzeme adını yazın" />
+          <div style="font-size:11px;color:var(--muted);margin-bottom:5px">Bu malzeme türü listeye kalıcı olarak eklenecek, tekrar yazmanıza gerek kalmayacak.</div>
+          <input type="text" id="fMalzemeOzel" placeholder="Yeni malzeme türü adı" />
         </div>
         <div class="form-row" style="margin-bottom:8px">
           <input type="number" id="fMiktar" placeholder="Miktar" inputmode="decimal" />
@@ -1249,7 +1251,7 @@
             <option>m³</option><option>kg</option><option>ton</option><option>lt</option>
           </select>
         </div>
-        <button class="btn-blue" style="width:100%" onclick="malzemeEkleVeKaydet()">💾 Ekle ve Kaydet</button>
+        <button class="btn-blue" id="malzemeKaydetBtn" style="width:100%" onclick="malzemeEkleVeKaydet()">💾 Ekle ve Kaydet</button>
       </div>
     </div>
 
@@ -1395,6 +1397,23 @@
         <button onclick="ekipEkle()" style="background:#8b5cf6;color:#fff;border:none;border-radius:8px;padding:0 18px;font-size:20px;font-weight:700;cursor:pointer;font-family:inherit">+</button>
       </div>
       <div id="ekipListesi"></div>
+    </div>
+  </div>
+</div>
+
+<div id="malzemeYonetimModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:450;align-items:center;justify-content:center">
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;margin:16px;max-width:400px;width:100%;max-height:80vh;display:flex;flex-direction:column">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--border)">
+      <span style="font-size:15px;font-weight:700;color:var(--blue)">🧱 Malzeme Türleri</span>
+      <button onclick="document.getElementById('malzemeYonetimModal').style.display='none'" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;line-height:1">✕</button>
+    </div>
+    <div style="padding:16px 18px;overflow-y:auto">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Kayıtlara malzeme eklerken seçebileceğiniz malzeme türlerini buradan yönetin. Yeni tür ekledikten sonra listede kalıcı olarak görünür, tekrar tekrar elle yazmanıza gerek kalmaz.</div>
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <input type="text" id="malzemeTuruAdInput" placeholder="örn: Boru, Mehol, Bant" style="flex:1" onkeydown="if(event.key==='Enter')malzemeTuruEkle()" />
+        <button onclick="malzemeTuruEkle()" style="background:var(--blue);color:#fff;border:none;border-radius:8px;padding:0 18px;font-size:20px;font-weight:700;cursor:pointer;font-family:inherit">+</button>
+      </div>
+      <div id="malzemeTuruListesi"></div>
     </div>
   </div>
 </div>
@@ -1561,6 +1580,7 @@ sb.auth.onAuthStateChange((event, session) => {
     if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED') {
       loadTeams();
       loadDenetimciler();
+      loadMalzemeTurleri();
       loadProjects().then(async () => {
         const ids = data.projects.map(p => p.id);
         if (!data.activeProjectId || !ids.includes(data.activeProjectId)) {
@@ -1579,7 +1599,7 @@ sb.auth.onAuthStateChange((event, session) => {
 });
 
 // ─── DATA ────────────────────────────────────────────────
-let data = { projects: [], deletedProjects: [], teams: [], denetimciler: [], activeProjectId: localStorage.getItem('aktifProje') || null };
+let data = { projects: [], deletedProjects: [], teams: [], denetimciler: [], malzemeTurleri: [], activeProjectId: localStorage.getItem('aktifProje') || null };
 let editingId = null;
 let tempMalzemeler = [];
 let tempHataTurler = [];
@@ -1627,6 +1647,8 @@ function resetForm() {
   if (typeof data !== 'undefined' && data.teams && data.teams.length === 0 && typeof loadTeams === 'function') loadTeams();
   if (typeof renderDenetimciSelect === 'function') renderDenetimciSelect();
   if (typeof data !== 'undefined' && data.denetimciler && data.denetimciler.length === 0 && typeof loadDenetimciler === 'function') loadDenetimciler();
+  if (typeof renderMalzemeSelect === 'function') renderMalzemeSelect();
+  if (typeof data !== 'undefined' && data.malzemeTurleri && data.malzemeTurleri.length === 0 && typeof loadMalzemeTurleri === 'function') loadMalzemeTurleri();
 }
 
 function resetDosyaForm() {
@@ -2315,6 +2337,12 @@ async function hizliDetay(entryId, tip, hataIdx = null) {
       // Sadece görüntüleme modunda ekleme formunu gizle
       document.getElementById('yeniMalzemeForm').style.display = 'none';
       document.getElementById('yeniMalzemeAcBtn').style.display = sadeceBak ? 'none' : 'block';
+      document.getElementById('yeniMalzemeAcBtn').textContent = '➕ Yeni Malzeme Ekle';
+      editingMalzemeIndex = null;
+      const kaydetBtn = document.getElementById('malzemeKaydetBtn');
+      if (kaydetBtn) kaydetBtn.textContent = '💾 Ekle ve Kaydet';
+      renderMalzemeSelect();
+      if (data.malzemeTurleri.length === 0) loadMalzemeTurleri();
       sb.from('kayitlar').select('malzemeler').eq('id', entryId).single().then(({data}) => {
         renderMevcutMalzemeler(entryId, data?.malzemeler || [], sadeceBak);
       });
@@ -3989,6 +4017,95 @@ function ekipSil(id) {
   });
 }
 
+// ─── MALZEME TÜRLERİ ────────────────────────────────────────
+async function loadMalzemeTurleri() {
+  try {
+    const { data: turler, error } = await sb.from('malzeme_turleri').select('*').order('ad', { ascending: true });
+    if (error) { console.warn('Malzeme türleri yüklenemedi:', error.message); return; }
+    data.malzemeTurleri = turler || [];
+    renderMalzemeSelect();
+    renderMalzemeTurleri();
+  } catch (e) { console.warn('Malzeme türleri yüklenemedi'); }
+}
+
+function renderMalzemeSelect() {
+  const sel = document.getElementById('fMalzemeSelect');
+  if (!sel) return;
+  const secili = sel.value;
+  sel.innerHTML = '<option value="">Malzeme Seç</option>'
+    + data.malzemeTurleri.map(t => `<option value="${t.ad}">${t.ad}</option>`).join('')
+    + '<option value="__yeni__">➕ Yeni Malzeme Türü Ekle...</option>';
+  if (secili) sel.value = secili;
+}
+
+function malzemeYonetimAc() {
+  const input = document.getElementById('malzemeTuruAdInput');
+  if (input) { input.value = ''; delete input.dataset.editingId; }
+  const btn = document.querySelector('#malzemeYonetimModal button[onclick="malzemeTuruEkle()"]');
+  if (btn) { btn.textContent = '+'; btn.style.background = 'var(--blue)'; }
+  renderMalzemeTurleri();
+  document.getElementById('malzemeYonetimModal').style.display = 'flex';
+}
+
+function renderMalzemeTurleri() {
+  const el = document.getElementById('malzemeTuruListesi');
+  if (!el) return;
+  if (data.malzemeTurleri.length === 0) {
+    el.innerHTML = '<div style="font-size:12px;color:var(--muted);text-align:center;padding:8px 0">Henüz malzeme türü eklenmedi.</div>';
+    return;
+  }
+  el.innerHTML = data.malzemeTurleri.map(t => `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.2);border-radius:8px;margin-bottom:6px">
+      <span style="font-size:13px;color:var(--text);font-weight:600">🧱 ${t.ad}</span>
+      <div style="display:flex;align-items:center;gap:4px">
+        <button onclick="malzemeTuruDuzenle('${t.id}')" style="background:none;border:none;color:var(--blue);font-size:14px;cursor:pointer;padding:2px 6px">✎</button>
+        <button onclick="malzemeTuruSil('${t.id}')" style="background:none;border:none;color:var(--red);font-size:16px;cursor:pointer;padding:2px 6px">×</button>
+      </div>
+    </div>`).join('');
+}
+
+async function malzemeTuruDuzenle(id) {
+  const t = data.malzemeTurleri.find(x => x.id === id);
+  if (!t) return;
+  const input = document.getElementById('malzemeTuruAdInput');
+  const btn = document.querySelector('#malzemeYonetimModal button[onclick="malzemeTuruEkle()"]');
+  input.value = t.ad;
+  input.focus();
+  input.dataset.editingId = id;
+  if (btn) { btn.textContent = '✓'; btn.style.background = '#10b981'; }
+}
+
+async function malzemeTuruEkle() {
+  const input = document.getElementById('malzemeTuruAdInput');
+  const ad = input?.value.trim();
+  if (!ad) { toast('⚠️ Malzeme türü adı girin', true); return; }
+  const editingId = input.dataset.editingId;
+  showLoading(editingId ? 'Güncelleniyor...' : 'Ekleniyor...');
+  const { error } = editingId
+    ? await sb.from('malzeme_turleri').update({ ad }).eq('id', editingId)
+    : await sb.from('malzeme_turleri').insert({ ad });
+  hideLoading();
+  if (error) { toast('⚠️ ' + error.message, true); return; }
+  input.value = '';
+  delete input.dataset.editingId;
+  const btn = document.querySelector('#malzemeYonetimModal button[onclick="malzemeTuruEkle()"]');
+  if (btn) { btn.textContent = '+'; btn.style.background = 'var(--blue)'; }
+  toast(editingId ? '✅ Malzeme türü güncellendi' : '✅ Malzeme türü eklendi');
+  await loadMalzemeTurleri();
+}
+
+function malzemeTuruSil(id) {
+  const t = data.malzemeTurleri.find(x => x.id === id);
+  silOnayla(`"${t?.ad || 'Bu malzeme türü'}" silinsin mi? Daha önce kaydedilmiş malzeme kayıtları etkilenmez.`, async () => {
+    showLoading('Siliniyor...');
+    const { error } = await sb.from('malzeme_turleri').delete().eq('id', id);
+    hideLoading();
+    if (error) { toast('⚠️ ' + error.message, true); return; }
+    toast('🗑 Malzeme türü silindi');
+    await loadMalzemeTurleri();
+  });
+}
+
 // ─── DENETİMCİLER ─────────────────────────────────────────
 async function loadDenetimciler() {
   try {
@@ -4898,6 +5015,8 @@ async function renderMevcutFotolar(entryId, fotograflar, sadeceBak = false) {
     </div>`).join('');
 }
 
+let editingMalzemeIndex = null;
+
 function toggleYeniMalzemeForm() {
   const form = document.getElementById('yeniMalzemeForm');
   const btn = document.getElementById('yeniMalzemeAcBtn');
@@ -4905,16 +5024,48 @@ function toggleYeniMalzemeForm() {
   form.style.display = acik ? 'none' : 'block';
   btn.textContent = acik ? '➕ Yeni Malzeme Ekle' : '✕ Formu Kapat';
   if (!acik) {
+    editingMalzemeIndex = null;
     document.getElementById('fMalzemeSelect').value = '';
+    document.getElementById('fMalzemeOzel').value = '';
     document.getElementById('fMiktar').value = '';
     document.getElementById('fBirim').value = 'adet';
     document.getElementById('malzemeOzelWrap').style.display = 'none';
+    const kaydetBtn = document.getElementById('malzemeKaydetBtn');
+    if (kaydetBtn) kaydetBtn.textContent = '💾 Ekle ve Kaydet';
   }
 }
 
 function malzemeSecDegis() {
   const val = document.getElementById('fMalzemeSelect').value;
-  document.getElementById('malzemeOzelWrap').style.display = val === 'Diğer' ? 'block' : 'none';
+  document.getElementById('malzemeOzelWrap').style.display = val === '__yeni__' ? 'block' : 'none';
+}
+
+function malzemeDuzenle(entryId, i) {
+  const m = tempMalzemeler[i];
+  if (!m) return;
+  editingMalzemeIndex = i;
+
+  const form = document.getElementById('yeniMalzemeForm');
+  form.style.display = 'block';
+  document.getElementById('yeniMalzemeAcBtn').textContent = '✕ Formu Kapat';
+
+  const sel = document.getElementById('fMalzemeSelect');
+  const varMi = Array.from(sel.options).some(o => o.value === m.name);
+  const ozelWrap = document.getElementById('malzemeOzelWrap');
+  if (varMi) {
+    sel.value = m.name;
+    ozelWrap.style.display = 'none';
+  } else {
+    sel.value = '__yeni__';
+    ozelWrap.style.display = 'block';
+    document.getElementById('fMalzemeOzel').value = m.name;
+  }
+  document.getElementById('fMiktar').value = m.miktar;
+  document.getElementById('fBirim').value = m.birim;
+
+  const kaydetBtn = document.getElementById('malzemeKaydetBtn');
+  if (kaydetBtn) kaydetBtn.textContent = '💾 Güncelle';
+  form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 async function renderMevcutMalzemeler(entryId, malzemeler, sadeceBak = false) {
@@ -4925,9 +5076,11 @@ async function renderMevcutMalzemeler(entryId, malzemeler, sadeceBak = false) {
   if (sayac) sayac.textContent = tempMalzemeler.length > 0 ? `${tempMalzemeler.length} malzeme` : '';
   if (tempMalzemeler.length === 0) { div.innerHTML = ''; return; }
   div.innerHTML = tempMalzemeler.map((m, i) => `
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:8px;margin-bottom:6px">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:8px;margin-bottom:6px;gap:8px">
       <span style="color:var(--text);font-size:13px">🧱 ${m.name} — <strong>${m.miktar} ${m.birim}</strong></span>
-      ${!sadeceBak ? `<button onclick="silOnayla('Bu malzemeyi silmek istediğine emin misin?', async () => {
+      ${!sadeceBak ? `<div style="display:flex;align-items:center;gap:4px;flex-shrink:0">
+        <button onclick="malzemeDuzenle('${entryId}', ${i})" style="background:none;border:1px solid var(--blue);color:var(--blue);border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;font-family:inherit">✎</button>
+        <button onclick="silOnayla('Bu malzemeyi silmek istediğine emin misin?', async () => {
         tempMalzemeler.splice(${i}, 1);
         renderMevcutMalzemeler('${entryId}', tempMalzemeler);
         const proj = activeProject();
@@ -4937,14 +5090,16 @@ async function renderMevcutMalzemeler(entryId, malzemeler, sadeceBak = false) {
           await sb.from('kayitlar').update({ malzemeler: entry.malzemeler }).eq('id', '${entryId}');
         }
         toast('✅ Malzeme silindi!');
-      })" style="background:none;border:1px solid var(--red);color:var(--red);border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;font-family:inherit">🗑</button>` : ''}
+      })" style="background:none;border:1px solid var(--red);color:var(--red);border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;font-family:inherit">🗑</button>
+      </div>` : ''}
     </div>`).join('');
 }
 
 async function malzemeEkleVeKaydet() {
   const sec = document.getElementById('fMalzemeSelect').value;
   const ozel = document.getElementById('fMalzemeOzel').value.trim();
-  const name = sec === 'Diğer' ? (ozel || 'Diğer') : sec;
+  const yeniTur = sec === '__yeni__';
+  const name = yeniTur ? ozel : sec;
   const miktar = parseFloat(document.getElementById('fMiktar').value);
   const birim = document.getElementById('fBirim').value;
   if (!name || isNaN(miktar) || miktar <= 0) { islemBildir('Malzeme ve miktar seçin!', null, true); return; }
@@ -4953,10 +5108,23 @@ async function malzemeEkleVeKaydet() {
   if (!entryId) { islemBildir('Kayıt bulunamadı!', null, true); return; }
 
   showLoading('Kaydediliyor...');
-  tempMalzemeler.push({ name, miktar, birim });
+
+  // Yeni malzeme türüyse, listeye kalıcı olarak ekle (bir daha elle yazmaya gerek kalmasın)
+  if (yeniTur && !data.malzemeTurleri.some(t => t.ad.toLowerCase() === name.toLowerCase())) {
+    const { error: turHata } = await sb.from('malzeme_turleri').insert({ ad: name });
+    if (!turHata) await loadMalzemeTurleri();
+  }
+
+  const oncekiListe = [...tempMalzemeler];
+  const duzenlemeModu = editingMalzemeIndex !== null;
+  if (duzenlemeModu) {
+    tempMalzemeler[editingMalzemeIndex] = { name, miktar, birim };
+  } else {
+    tempMalzemeler.push({ name, miktar, birim });
+  }
   const { error } = await sb.from('kayitlar').update({ malzemeler: tempMalzemeler }).eq('id', entryId);
   hideLoading();
-  if (error) { tempMalzemeler.pop(); islemBildir('Kaydedilemedi: ' + error.message, null, true); return; }
+  if (error) { tempMalzemeler = oncekiListe; islemBildir('Kaydedilemedi: ' + error.message, null, true); return; }
   // try/catch sarılı değil - satır bazlı hata yönetimi yeterli
 
   const proj = activeProject();
@@ -4964,16 +5132,20 @@ async function malzemeEkleVeKaydet() {
   if (entry) entry.malzemeler = [...tempMalzemeler];
 
   // Formu sıfırla ve kapat
+  editingMalzemeIndex = null;
   document.getElementById('fMalzemeSelect').value = '';
+  document.getElementById('fMalzemeOzel').value = '';
   document.getElementById('fMiktar').value = '';
   document.getElementById('fBirim').value = 'adet';
   document.getElementById('malzemeOzelWrap').style.display = 'none';
   document.getElementById('yeniMalzemeForm').style.display = 'none';
   document.getElementById('yeniMalzemeAcBtn').textContent = '➕ Yeni Malzeme Ekle';
+  const kaydetBtn = document.getElementById('malzemeKaydetBtn');
+  if (kaydetBtn) kaydetBtn.textContent = '💾 Ekle ve Kaydet';
 
   renderMevcutMalzemeler(entryId, tempMalzemeler);
   updateStats();
-  toast('✅ Malzeme eklendi!');
+  toast(duzenlemeModu ? '✅ Malzeme güncellendi!' : '✅ Malzeme eklendi!');
 }
 
 function toggleYeniHataForm() {
@@ -6875,6 +7047,7 @@ sb.auth.getSession().then(({ data: { session } }) => {
     document.getElementById('appMain').style.display = 'block';
     document.getElementById('appNav').style.display = 'flex';
     loadTeams();
+    loadMalzemeTurleri();
     loadProjects().then(async () => {
       const ids = data.projects.map(p => p.id);
       if (!data.activeProjectId || !ids.includes(data.activeProjectId)) {
