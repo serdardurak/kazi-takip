@@ -733,17 +733,11 @@
             <input type="number" id="fMetre" placeholder="örn: 25" inputmode="decimal" style="font-size:18px;font-weight:700;color:var(--yellow)" />
           </div>
         </div>
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px">
-          <label class="field-label" style="margin:0">KAZI EKİBİ (opsiyonel)</label>
-          <button type="button" onclick="ekipYonetimAc()" style="flex-shrink:0;display:flex;align-items:center;gap:5px;background:rgba(139,92,246,0.15);border:1.5px solid #8b5cf6;color:#c4b5fd;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;padding:7px 12px;border-radius:20px">👷 Ekipleri Yönet</button>
-        </div>
+        <label class="field-label" style="margin-top:12px">KAZI EKİBİ (opsiyonel)</label>
         <select id="fEkip">
           <option value="">Ekip seçilmedi</option>
         </select>
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px">
-          <label class="field-label" style="margin:0">DENETİMCİLER (opsiyonel)</label>
-          <button type="button" onclick="denetimciYonetimAc()" style="flex-shrink:0;display:flex;align-items:center;gap:5px;background:rgba(6,182,212,0.15);border:1.5px solid #06b6d4;color:#67e8f9;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;padding:7px 12px;border-radius:20px">🕵️ Denetimcileri Yönet</button>
-        </div>
+        <label class="field-label" style="margin-top:12px">DENETİMCİLER (opsiyonel)</label>
         <div id="fDenetimciSeciliListe" style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px"></div>
         <div style="display:flex;gap:6px">
           <select id="fDenetimciVakit" style="flex:0 0 122px">
@@ -994,9 +988,6 @@
       <label class="field-label">KATEGORİ *</label>
       <select id="gKategoriSelect" onchange="gKategoriDegis()">
         <option value="">Seçin...</option>
-        <option>Yemek</option><option>Yakıt</option><option>HGS</option><option>Market</option><option>Kırtasiye</option>
-        <option>Malzeme</option><option>İşçilik</option><option>Ulaşım</option>
-        <option>Konaklama</option><option>Diğer</option>
       </select>
       <div id="gKategoriOzelWrap" style="display:none;margin-top:6px">
         <input type="text" id="gKategoriOzel" placeholder="Kategori adını yazın" />
@@ -1011,8 +1002,123 @@
   </div>
 
   <!-- VIEW: PROJELER -->
-  <!-- VIEW: QR KOD -->
-  <div class="view" id="view-qrkod">
+  <!-- VIEW: YÖNETİM -->
+  <div class="view" id="view-yonetim">
+    <div class="card" id="yonetimOzetCard">
+      <div class="card-title">📊 Genel Durum</div>
+      <div class="stats-row" style="margin-bottom:0">
+        <div class="stat-card" style="border-top-color:var(--yellow)">
+          <div class="stat-icon">🏗</div>
+          <div class="stat-value" id="yonetimProjeSayisi">0</div>
+          <div class="stat-label">PROJE</div>
+        </div>
+        <div class="stat-card" style="border-top-color:#8b5cf6">
+          <div class="stat-icon">👷</div>
+          <div class="stat-value" id="yonetimOzetEkip">0</div>
+          <div class="stat-label">EKİP</div>
+        </div>
+        <div class="stat-card" style="border-top-color:#06b6d4">
+          <div class="stat-icon">🕵️</div>
+          <div class="stat-value" id="yonetimOzetDenetimci">0</div>
+          <div class="stat-label">DENETMEN</div>
+        </div>
+        <div class="stat-card" style="border-top-color:var(--blue)">
+          <div class="stat-icon">🧱</div>
+          <div class="stat-value" id="yonetimOzetMalzeme">0</div>
+          <div class="stat-label">MALZEME</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">⚙️ Yönetim Menüsü</div>
+      <div style="font-size:11.5px;color:var(--muted);margin:-4px 0 12px">Ekip, denetmen, malzeme ve gider kategorisi tanımlarıyla QR kod oluşturucu artık tek yerde. Aşağıdan yönetmek istediğin bölümü seç.</div>
+
+      <div id="yonetimMenu" style="display:flex;flex-direction:column;gap:8px">
+        <button type="button" onclick="ekipYonetimAc()" style="display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:rgba(139,92,246,0.08);border:1.5px solid rgba(139,92,246,0.4);color:var(--text);border-radius:10px;padding:12px 13px;cursor:pointer;font-family:inherit">
+          <span style="font-size:20px;flex-shrink:0">👷</span>
+          <span style="flex:1;min-width:0">
+            <span style="display:block;font-size:13.5px;font-weight:800;color:#c4b5fd">Ekipleri Yönet</span>
+            <span style="display:block;font-size:11px;color:var(--muted);margin-top:1px">Saha ekiplerini ekle, düzenle veya sil</span>
+          </span>
+          <span id="yonetimEkipSayac" style="flex-shrink:0;background:rgba(139,92,246,0.2);color:#c4b5fd;font-size:11px;font-weight:800;border-radius:20px;padding:3px 9px">0</span>
+          <span style="flex-shrink:0;color:var(--muted);font-size:15px">›</span>
+        </button>
+
+        <button type="button" onclick="denetimciYonetimAc()" style="display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:rgba(6,182,212,0.08);border:1.5px solid rgba(6,182,212,0.4);color:var(--text);border-radius:10px;padding:12px 13px;cursor:pointer;font-family:inherit">
+          <span style="font-size:20px;flex-shrink:0">🕵️</span>
+          <span style="flex:1;min-width:0">
+            <span style="display:block;font-size:13.5px;font-weight:800;color:#67e8f9">Denetmenleri Yönet</span>
+            <span style="display:block;font-size:11px;color:var(--muted);margin-top:1px">Denetmen adı ve kurum/firma bilgilerini yönet</span>
+          </span>
+          <span id="yonetimDenetimciSayac" style="flex-shrink:0;background:rgba(6,182,212,0.2);color:#67e8f9;font-size:11px;font-weight:800;border-radius:20px;padding:3px 9px">0</span>
+          <span style="flex-shrink:0;color:var(--muted);font-size:15px">›</span>
+        </button>
+
+        <button type="button" onclick="malzemeYonetimAc()" style="display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:rgba(59,130,246,0.08);border:1.5px solid rgba(59,130,246,0.4);color:var(--text);border-radius:10px;padding:12px 13px;cursor:pointer;font-family:inherit">
+          <span style="font-size:20px;flex-shrink:0">🧱</span>
+          <span style="flex:1;min-width:0">
+            <span style="display:block;font-size:13.5px;font-weight:800;color:#93c5fd">Malzeme Türlerini Yönet</span>
+            <span style="display:block;font-size:11px;color:var(--muted);margin-top:1px">Kayıtlarda seçilecek malzeme türlerini yönet</span>
+          </span>
+          <span id="yonetimMalzemeSayac" style="flex-shrink:0;background:rgba(59,130,246,0.2);color:#93c5fd;font-size:11px;font-weight:800;border-radius:20px;padding:3px 9px">0</span>
+          <span style="flex-shrink:0;color:var(--muted);font-size:15px">›</span>
+        </button>
+
+        <button type="button" onclick="giderKategoriYonetimAc()" style="display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:rgba(16,185,129,0.08);border:1.5px solid rgba(16,185,129,0.4);color:var(--text);border-radius:10px;padding:12px 13px;cursor:pointer;font-family:inherit">
+          <span style="font-size:20px;flex-shrink:0">💸</span>
+          <span style="flex:1;min-width:0">
+            <span style="display:block;font-size:13.5px;font-weight:800;color:#6ee7b7">Gider Kategorilerini Yönet</span>
+            <span style="display:block;font-size:11px;color:var(--muted);margin-top:1px">Gider eklerken seçilecek kategorileri yönet</span>
+          </span>
+          <span id="yonetimGiderKatSayac" style="flex-shrink:0;background:rgba(16,185,129,0.2);color:#6ee7b7;font-size:11px;font-weight:800;border-radius:20px;padding:3px 9px">0</span>
+          <span style="flex-shrink:0;color:var(--muted);font-size:15px">›</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Silinenler -->
+    <div class="card" id="silinenlerCard" style="display:none;margin-bottom:12px;border-color:rgba(239,68,68,0.3)">
+      <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';this.querySelector('.sil-chevron').textContent=this.nextElementSibling.style.display==='none'?'▼':'▲'">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:15px;font-weight:800;color:var(--red);letter-spacing:1px">🗑 SİLİNENLER</span>
+          <span id="silinenlerSayi" style="background:rgba(239,68,68,0.15);border:1px solid var(--red);color:#fca5a5;border-radius:20px;padding:2px 8px;font-size:11px;font-weight:700"></span>
+        </div>
+        <span class="sil-chevron" style="color:var(--muted);font-size:12px">▼</span>
+      </div>
+      <div id="silinenlerList" style="display:none;margin-top:10px"></div>
+    </div>
+
+    <!-- Veri Yedekleme & Geri Yükleme -->
+    <div class="card" style="margin-top:12px;border-color:rgba(59,130,246,0.3)">
+      <div class="card-title" style="color:var(--blue)">💾 VERİ YÖNETİMİ</div>
+
+      <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Tüm projeler, kazı kayıtları ve giderleri yedekler.</div>
+
+      <button onclick="verileriYedekle()" style="width:100%;background:rgba(59,130,246,0.12);border:1.5px solid var(--blue);color:var(--blue);border-radius:10px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:8px">
+        📥 Supabase Yedeği Al (JSON)
+      </button>
+
+      <div style="display:flex;gap:8px;margin-bottom:8px">
+        <button onclick="verileriExcelYedekle()" style="flex:1;background:rgba(16,185,129,0.1);border:1.5px solid #10b981;color:#10b981;border-radius:10px;padding:12px 8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">
+          📊 Excel
+        </button>
+        <button onclick="verileriPdfYedekle()" style="flex:1;background:rgba(239,68,68,0.1);border:1.5px solid var(--red);color:var(--red);border-radius:10px;padding:12px 8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">
+          📄 PDF
+        </button>
+      </div>
+
+      <div style="border-top:1px solid var(--border);margin:8px 0 12px"></div>
+
+      <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Daha önce alınan JSON yedeği Supabase'e geri yükler. Mevcut verilerle çakışanlar güncellenir, yeni olanlar eklenir.</div>
+
+      <button onclick="document.getElementById('importDosya').click()" style="width:100%;background:rgba(245,158,11,0.1);border:1.5px solid var(--yellow);color:var(--yellow);border-radius:10px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">
+        📤 Yedeği Geri Yükle (JSON)
+      </button>
+      <input type="file" id="importDosya" accept=".json" style="display:none" onchange="verileriIceAktar(this)">
+    </div>
+
+    <div class="rp-eyebrow">🔗 QR Kod Oluşturucu</div>
     <div class="card">
       <div class="card-title">🔗 QR Kod Oluştur</div>
       <div style="display:flex;gap:6px;margin-bottom:14px">
@@ -1081,49 +1187,8 @@
       <div id="projList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px"></div>
     </div>
 
-    <!-- Silinenler -->
-    <div class="card" id="silinenlerCard" style="display:none;margin-bottom:12px;border-color:rgba(239,68,68,0.3)">
-      <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';this.querySelector('.sil-chevron').textContent=this.nextElementSibling.style.display==='none'?'▼':'▲'">
-        <div style="display:flex;align-items:center;gap:8px">
-          <span style="font-size:15px;font-weight:800;color:var(--red);letter-spacing:1px">🗑 SİLİNENLER</span>
-          <span id="silinenlerSayi" style="background:rgba(239,68,68,0.15);border:1px solid var(--red);color:#fca5a5;border-radius:20px;padding:2px 8px;font-size:11px;font-weight:700"></span>
-        </div>
-        <span class="sil-chevron" style="color:var(--muted);font-size:12px">▼</span>
-      </div>
-      <div id="silinenlerList" style="display:none;margin-top:10px"></div>
-    </div>
-
-    <!-- Veri Yedekleme & Geri Yükleme -->
-    <div class="card" style="margin-top:12px;border-color:rgba(59,130,246,0.3)">
-      <div class="card-title" style="color:var(--blue)">💾 VERİ YÖNETİMİ</div>
-
-      <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Tüm projeler, kazı kayıtları ve giderleri yedekler.</div>
-
-      <button onclick="verileriYedekle()" style="width:100%;background:rgba(59,130,246,0.12);border:1.5px solid var(--blue);color:var(--blue);border-radius:10px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:8px">
-        📥 Supabase Yedeği Al (JSON)
-      </button>
-
-      <div style="display:flex;gap:8px;margin-bottom:8px">
-        <button onclick="verileriExcelYedekle()" style="flex:1;background:rgba(16,185,129,0.1);border:1.5px solid #10b981;color:#10b981;border-radius:10px;padding:12px 8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">
-          📊 Excel
-        </button>
-        <button onclick="verileriPdfYedekle()" style="flex:1;background:rgba(239,68,68,0.1);border:1.5px solid var(--red);color:var(--red);border-radius:10px;padding:12px 8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">
-          📄 PDF
-        </button>
-      </div>
-
-      <div style="border-top:1px solid var(--border);margin:8px 0 12px"></div>
-
-      <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Daha önce alınan JSON yedeği Supabase'e geri yükler. Mevcut verilerle çakışanlar güncellenir, yeni olanlar eklenir.</div>
-
-      <button onclick="document.getElementById('importDosya').click()" style="width:100%;background:rgba(245,158,11,0.1);border:1.5px solid var(--yellow);color:var(--yellow);border-radius:10px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">
-        📤 Yedeği Geri Yükle (JSON)
-      </button>
-      <input type="file" id="importDosya" accept=".json" style="display:none" onchange="verileriIceAktar(this)">
-
-    </div>
-
   </div><!-- /view-projeler -->
+
 
 
   <!-- VIEW: GİDERLER -->
@@ -1225,10 +1290,6 @@
         <div style="font-size:13px;font-weight:700;color:var(--blue)">🧱 Malzemeler</div>
         <span id="malzemeSayacBadge" style="font-size:11px;color:var(--muted)"></span>
       </div>
-      <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
-        <button type="button" onclick="malzemeYonetimAc()" style="flex-shrink:0;display:flex;align-items:center;gap:5px;background:rgba(59,130,246,0.12);border:1.5px solid var(--blue);color:#93c5fd;font-size:11.5px;font-weight:800;cursor:pointer;font-family:inherit;padding:6px 11px;border-radius:20px">🧱 Malzeme Türlerini Yönet</button>
-      </div>
-
       <!-- Mevcut malzemeler listesi -->
       <div id="mevcutMalzemeList" style="margin-bottom:10px"></div>
 
@@ -1237,13 +1298,10 @@
 
       <!-- Yeni malzeme formu (gizli) -->
       <div id="yeniMalzemeForm" style="display:none;margin-top:10px;background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.2);border-radius:8px;padding:10px">
-        <select id="fMalzemeSelect" style="margin-bottom:6px" onchange="malzemeSecDegis()">
+        <select id="fMalzemeSelect" style="margin-bottom:6px">
           <option value="">Malzeme Seç</option>
         </select>
-        <div id="malzemeOzelWrap" style="display:none;margin-bottom:6px">
-          <div style="font-size:11px;color:var(--muted);margin-bottom:5px">Bu malzeme türü listeye kalıcı olarak eklenecek, tekrar yazmanıza gerek kalmayacak.</div>
-          <input type="text" id="fMalzemeOzel" placeholder="Yeni malzeme türü adı" />
-        </div>
+        <div style="font-size:10.5px;color:var(--muted);margin-bottom:8px">Aradığınız tür listede yoksa önce ⚙️ Yönetim &gt; Malzeme Türlerini Yönet'ten ekleyin.</div>
         <div class="form-row" style="margin-bottom:8px">
           <input type="number" id="fMiktar" placeholder="Miktar" inputmode="decimal" />
           <select id="fBirim">
@@ -1370,8 +1428,8 @@
   <button class="nav-btn" id="nav-giderler" onclick="showView('giderler')">
     <span class="icon">💸</span><span>Giderler</span>
   </button>
-  <button class="nav-btn" id="nav-qrkod" onclick="showView('qrkod')">
-    <span class="icon">🔗</span><span>QR Kod</span>
+  <button class="nav-btn" id="nav-yonetim" onclick="showView('yonetim')">
+    <span class="icon">⚙️</span><span>Yönetim</span>
   </button>
   <button class="nav-btn" id="nav-rapor" onclick="showView('rapor')">
     <span class="icon">📊</span><span>Rapor</span>
@@ -1432,6 +1490,23 @@
         <button onclick="denetimciEkle()" style="background:#06b6d4;color:#fff;border:none;border-radius:8px;padding:0 18px;font-size:20px;font-weight:700;cursor:pointer;font-family:inherit">+</button>
       </div>
       <div id="denetimciListesi"></div>
+    </div>
+  </div>
+</div>
+
+<div id="giderKategoriYonetimModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:450;align-items:center;justify-content:center">
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;margin:16px;max-width:400px;width:100%;max-height:80vh;display:flex;flex-direction:column">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--border)">
+      <span style="font-size:15px;font-weight:700;color:#6ee7b7">💸 Gider Kategorileri</span>
+      <button onclick="document.getElementById('giderKategoriYonetimModal').style.display='none'" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;line-height:1">✕</button>
+    </div>
+    <div style="padding:16px 18px;overflow-y:auto">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Gider eklerken seçebileceğiniz kategorileri buradan yönetin. "Diğer" seçeneği her zaman listede kalır ve tek seferlik özel kategoriler için serbest metin girmenizi sağlar.</div>
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <input type="text" id="giderKategoriAdInput" placeholder="örn: Sigorta, Kira" style="flex:1" onkeydown="if(event.key==='Enter')giderKategoriEkle()" />
+        <button onclick="giderKategoriEkle()" style="background:#10b981;color:#fff;border:none;border-radius:8px;padding:0 18px;font-size:20px;font-weight:700;cursor:pointer;font-family:inherit">+</button>
+      </div>
+      <div id="giderKategoriListesi"></div>
     </div>
   </div>
 </div>
@@ -1581,6 +1656,7 @@ sb.auth.onAuthStateChange((event, session) => {
       loadTeams();
       loadDenetimciler();
       loadMalzemeTurleri();
+      loadGiderKategorileri();
       loadProjects().then(async () => {
         const ids = data.projects.map(p => p.id);
         if (!data.activeProjectId || !ids.includes(data.activeProjectId)) {
@@ -1599,7 +1675,7 @@ sb.auth.onAuthStateChange((event, session) => {
 });
 
 // ─── DATA ────────────────────────────────────────────────
-let data = { projects: [], deletedProjects: [], teams: [], denetimciler: [], malzemeTurleri: [], activeProjectId: localStorage.getItem('aktifProje') || null };
+let data = { projects: [], deletedProjects: [], teams: [], denetimciler: [], malzemeTurleri: [], giderKategorileri: [], activeProjectId: localStorage.getItem('aktifProje') || null };
 let editingId = null;
 let tempMalzemeler = [];
 let tempHataTurler = [];
@@ -1624,10 +1700,8 @@ function resetForm() {
   tempMalzemeler = [];
   tempHataTurler = [];
   tempHatalar = [];
-  const fields = { fTarih: new Date().toISOString().split('T')[0], fMetre: '', fNotlar: '', fMalzemeSelect: '', fMiktar: '', fBirim: 'adet', fMalzemeOzel: '' };
+  const fields = { fTarih: new Date().toISOString().split('T')[0], fMetre: '', fNotlar: '', fMalzemeSelect: '', fMiktar: '', fBirim: 'adet' };
   Object.entries(fields).forEach(([id, val]) => { const el = document.getElementById(id); if (el) el.value = val; });
-  const malzemeOzel = document.getElementById('malzemeOzelWrap');
-  if (malzemeOzel) malzemeOzel.style.display = 'none';
   document.querySelectorAll('.hata-type-btn').forEach(b => b.className = 'hata-type-btn');
   const saveBtn = document.getElementById('saveBtn');
   if (saveBtn) saveBtn.textContent = '💾 Kaydı Kaydet';
@@ -2045,6 +2119,7 @@ function showView(name) {
     document.getElementById('detayEkleWrap').style.display = 'none';
   }
   if (name === 'giderler') loadGiderler();
+  if (name === 'yonetim') { renderYonetimOzet(); if (typeof renderSilinenler === 'function') renderSilinenler(); }
   if (name === 'gider-ekle' && !editingGiderId) {
     resetGiderForm();
     const fb = document.getElementById('giderFormBaslik');
@@ -3973,6 +4048,7 @@ function renderEkipler() {
         <button onclick="ekipSil('${t.id}')" style="background:none;border:none;color:var(--red);font-size:16px;cursor:pointer;padding:2px 6px">×</button>
       </div>
     </div>`).join('');
+  renderYonetimOzet();
 }
 
 async function ekipDuzenle(id) {
@@ -4033,8 +4109,7 @@ function renderMalzemeSelect() {
   if (!sel) return;
   const secili = sel.value;
   sel.innerHTML = '<option value="">Malzeme Seç</option>'
-    + data.malzemeTurleri.map(t => `<option value="${t.ad}">${t.ad}</option>`).join('')
-    + '<option value="__yeni__">➕ Yeni Malzeme Türü Ekle...</option>';
+    + data.malzemeTurleri.map(t => `<option value="${t.ad}">${t.ad}</option>`).join('');
   if (secili) sel.value = secili;
 }
 
@@ -4062,6 +4137,7 @@ function renderMalzemeTurleri() {
         <button onclick="malzemeTuruSil('${t.id}')" style="background:none;border:none;color:var(--red);font-size:16px;cursor:pointer;padding:2px 6px">×</button>
       </div>
     </div>`).join('');
+  renderYonetimOzet();
 }
 
 async function malzemeTuruDuzenle(id) {
@@ -4228,6 +4304,149 @@ function renderDenetimciler() {
         <button onclick="denetimciSil('${d.id}')" style="background:none;border:none;color:var(--red);font-size:16px;cursor:pointer;padding:2px 6px">×</button>
       </div>
     </div>`).join('');
+  renderYonetimOzet();
+}
+
+// ─── YÖNETİM (ekip / denetmen / malzeme türü / gider kategorisi sayaçları) ────
+function renderYonetimOzet() {
+  const ekipEl = document.getElementById('yonetimEkipSayac');
+  const denEl = document.getElementById('yonetimDenetimciSayac');
+  const malEl = document.getElementById('yonetimMalzemeSayac');
+  const gkEl = document.getElementById('yonetimGiderKatSayac');
+  if (ekipEl) ekipEl.textContent = (data.teams || []).length;
+  if (denEl) denEl.textContent = (data.denetimciler || []).length;
+  if (malEl) malEl.textContent = (data.malzemeTurleri || []).length;
+  if (gkEl) gkEl.textContent = (data.giderKategorileri || []).length;
+
+  const projSayEl = document.getElementById('yonetimProjeSayisi');
+  const ozetEkipEl = document.getElementById('yonetimOzetEkip');
+  const ozetDenEl = document.getElementById('yonetimOzetDenetimci');
+  const ozetMalEl = document.getElementById('yonetimOzetMalzeme');
+  if (projSayEl) projSayEl.textContent = (data.projects || []).length;
+  if (ozetEkipEl) ozetEkipEl.textContent = (data.teams || []).length;
+  if (ozetDenEl) ozetDenEl.textContent = (data.denetimciler || []).length;
+  if (ozetMalEl) ozetMalEl.textContent = (data.malzemeTurleri || []).length;
+}
+
+// ─── GİDER KATEGORİLERİ ─────────────────────────────────────
+// Tablo henüz oluşturulmadıysa (veya boşsa) bu varsayılan liste kullanılır.
+const GIDER_KATEGORI_VARSAYILAN = ['Yemek', 'Yakıt', 'HGS', 'Market', 'Kırtasiye', 'Malzeme', 'İşçilik', 'Ulaşım', 'Konaklama'];
+let _giderKategoriYukleniyor = null;
+
+function loadGiderKategorileri() {
+  // Aynı anda birden fazla çağrı gelirse (örn. açılışta iki farklı init akışı),
+  // hepsi aynı tek isteği bekler — bu sayede tohumlama asla iki kez tetiklenmez.
+  if (_giderKategoriYukleniyor) return _giderKategoriYukleniyor;
+  _giderKategoriYukleniyor = _loadGiderKategorileriGercek().finally(() => { _giderKategoriYukleniyor = null; });
+  return _giderKategoriYukleniyor;
+}
+
+async function _loadGiderKategorileriGercek() {
+  try {
+    const { data: katlar, error } = await sb.from('gider_kategorileri').select('*').order('ad', { ascending: true });
+    if (error) { console.warn('Gider kategorileri yüklenemedi (tablo henüz yok olabilir):', error.message); renderGiderKategoriSelect(); return; }
+
+    // Tablo var ama boş ve daha önce hiç tohumlanmamışsa, varsayılan kategorileri
+    // bir kereye mahsus DB'ye ekle ki "Yönetim"den düzenlenebilir/silinebilir olsunlar.
+    if ((katlar || []).length === 0 && !localStorage.getItem('giderKategoriTohumlandi')) {
+      localStorage.setItem('giderKategoriTohumlandi', '1'); // önce kilitle ki paralel çağrı tekrar denemesin
+      const { error: seedErr } = await sb.from('gider_kategorileri').insert(GIDER_KATEGORI_VARSAYILAN.map(ad => ({ ad })));
+      if (!seedErr) {
+        const { data: yeniKatlar } = await sb.from('gider_kategorileri').select('*').order('ad', { ascending: true });
+        data.giderKategorileri = yeniKatlar || [];
+        renderGiderKategoriSelect();
+        renderGiderKategoriListesi();
+        renderYonetimOzet();
+        return;
+      }
+    }
+
+    data.giderKategorileri = katlar || [];
+    renderGiderKategoriSelect();
+    renderGiderKategoriListesi();
+    renderYonetimOzet();
+  } catch (e) { console.warn('Gider kategorileri yüklenemedi'); renderGiderKategoriSelect(); }
+}
+
+function renderGiderKategoriSelect() {
+  const sel = document.getElementById('gKategoriSelect');
+  if (!sel) return;
+  const secili = sel.value;
+  const kaynak = (data.giderKategorileri && data.giderKategorileri.length > 0)
+    ? data.giderKategorileri.map(k => k.ad)
+    : GIDER_KATEGORI_VARSAYILAN;
+  sel.innerHTML = '<option value="">Seçin...</option>'
+    + kaynak.map(ad => `<option>${ad}</option>`).join('')
+    + '<option>Diğer</option>';
+  if (secili) sel.value = secili;
+}
+
+function giderKategoriYonetimAc() {
+  const input = document.getElementById('giderKategoriAdInput');
+  if (input) { input.value = ''; delete input.dataset.editingId; }
+  const btn = document.querySelector('#giderKategoriYonetimModal button[onclick="giderKategoriEkle()"]');
+  if (btn) { btn.textContent = '+'; btn.style.background = '#10b981'; }
+  renderGiderKategoriListesi();
+  document.getElementById('giderKategoriYonetimModal').style.display = 'flex';
+}
+
+function renderGiderKategoriListesi() {
+  const el = document.getElementById('giderKategoriListesi');
+  if (!el) return;
+  if (!data.giderKategorileri || data.giderKategorileri.length === 0) {
+    el.innerHTML = `<div style="font-size:12px;color:var(--muted);text-align:center;padding:8px 0">Henüz özel kategori eklenmedi. Varsayılan liste kullanılıyor: ${GIDER_KATEGORI_VARSAYILAN.join(', ')}.</div>`;
+    return;
+  }
+  el.innerHTML = data.giderKategorileri.map(k => `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2);border-radius:8px;margin-bottom:6px">
+      <span style="font-size:13px;color:var(--text);font-weight:600">💸 ${k.ad}</span>
+      <div style="display:flex;align-items:center;gap:4px">
+        <button onclick="giderKategoriDuzenle('${k.id}')" style="background:none;border:none;color:var(--blue);font-size:14px;cursor:pointer;padding:2px 6px">✎</button>
+        <button onclick="giderKategoriSil('${k.id}')" style="background:none;border:none;color:var(--red);font-size:16px;cursor:pointer;padding:2px 6px">×</button>
+      </div>
+    </div>`).join('');
+}
+
+async function giderKategoriDuzenle(id) {
+  const k = data.giderKategorileri.find(x => x.id === id);
+  if (!k) return;
+  const input = document.getElementById('giderKategoriAdInput');
+  const btn = document.querySelector('#giderKategoriYonetimModal button[onclick="giderKategoriEkle()"]');
+  input.value = k.ad;
+  input.focus();
+  input.dataset.editingId = id;
+  if (btn) { btn.textContent = '✓'; btn.style.background = '#10b981'; }
+}
+
+async function giderKategoriEkle() {
+  const input = document.getElementById('giderKategoriAdInput');
+  const ad = input?.value.trim();
+  if (!ad) { toast('⚠️ Kategori adı girin', true); return; }
+  const editingId = input.dataset.editingId;
+  showLoading(editingId ? 'Güncelleniyor...' : 'Ekleniyor...');
+  const { error } = editingId
+    ? await sb.from('gider_kategorileri').update({ ad }).eq('id', editingId)
+    : await sb.from('gider_kategorileri').insert({ ad });
+  hideLoading();
+  if (error) { toast('⚠️ ' + error.message + (error.message.includes('does not exist') ? '\n"gider_kategorileri" tablosu Supabase\'de oluşturulmamış olabilir.' : ''), true); return; }
+  input.value = '';
+  delete input.dataset.editingId;
+  const btn = document.querySelector('#giderKategoriYonetimModal button[onclick="giderKategoriEkle()"]');
+  if (btn) { btn.textContent = '+'; btn.style.background = '#10b981'; }
+  toast(editingId ? '✅ Kategori güncellendi' : '✅ Kategori eklendi');
+  await loadGiderKategorileri();
+}
+
+function giderKategoriSil(id) {
+  const k = data.giderKategorileri.find(x => x.id === id);
+  silOnayla(`"${k?.ad || 'Bu kategori'}" silinsin mi? Daha önce kaydedilmiş giderler etkilenmez.`, async () => {
+    showLoading('Siliniyor...');
+    const { error } = await sb.from('gider_kategorileri').delete().eq('id', id);
+    hideLoading();
+    if (error) { toast('⚠️ ' + error.message, true); return; }
+    toast('🗑 Kategori silindi');
+    await loadGiderKategorileri();
+  });
 }
 
 async function denetimciDuzenle(id) {
@@ -5026,18 +5245,11 @@ function toggleYeniMalzemeForm() {
   if (!acik) {
     editingMalzemeIndex = null;
     document.getElementById('fMalzemeSelect').value = '';
-    document.getElementById('fMalzemeOzel').value = '';
     document.getElementById('fMiktar').value = '';
     document.getElementById('fBirim').value = 'adet';
-    document.getElementById('malzemeOzelWrap').style.display = 'none';
     const kaydetBtn = document.getElementById('malzemeKaydetBtn');
     if (kaydetBtn) kaydetBtn.textContent = '💾 Ekle ve Kaydet';
   }
-}
-
-function malzemeSecDegis() {
-  const val = document.getElementById('fMalzemeSelect').value;
-  document.getElementById('malzemeOzelWrap').style.display = val === '__yeni__' ? 'block' : 'none';
 }
 
 function malzemeDuzenle(entryId, i) {
@@ -5051,15 +5263,14 @@ function malzemeDuzenle(entryId, i) {
 
   const sel = document.getElementById('fMalzemeSelect');
   const varMi = Array.from(sel.options).some(o => o.value === m.name);
-  const ozelWrap = document.getElementById('malzemeOzelWrap');
-  if (varMi) {
-    sel.value = m.name;
-    ozelWrap.style.display = 'none';
-  } else {
-    sel.value = '__yeni__';
-    ozelWrap.style.display = 'block';
-    document.getElementById('fMalzemeOzel').value = m.name;
+  if (!varMi) {
+    // Eski kayıtta, artık listede olmayan bir malzeme adı olabilir — görüntülemek için geçici seçenek ekle.
+    const opt = document.createElement('option');
+    opt.value = m.name;
+    opt.textContent = `${m.name} (listede yok)`;
+    sel.appendChild(opt);
   }
+  sel.value = m.name;
   document.getElementById('fMiktar').value = m.miktar;
   document.getElementById('fBirim').value = m.birim;
 
@@ -5096,10 +5307,7 @@ async function renderMevcutMalzemeler(entryId, malzemeler, sadeceBak = false) {
 }
 
 async function malzemeEkleVeKaydet() {
-  const sec = document.getElementById('fMalzemeSelect').value;
-  const ozel = document.getElementById('fMalzemeOzel').value.trim();
-  const yeniTur = sec === '__yeni__';
-  const name = yeniTur ? ozel : sec;
+  const name = document.getElementById('fMalzemeSelect').value;
   const miktar = parseFloat(document.getElementById('fMiktar').value);
   const birim = document.getElementById('fBirim').value;
   if (!name || isNaN(miktar) || miktar <= 0) { islemBildir('Malzeme ve miktar seçin!', null, true); return; }
@@ -5108,12 +5316,6 @@ async function malzemeEkleVeKaydet() {
   if (!entryId) { islemBildir('Kayıt bulunamadı!', null, true); return; }
 
   showLoading('Kaydediliyor...');
-
-  // Yeni malzeme türüyse, listeye kalıcı olarak ekle (bir daha elle yazmaya gerek kalmasın)
-  if (yeniTur && !data.malzemeTurleri.some(t => t.ad.toLowerCase() === name.toLowerCase())) {
-    const { error: turHata } = await sb.from('malzeme_turleri').insert({ ad: name });
-    if (!turHata) await loadMalzemeTurleri();
-  }
 
   const oncekiListe = [...tempMalzemeler];
   const duzenlemeModu = editingMalzemeIndex !== null;
@@ -5134,10 +5336,8 @@ async function malzemeEkleVeKaydet() {
   // Formu sıfırla ve kapat
   editingMalzemeIndex = null;
   document.getElementById('fMalzemeSelect').value = '';
-  document.getElementById('fMalzemeOzel').value = '';
   document.getElementById('fMiktar').value = '';
   document.getElementById('fBirim').value = 'adet';
-  document.getElementById('malzemeOzelWrap').style.display = 'none';
   document.getElementById('yeniMalzemeForm').style.display = 'none';
   document.getElementById('yeniMalzemeAcBtn').textContent = '➕ Yeni Malzeme Ekle';
   const kaydetBtn = document.getElementById('malzemeKaydetBtn');
@@ -5189,10 +5389,6 @@ function toggleHataTur(btn, tur) {
 }
 
 // ─── MALZEME ─────────────────────────────────────────────
-document.getElementById('fMalzemeSelect').addEventListener('change', function() {
-  document.getElementById('malzemeOzelWrap').style.display = this.value === 'Diğer' ? 'block' : 'none';
-});
-
 function removeMalzeme(idx) {
   tempMalzemeler.splice(idx, 1);
   renderMalzemeChips();
@@ -6634,7 +6830,17 @@ function editGider(id) {
   if (!g) return;
   editingGiderId = id;
   document.getElementById('gTarih').value = g.tarih;
-  document.getElementById('gKategoriSelect').value = g.kategori;
+  if (typeof renderGiderKategoriSelect === 'function') renderGiderKategoriSelect();
+  const katSel = document.getElementById('gKategoriSelect');
+  const katVarMi = Array.from(katSel.options).some(o => o.value === g.kategori);
+  if (katVarMi) {
+    katSel.value = g.kategori;
+    document.getElementById('gKategoriOzelWrap').style.display = 'none';
+  } else {
+    katSel.value = 'Diğer';
+    document.getElementById('gKategoriOzelWrap').style.display = 'block';
+    document.getElementById('gKategoriOzel').value = g.kategori || '';
+  }
   document.getElementById('gAciklama').value = g.aciklama || '';
   document.getElementById('gTutar').value = g.tutar;
   document.getElementById('gSaveBtn').textContent = '✅ Güncelle';
@@ -6651,6 +6857,7 @@ function cancelGiderEdit() {
 
 function resetGiderForm() {
   document.getElementById('gTarih').value = new Date().toISOString().split('T')[0];
+  if (typeof renderGiderKategoriSelect === 'function') renderGiderKategoriSelect();
   document.getElementById('gKategoriSelect').value = '';
   document.getElementById('gAciklama').value = '';
   document.getElementById('gTutar').value = '';
@@ -6925,10 +7132,13 @@ function renderSilinenler() {
   const wrap = document.getElementById('silinenlerCard');
   if (!wrap) return;
   const deleted = data.deletedProjects || [];
-  if (deleted.length === 0) { wrap.style.display = 'none'; return; }
   wrap.style.display = 'block';
   document.getElementById('silinenlerSayi').textContent = deleted.length;
   const list = document.getElementById('silinenlerList');
+  if (deleted.length === 0) {
+    list.innerHTML = `<div style="font-size:12px;color:var(--muted);text-align:center;padding:12px 0">Silinmiş proje yok. Bir projeyi sildiğinde burada görünür ve istersen geri getirebilirsin.</div>`;
+    return;
+  }
   list.innerHTML = deleted.map(p => `
     <div style="display:flex;align-items:center;padding:12px 14px;border-bottom:1px solid var(--border);gap:10px;opacity:0.75">
       <div style="flex:1">
@@ -7048,6 +7258,7 @@ sb.auth.getSession().then(({ data: { session } }) => {
     document.getElementById('appNav').style.display = 'flex';
     loadTeams();
     loadMalzemeTurleri();
+    loadGiderKategorileri();
     loadProjects().then(async () => {
       const ids = data.projects.map(p => p.id);
       if (!data.activeProjectId || !ids.includes(data.activeProjectId)) {
