@@ -125,6 +125,36 @@
     .nav-btn.nav-fab:active .icon { transform: translateY(-15px) scale(0.9); }
     .nav-btn.nav-fab span:last-child { margin-top: -9px; font-weight: 800; }
 
+    /* CENTER GROUP — geri / ekle / ileri */
+    .nav-fab-group {
+      flex: 0 0 128px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: relative;
+    }
+    .nav-fab-group .nav-btn.nav-fab { flex: 1 1 auto; }
+    .nav-arrow {
+      flex: 0 0 auto;
+      width: 30px; height: 30px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(150deg, var(--yellow-light), var(--yellow));
+      border: none; color: #1e293b;
+      box-shadow: 0 3px 10px rgba(245,158,11,0.35), 0 1px 3px rgba(0,0,0,0.3);
+      transform: translateY(-6px);
+      cursor: pointer; -webkit-tap-highlight-color: transparent;
+      transition: transform 0.15s ease, opacity 0.15s ease, box-shadow 0.15s ease;
+    }
+    .nav-arrow svg {
+      width: 15px; height: 15px;
+      stroke: #1e293b; fill: none;
+      stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .nav-arrow:active:not(:disabled) { transform: translateY(-6px) scale(0.88); }
+    .nav-arrow:disabled {
+      background: var(--card2, #263349); color: var(--muted);
+      box-shadow: none; opacity: 0.5; cursor: default;
+    }
+    .nav-arrow:disabled svg { stroke: var(--muted); }
+
     /* MAIN */
     main { padding: 14px 14px 78px; }
 
@@ -1464,10 +1494,18 @@
     <span class="icon"><svg viewBox="0 0 24 24"><path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></span>
     <span>Yönetim</span>
   </button>
+  <div class="nav-fab-group">
+  <button class="nav-arrow" id="navBackBtn" onclick="navGeri()" aria-label="Geri" disabled>
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+  </button>
   <button class="nav-btn nav-fab" id="nav-kayit" onclick="yeniKayitAc()">
     <span class="icon"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
     <span>Kayıt Ekle</span>
   </button>
+  <button class="nav-arrow" id="navFwdBtn" onclick="navIleri()" aria-label="İleri" disabled>
+    <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+  </button>
+  </div>
   <button class="nav-btn" id="nav-rapor" onclick="showView('rapor')">
     <span class="icon"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>
     <span>Rapor</span>
@@ -2059,6 +2097,37 @@ function islemBildir(mesaj, hedef, hata = false) {
   }, 1800);
 }
 
+// ─── SAYFA GEÇMİŞİ (İLERİ/GERİ) ─────────────────────────
+let _navHistory = ['dashboard'];
+let _navIndex = 0;
+
+function _navHistPush(name) {
+  if (_navHistory[_navIndex] === name) { _updateNavArrows(); return; }
+  _navHistory = _navHistory.slice(0, _navIndex + 1);
+  _navHistory.push(name);
+  _navIndex = _navHistory.length - 1;
+  _updateNavArrows();
+}
+
+function _updateNavArrows() {
+  const backBtn = document.getElementById('navBackBtn');
+  const fwdBtn = document.getElementById('navFwdBtn');
+  if (backBtn) backBtn.disabled = _navIndex <= 0;
+  if (fwdBtn) fwdBtn.disabled = _navIndex >= _navHistory.length - 1;
+}
+
+function navGeri() {
+  if (_navIndex <= 0) return;
+  _navIndex--;
+  showView(_navHistory[_navIndex], true);
+}
+
+function navIleri() {
+  if (_navIndex >= _navHistory.length - 1) return;
+  _navIndex++;
+  showView(_navHistory[_navIndex], true);
+}
+
 // ─── NAVIGATION ──────────────────────────────────────────
 function geriGit() {
   if (window._lastSavedEntryId && document.getElementById('detayEkleWrap')?.style.display !== 'none') {
@@ -2076,6 +2145,7 @@ function yeniKayitAc() {
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('view-kayit').classList.add('active');
   document.getElementById('nav-kayit').classList.add('active');
+  _navHistPush('kayit');
   const projSel = document.getElementById('projSelector');
   if (projSel) projSel.style.display = data.projects.length > 0 ? 'flex' : 'none';
 
@@ -2130,7 +2200,7 @@ function bitirDetay() {
   }
 }
 
-function showView(name) {
+function showView(name, fromHistory = false) {
   _oncekiSayfa = document.querySelector('.nav-btn.active')?.id?.replace('nav-', '') || 'dashboard';
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -2138,6 +2208,7 @@ function showView(name) {
   const navEl = document.getElementById('nav-' + name);
   if (viewEl) viewEl.classList.add('active');
   if (navEl) navEl.classList.add('active');
+  if (fromHistory) { _updateNavArrows(); } else { _navHistPush(name); }
   const hasProjSelector = ['dashboard', 'kayit', 'rapor'].includes(name);
   const projSel = document.getElementById('projSelector');
   if (projSel) projSel.style.display = hasProjSelector && data.projects.length > 0 ? 'flex' : 'none';
@@ -7287,6 +7358,7 @@ sb.auth.getSession().then(({ data: { session } }) => {
     document.getElementById('appHeader').style.display = 'flex';
     document.getElementById('appMain').style.display = 'block';
     document.getElementById('appNav').style.display = 'flex';
+    _updateNavArrows();
     loadTeams();
     loadMalzemeTurleri();
     loadGiderKategorileri();
