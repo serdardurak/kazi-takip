@@ -73,22 +73,60 @@
       background: var(--card);
       border-top: 1px solid var(--border);
       display: flex;
+      padding: 0 2px calc(env(safe-area-inset-bottom));
       z-index: 100;
+      box-shadow: 0 -2px 14px rgba(0,0,0,0.22);
     }
     .nav-btn {
       flex: 1; display: flex; flex-direction: column;
       align-items: center; justify-content: center;
-      padding: 7px 2px;
+      position: relative;
+      padding: 10px 2px 9px;
       background: none; border: none; cursor: pointer;
-      color: var(--muted); font-size: 9px; gap: 2px;
-      border-top: 2px solid transparent;
-      transition: color 0.15s;
+      color: var(--muted); font-size: 10px; font-weight: 600;
+      letter-spacing: 0.15px;
+      gap: 4px;
+      transition: color 0.18s ease;
+      -webkit-tap-highlight-color: transparent;
     }
-    .nav-btn.active { color: var(--yellow); border-top-color: var(--yellow); }
-    .nav-btn .icon { font-size: 18px; }
+    .nav-btn::before {
+      content: '';
+      position: absolute; top: 0; left: 10px; right: 10px;
+      height: 2.5px; border-radius: 0 0 4px 4px;
+      background: var(--yellow);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.25s ease;
+    }
+    .nav-btn.active::before { transform: scaleX(1); }
+    .nav-btn .icon { line-height: 1; transition: transform 0.18s ease; }
+    .nav-btn .icon svg {
+      width: 21px; height: 21px; display: block;
+      stroke: currentColor; fill: none;
+      stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+      transition: stroke-width 0.18s ease;
+    }
+    .nav-btn.active .icon svg { stroke-width: 2.1; }
+    .nav-btn:active .icon { transform: scale(0.88); }
+    .nav-btn.active { color: var(--yellow); }
+
+    /* PRIMARY ACTION — elevated FAB for "Kayıt Ekle" */
+    .nav-btn.nav-fab { color: var(--yellow-light); }
+    .nav-btn.nav-fab::before { display: none; }
+    .nav-btn.nav-fab .icon {
+      width: 50px; height: 50px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(150deg, var(--yellow-light), var(--yellow));
+      box-shadow: 0 5px 16px rgba(245,158,11,0.4), 0 2px 5px rgba(0,0,0,0.35);
+      transform: translateY(-15px);
+      transition: transform 0.15s ease;
+    }
+    .nav-btn.nav-fab .icon svg { stroke: #1e293b; stroke-width: 2.4; width: 23px; height: 23px; }
+    .nav-btn.nav-fab:active .icon { transform: translateY(-15px) scale(0.9); }
+    .nav-btn.nav-fab span:last-child { margin-top: -9px; font-weight: 800; }
 
     /* MAIN */
-    main { padding: 14px 14px 80px; }
+    main { padding: 14px 14px 78px; }
 
     /* VIEWS */
     .view { display: none; }
@@ -571,7 +609,6 @@
 <!-- HEADER -->
 <div class="header" id="appHeader" style="display:none">
   <div class="header-left">
-    <button id="geriBtn" onclick="geriGit()" style="display:none;background:none;border:none;color:var(--yellow);font-size:22px;cursor:pointer;padding:0 8px 0 0;line-height:1">←</button>
     <div onclick="showView('dashboard')" style="display:flex;align-items:center;gap:10px;cursor:pointer">
     <svg width="40" height="40" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
       <circle cx="50" cy="50" r="49" fill="#b45309"/>
@@ -1419,23 +1456,25 @@
 
 <!-- BOTTOM NAV -->
 <nav class="bottom-nav" id="appNav" style="display:none">
-  <button class="nav-btn active" id="nav-dashboard" onclick="showView('dashboard')">
-    <span class="icon">📋</span><span>Özet</span>
-  </button>
-  <button class="nav-btn" id="nav-kayit" onclick="yeniKayitAc()">
-    <span class="icon">➕</span><span>Kayıt Ekle</span>
-  </button>
   <button class="nav-btn" id="nav-giderler" onclick="showView('giderler')">
-    <span class="icon">💸</span><span>Giderler</span>
+    <span class="icon"><svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2.5"/><circle cx="12" cy="12" r="2.4"/></svg></span>
+    <span>Giderler</span>
   </button>
   <button class="nav-btn" id="nav-yonetim" onclick="showView('yonetim')">
-    <span class="icon">⚙️</span><span>Yönetim</span>
+    <span class="icon"><svg viewBox="0 0 24 24"><path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></span>
+    <span>Yönetim</span>
+  </button>
+  <button class="nav-btn nav-fab" id="nav-kayit" onclick="yeniKayitAc()">
+    <span class="icon"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
+    <span>Kayıt Ekle</span>
   </button>
   <button class="nav-btn" id="nav-rapor" onclick="showView('rapor')">
-    <span class="icon">📊</span><span>Rapor</span>
+    <span class="icon"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>
+    <span>Rapor</span>
   </button>
   <button class="nav-btn" id="nav-projeler" onclick="showView('projeler')">
-    <span class="icon">🏗</span><span>Projeler</span>
+    <span class="icon"><svg viewBox="0 0 24 24"><path d="M4 21V9l5-4v16"/><path d="M9 8h7l3 3v10"/><path d="M9 13h10"/><path d="M4 21h16"/></svg></span>
+    <span>Projeler</span>
   </button>
   <button class="nav-btn" id="nav-gider-ekle" style="display:none"></button>
 </nav>
@@ -1894,8 +1933,6 @@ async function saveEntry() {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('view-dashboard').classList.add('active');
-  document.getElementById('nav-dashboard').classList.add('active');
-  document.getElementById('geriBtn').style.display = 'none';
   const fTarih = document.getElementById('fTarih');
   if (fTarih) fTarih.value = new Date().toISOString().split('T')[0];
   const fMetre = document.getElementById('fMetre');
@@ -1954,8 +1991,6 @@ async function updateEntry() {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('view-dashboard').classList.add('active');
-  document.getElementById('nav-dashboard').classList.add('active');
-  document.getElementById('geriBtn').style.display = 'none';
   toast('✅ Kayıt güncellendi!');
   } catch(err) { hideLoading(); islemBildir('Güncellenemedi: ' + (err.message || 'Bağlantı hatası'), null, true); }
 }
@@ -2041,8 +2076,6 @@ function yeniKayitAc() {
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('view-kayit').classList.add('active');
   document.getElementById('nav-kayit').classList.add('active');
-  const geriBtn = document.getElementById('geriBtn');
-  if (geriBtn) geriBtn.style.display = 'block';
   const projSel = document.getElementById('projSelector');
   if (projSel) projSel.style.display = data.projects.length > 0 ? 'flex' : 'none';
 
@@ -2105,8 +2138,6 @@ function showView(name) {
   const navEl = document.getElementById('nav-' + name);
   if (viewEl) viewEl.classList.add('active');
   if (navEl) navEl.classList.add('active');
-  const geriBtn = document.getElementById('geriBtn');
-  if (geriBtn) geriBtn.style.display = name === 'dashboard' ? 'none' : 'block';
   const hasProjSelector = ['dashboard', 'kayit', 'rapor'].includes(name);
   const projSel = document.getElementById('projSelector');
   if (projSel) projSel.style.display = hasProjSelector && data.projects.length > 0 ? 'flex' : 'none';
