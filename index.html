@@ -114,20 +114,43 @@
     .nav-btn.nav-fab { color: var(--yellow-light); }
     .nav-btn.nav-fab::before { display: none; }
     .nav-btn.nav-fab .icon {
-      width: 50px; height: 50px; border-radius: 50%;
+      width: 38px; height: 38px; border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
       background: linear-gradient(150deg, var(--yellow-light), var(--yellow));
       box-shadow: 0 5px 16px rgba(245,158,11,0.4), 0 2px 5px rgba(0,0,0,0.35);
-      transform: translateY(-15px);
+      transform: translateY(11px);
       transition: transform 0.15s ease;
     }
-    .nav-btn.nav-fab .icon svg { stroke: #1e293b; stroke-width: 2.4; width: 23px; height: 23px; }
-    .nav-btn.nav-fab:active .icon { transform: translateY(-15px) scale(0.9); }
+    .nav-btn.nav-fab .icon svg { stroke: #1e293b; stroke-width: 2.4; width: 18px; height: 18px; }
+    .nav-btn.nav-fab:active .icon { transform: translateY(11px) scale(0.9); }
+
+    /* SON KAYITLAR SHORTCUT — floats clear above the FAB, styled like the nav arrows */
+    .nav-ozet-btn {
+      position: absolute;
+      top: -14px; left: 50%;
+      transform: translateX(-50%);
+      width: 26px; height: 26px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(150deg, var(--yellow-light), var(--yellow));
+      border: none; outline: none; color: #1e293b;
+      box-shadow: 0 3px 10px rgba(245,158,11,0.35), 0 1px 3px rgba(0,0,0,0.3);
+      cursor: pointer; -webkit-tap-highlight-color: transparent;
+      z-index: 5;
+      transition: transform 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+    }
+    .nav-ozet-btn:focus { outline: none; }
+    .nav-ozet-btn svg { width: 12px; height: 12px; stroke: #1e293b; fill: none; stroke-width: 2.3; stroke-linecap: round; stroke-linejoin: round; }
+    .nav-ozet-btn.inactive {
+      background: var(--card2, #263349);
+      box-shadow: none;
+    }
+    .nav-ozet-btn.inactive svg { stroke: var(--muted); }
+    .nav-ozet-btn:active { transform: translateX(-50%) scale(0.88); }
     .nav-btn.nav-fab span:last-child { margin-top: -9px; font-weight: 800; }
 
     /* CENTER GROUP — geri / ekle / ileri */
     .nav-fab-group {
-      flex: 0 0 128px;
+      flex: 0 0 104px;
       display: flex; align-items: center; justify-content: space-between;
       position: relative;
     }
@@ -1501,9 +1524,11 @@
   <button class="nav-arrow" id="navBackBtn" onclick="navGeri()" aria-label="Geri" disabled>
     <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
   </button>
+  <button class="nav-ozet-btn" id="navHomeBtn" onclick="sonKayitlarAc()" aria-label="Son Kayıtlar">
+    <svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9"/></svg>
+  </button>
   <button class="nav-btn nav-fab" id="nav-kayit" onclick="yeniKayitAc()">
     <span class="icon"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
-    <span>Kayıt Ekle</span>
   </button>
   <button class="nav-arrow" id="navFwdBtn" onclick="navIleri()" aria-label="İleri" disabled>
     <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
@@ -1660,7 +1685,7 @@
 </div>
 
 <!-- SİLME ONAY MODALI -->
-<div id="silOnayModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:400;align-items:center;justify-content:center">
+<div id="silOnayModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:600;align-items:center;justify-content:center">
   <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;margin:20px;max-width:320px;width:100%">
     <div id="silOnayIkon" style="font-size:32px;text-align:center;margin-bottom:12px">🗑</div>
     <div id="silOnayMesaj" style="font-size:15px;color:var(--text);text-align:center;margin-bottom:20px;line-height:1.5">Silmek istediğine emin misin?</div>
@@ -1672,7 +1697,7 @@
 </div>
 
 <!-- BİLGİ MODALI -->
-<div id="bilgiModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:400;align-items:center;justify-content:center">
+<div id="bilgiModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:600;align-items:center;justify-content:center">
   <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;margin:20px;max-width:340px;width:100%">
     <div id="bilgiModalIkon" style="font-size:32px;text-align:center;margin-bottom:10px">ℹ️</div>
     <div id="bilgiModalBaslik" style="font-size:15px;font-weight:800;color:var(--text);text-align:center;margin-bottom:10px;letter-spacing:0.5px"></div>
@@ -1784,6 +1809,29 @@ let _onayDuzenleIdx = null;
 let _sahaOnaylariDesteklenmiyor = false;
 let _denetimciDesteklenmiyor = false;
 let _denetimSecimleriDesteklenmiyor = false;
+
+// Excel/PDF yedekleri "kayitlar" tablosunun sadece kullandıkları sütunları çeker
+// (select('*') yerine) — fotograflar/hatalar/malzemeler gibi büyük jsonb alanları
+// gerekmeyen (PDF) veya kısmen gerekli olan (Excel) durumlarda ağa daha az veri gider.
+async function kayitlarExportCek(genisMi) {
+  const kolonlar = () => {
+    let k = 'proje_id, tarih, kazi_metre, ekip_id, notlar';
+    if (!_denetimciDesteklenmiyor) k += ', denetimci_id';
+    if (!_denetimSecimleriDesteklenmiyor) k += ', denetim_secimleri';
+    if (genisMi) k += ', malzemeler, hatalar, fotograflar, kmz';
+    return k;
+  };
+  let res = await sb.from('kayitlar').select(kolonlar());
+  if (res.error && res.error.message && res.error.message.includes('denetim_secimleri')) {
+    _denetimSecimleriDesteklenmiyor = true;
+    res = await sb.from('kayitlar').select(kolonlar());
+  }
+  if (res.error && res.error.message && res.error.message.includes('denetimci_id')) {
+    _denetimciDesteklenmiyor = true;
+    res = await sb.from('kayitlar').select(kolonlar());
+  }
+  return res;
+}
 let formDenetimSecimleri = []; // [{id, vakit}] - forma o an eklenmiş denetimciler
 const VAKIT_ETIKETLERI = { sabah: '🌅 Sabah', ogle: '🌇 Öğleden Sonra', tumgun: '' };
 let _editOverlayAcik = false;
@@ -1865,7 +1913,8 @@ async function onFotografSec() {
   if (files.length > 5) { islemBildir('En fazla 5 fotoğraf seçin!', null, true); document.getElementById('fFotograflar').value = ''; return; }
   const eklenecek = Math.min(files.length, kalan);
   showLoading('Fotoğraflar işleniyor...');
-  for (let i = 0; i < eklenecek; i++) { tempFotograflar.push(await sikistir(files[i])); }
+  const sikistirilmis = await Promise.all(Array.from(files).slice(0, eklenecek).map(f => sikistir(f)));
+  tempFotograflar.push(...sikistirilmis);
   hideLoading();
   document.getElementById('fFotograflar').value = '';
   renderFotografOnizleme();
@@ -1878,7 +1927,8 @@ async function onHataGorselSec() {
   const files = document.getElementById('fHataGorsel').files;
   if (!files.length) return;
   showLoading(`${files.length} görsel işleniyor...`);
-  for (const f of files) { tempHataGorseller.push(await sikistir(f)); }
+  const sikistirilmis = await Promise.all(Array.from(files).map(f => sikistir(f)));
+  tempHataGorseller.push(...sikistirilmis);
   hideLoading();
   document.getElementById('fHataGorsel').value = '';
   renderHataGorselOnizleme();
@@ -1922,11 +1972,13 @@ function renderHataGorselOnizleme() {
 
 async function uploadDosyalar(entryId) {
   const urls = { fotograflar: [], kmz: null };
-  for (const f of tempFotograflar) {
+  urls.fotograflar = (await Promise.all(tempFotograflar.map(async f => {
     const path = `kayitlar/${entryId}/fotograflar/${Date.now()}_${f.file.name}`;
     const { error } = await sb.storage.from('kazi-dosyalar').upload(path, f.file);
-    if (!error) { const { data } = sb.storage.from('kazi-dosyalar').getPublicUrl(path); urls.fotograflar.push({ url: data.publicUrl, name: f.file.name, path }); }
-  }
+    if (error) return null;
+    const { data } = sb.storage.from('kazi-dosyalar').getPublicUrl(path);
+    return { url: data.publicUrl, name: f.file.name, path };
+  }))).filter(Boolean);
   if (tempKmz) {
     const proj = activeProject();
     const entry = proj?.entries.find(e => e.id === entryId);
@@ -2135,6 +2187,11 @@ function _updateNavArrows() {
   const fwdBtn = document.getElementById('navFwdBtn');
   if (backBtn) backBtn.disabled = _navIndex <= 0;
   if (fwdBtn) fwdBtn.disabled = _navIndex >= _navHistory.length - 1;
+  const homeBtn = document.getElementById('navHomeBtn');
+  if (homeBtn) {
+    const guncelSayfa = _navHistory[_navIndex];
+    homeBtn.classList.toggle('inactive', guncelSayfa === 'dashboard');
+  }
 }
 
 function navGeri() {
@@ -2155,6 +2212,11 @@ function geriGit() {
     bitirDetay(); return;
   }
   showView(_oncekiSayfa || 'dashboard');
+}
+
+function sonKayitlarAc() {
+  showView('dashboard');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function yeniKayitAc() {
@@ -3862,7 +3924,7 @@ async function verileriExcelYedekle() {
   try {
     const [projelerRes, kayitlarRes, giderlerRes, ekiplerRes, denetimcilerRes] = await Promise.all([
       sb.from('projeler').select('*'),
-      sb.from('kayitlar').select('*'),
+      kayitlarExportCek(true),
       sb.from('giderler').select('*'),
       sb.from('ekipler').select('*'),
       sb.from('denetimciler').select('*')
@@ -3929,7 +3991,7 @@ async function verileriPdfYedekle() {
   try {
     const [projelerRes, kayitlarRes, giderlerRes, ekiplerRes, denetimcilerRes] = await Promise.all([
       sb.from('projeler').select('*'),
-      sb.from('kayitlar').select('*'),
+      kayitlarExportCek(false),
       sb.from('giderler').select('*'),
       sb.from('ekipler').select('*'),
       sb.from('denetimciler').select('*')
@@ -4744,6 +4806,7 @@ function denetimciSil(id) {
 let _entryPage = 0;
 const ENTRY_PAGE_SIZE = 30;
 let _entryHasMore = false;
+let _entryTotalCount = 0;
 
 async function loadEntries(projeId, sessiz = false, sayfa = 0) {
   if (!projeId) return;
@@ -4751,6 +4814,7 @@ async function loadEntries(projeId, sessiz = false, sayfa = 0) {
   try {
     const from = sayfa * ENTRY_PAGE_SIZE;
     const to = from + ENTRY_PAGE_SIZE - 1;
+    const countOpt = sayfa === 0 ? { count: 'exact' } : {};
     const kolonlar = () => {
       let k = 'id, tarih, kazi_metre, ekip_id, notlar, malzemeler, hatalar, hata, fotograflar, kmz';
       if (!_sahaOnaylariDesteklenmiyor) k += ', saha_onaylari';
@@ -4759,7 +4823,7 @@ async function loadEntries(projeId, sessiz = false, sayfa = 0) {
       return k;
     };
     let { data: kayitlar, error, count } = await sb.from('kayitlar')
-      .select(kolonlar(), { count: 'exact' })
+      .select(kolonlar(), countOpt)
       .eq('proje_id', projeId)
       .order('tarih', { ascending: false })
       .range(from, to);
@@ -4767,7 +4831,7 @@ async function loadEntries(projeId, sessiz = false, sayfa = 0) {
     if (error && error.message && error.message.includes('saha_onaylari')) {
       _sahaOnaylariDesteklenmiyor = true;
       ({ data: kayitlar, error, count } = await sb.from('kayitlar')
-        .select(kolonlar(), { count: 'exact' })
+        .select(kolonlar(), countOpt)
         .eq('proje_id', projeId)
         .order('tarih', { ascending: false })
         .range(from, to));
@@ -4776,7 +4840,7 @@ async function loadEntries(projeId, sessiz = false, sayfa = 0) {
     if (error && error.message && error.message.includes('denetim_secimleri')) {
       _denetimSecimleriDesteklenmiyor = true;
       ({ data: kayitlar, error, count } = await sb.from('kayitlar')
-        .select(kolonlar(), { count: 'exact' })
+        .select(kolonlar(), countOpt)
         .eq('proje_id', projeId)
         .order('tarih', { ascending: false })
         .range(from, to));
@@ -4785,7 +4849,7 @@ async function loadEntries(projeId, sessiz = false, sayfa = 0) {
     if (error && error.message && error.message.includes('denetimci_id')) {
       _denetimciDesteklenmiyor = true;
       ({ data: kayitlar, error, count } = await sb.from('kayitlar')
-        .select(kolonlar(), { count: 'exact' })
+        .select(kolonlar(), countOpt)
         .eq('proje_id', projeId)
         .order('tarih', { ascending: false })
         .range(from, to));
@@ -4805,11 +4869,12 @@ async function loadEntries(projeId, sessiz = false, sayfa = 0) {
       }));
       if (sayfa === 0) {
         proj.entries = yeniKayitlar;
+        _entryTotalCount = count || 0;
       } else {
         proj.entries = [...proj.entries, ...yeniKayitlar];
       }
       _entryPage = sayfa;
-      _entryHasMore = (from + kayitlar.length) < (count || 0);
+      _entryHasMore = (from + kayitlar.length) < _entryTotalCount;
     }
     renderDashboard();
     renderRapor();
@@ -4861,18 +4926,16 @@ async function detayKaydet(tip) {
     // Mevcut fotoğrafları Supabase'den çek
     const { data: kayit } = await sb.from('kayitlar').select('fotograflar').eq('id', entryId).single();
     const mevcutFotolar = kayit?.fotograflar || [];
-    const yeniFotolar = [];
-    for (let fi = 0; fi < tempFotograflar.length; fi++) {
-      const f = tempFotograflar[fi];
+    const yeniFotolar = (await Promise.all(tempFotograflar.map(async (f, fi) => {
       const path = `kayitlar/${entryId}/fotograflar/${Date.now()}_${fi}_${f.file.name}`;
       const { error: upErr } = await sb.storage.from('kazi-dosyalar').upload(path, f.file);
       if (upErr) {
         toast(`⚠️ ${f.file.name} yüklenemedi: ${upErr.message}`, true);
-      } else {
-        const { data } = sb.storage.from('kazi-dosyalar').getPublicUrl(path);
-        yeniFotolar.push({ url: data.publicUrl, name: f.file.name, path });
+        return null;
       }
-    }
+      const { data } = sb.storage.from('kazi-dosyalar').getPublicUrl(path);
+      return { url: data.publicUrl, name: f.file.name, path };
+    }))).filter(Boolean);
     const tumFotolar = [...mevcutFotolar, ...yeniFotolar];
     const { error } = await sb.from('kayitlar').update({ fotograflar: tumFotolar }).eq('id', entryId);
     hideLoading();
@@ -4979,15 +5042,13 @@ async function hataEkleVeKaydet() {
   const mevcutHatalar = Array.isArray(kayit.hatalar) ? [...kayit.hatalar] : [];
 
   // Görselleri yükle
-  const yuklenenGorseller = [];
-  for (const f of tempHataGorseller) {
+  const yuklenenGorseller = (await Promise.all(tempHataGorseller.map(async f => {
     const path = `kayitlar/${entryId}/hata/${Date.now()}_${f.file.name}`;
     const { error: upErr } = await sb.storage.from('kazi-dosyalar').upload(path, f.file);
-    if (!upErr) {
-      const { data } = sb.storage.from('kazi-dosyalar').getPublicUrl(path);
-      yuklenenGorseller.push({ url: data.publicUrl, name: f.file.name, path });
-    }
-  }
+    if (upErr) return null;
+    const { data } = sb.storage.from('kazi-dosyalar').getPublicUrl(path);
+    return { url: data.publicUrl, name: f.file.name, path };
+  }))).filter(Boolean);
 
   const yeniHata = {
     turler: [...tempHataTurler],
@@ -5156,7 +5217,8 @@ async function onHataGiderilmeFotoSec(i) {
   const files = input.files;
   if (!files.length) return;
   showLoading('Fotoğraflar işleniyor...');
-  for (const f of files) { hataGiderilmeTemp[i].gorseller.push(await sikistir(f)); }
+  const sikistirilmis = await Promise.all(Array.from(files).map(f => sikistir(f)));
+  hataGiderilmeTemp[i].gorseller.push(...sikistirilmis);
   hideLoading();
   input.value = '';
   renderHataGiderilmeOnizleme(i);
@@ -5180,15 +5242,13 @@ async function hataGiderildiKaydet(i) {
   showLoading('Kaydediliyor...');
   try {
     const gorseller = hataGiderilmeTemp[i]?.gorseller || [];
-    const fotoUrls = [];
-    for (const f of gorseller) {
+    const fotoUrls = (await Promise.all(gorseller.map(async f => {
       const path = `kayitlar/${entryId}/hata/${i}/giderilme/${Date.now()}_${f.file.name}`;
       const { error: upErr } = await sb.storage.from('kazi-dosyalar').upload(path, f.file);
-      if (!upErr) {
-        const { data: pub } = sb.storage.from('kazi-dosyalar').getPublicUrl(path);
-        fotoUrls.push({ url: pub.publicUrl, name: f.file.name, path });
-      }
-    }
+      if (upErr) return null;
+      const { data: pub } = sb.storage.from('kazi-dosyalar').getPublicUrl(path);
+      return { url: pub.publicUrl, name: f.file.name, path };
+    }))).filter(Boolean);
     tempHatalar[i] = {
       ...tempHatalar[i],
       giderildi: true,
@@ -5251,7 +5311,8 @@ async function onOnayGorselSec() {
   const files = document.getElementById('fOnayGorsel').files;
   if (!files.length) return;
   showLoading(`${files.length} görsel işleniyor...`);
-  for (const f of files) { tempOnayGorseller.push(await sikistir(f)); }
+  const sikistirilmis = await Promise.all(Array.from(files).map(f => sikistir(f)));
+  tempOnayGorseller.push(...sikistirilmis);
   hideLoading();
   document.getElementById('fOnayGorsel').value = '';
   renderOnayGorselOnizleme();
@@ -5295,15 +5356,13 @@ async function onayEkleVeKaydet() {
 
   const mevcutOnaylar = Array.isArray(kayit.saha_onaylari) ? [...kayit.saha_onaylari] : [];
 
-  const yuklenenGorseller = [];
-  for (const f of tempOnayGorseller) {
+  const yuklenenGorseller = (await Promise.all(tempOnayGorseller.map(async f => {
     const path = `kayitlar/${entryId}/onay/${Date.now()}_${f.file.name}`;
     const { error: upErr } = await sb.storage.from('kazi-dosyalar').upload(path, f.file);
-    if (!upErr) {
-      const { data } = sb.storage.from('kazi-dosyalar').getPublicUrl(path);
-      yuklenenGorseller.push({ url: data.publicUrl, name: f.file.name, path });
-    }
-  }
+    if (upErr) return null;
+    const { data } = sb.storage.from('kazi-dosyalar').getPublicUrl(path);
+    return { url: data.publicUrl, name: f.file.name, path };
+  }))).filter(Boolean);
 
   const yeniOnay = {
     aciklama,
@@ -5440,13 +5499,13 @@ async function fotograflariYukle() {
   const { data: kayit } = await sb.from('kayitlar').select('fotograflar').eq('id', entryId).single();
   const eskiFotolar = kayit?.fotograflar || [];
 
-  for (let i = 0; i < tempFotograflar.length; i++) {
-    const f = tempFotograflar[i];
+  const yeniFotolar = await Promise.all(tempFotograflar.map(async (f, i) => {
     const path = `kayitlar/${entryId}/foto/${Date.now()}${i}${i}.jpg`;
     await sb.storage.from('kazi-dosyalar').upload(path, f.file);
     const { data: urlData } = sb.storage.from('kazi-dosyalar').getPublicUrl(path);
-    eskiFotolar.push({ url: urlData.publicUrl, name: f.file.name, path });
-  }
+    return { url: urlData.publicUrl, name: f.file.name, path };
+  }));
+  eskiFotolar.push(...yeniFotolar);
 
   await sb.from('kayitlar').update({ fotograflar: eskiFotolar }).eq('id', entryId);
   location.reload();
@@ -5815,8 +5874,10 @@ function renderDashboard() {
 }
 
 
+let _aramaTimer = null;
 function aramaYap(val) {
-  renderDashboard();
+  clearTimeout(_aramaTimer);
+  _aramaTimer = setTimeout(() => renderDashboard(), 200);
 }
 
 function toggleEntry(id) {
