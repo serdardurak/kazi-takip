@@ -1141,6 +1141,16 @@
           <span id="yonetimGiderKatSayac" style="flex-shrink:0;background:rgba(16,185,129,0.2);color:#6ee7b7;font-size:11px;font-weight:800;border-radius:20px;padding:3px 9px">0</span>
           <span style="flex-shrink:0;color:var(--muted);font-size:15px">›</span>
         </button>
+
+        <button type="button" onclick="hataTuruYonetimAc()" style="display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:rgba(239,68,68,0.08);border:1.5px solid rgba(239,68,68,0.4);color:var(--text);border-radius:10px;padding:12px 13px;cursor:pointer;font-family:inherit">
+          <span style="font-size:20px;flex-shrink:0">⚠️</span>
+          <span style="flex:1;min-width:0">
+            <span style="display:block;font-size:13.5px;font-weight:800;color:#fca5a5">Hata Türlerini Yönet</span>
+            <span style="display:block;font-size:11px;color:var(--muted);margin-top:1px">Kayıtlarda seçilecek hata türlerini yönet</span>
+          </span>
+          <span id="yonetimHataTuruSayac" style="flex-shrink:0;background:rgba(239,68,68,0.2);color:#fca5a5;font-size:11px;font-weight:800;border-radius:20px;padding:3px 9px">0</span>
+          <span style="flex-shrink:0;color:var(--muted);font-size:15px">›</span>
+        </button>
       </div>
     </div>
 
@@ -1395,15 +1405,8 @@
       <!-- Yeni hata formu (gizli) -->
       <div id="yeniHataForm" style="display:none;margin-top:10px;background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:10px">
         <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:1px;margin-bottom:8px">YENİ HATA</div>
-        <div class="hata-type-grid">
-          <button class="hata-type-btn" onclick="toggleHataTur(this,'Onay')">Onay</button>
-          <button class="hata-type-btn" onclick="toggleHataTur(this,'Eksik Malzeme')">Eksik Malzeme</button>
-          <button class="hata-type-btn" onclick="toggleHataTur(this,'Yanlış Ölçü')">Yanlış Ölçü</button>
-          <button class="hata-type-btn" onclick="toggleHataTur(this,'Hatalı Döşeme')">Hatalı Döşeme</button>
-          <button class="hata-type-btn" onclick="toggleHataTur(this,'Zemin Sorunu')">Zemin Sorunu</button>
-          <button class="hata-type-btn" onclick="toggleHataTur(this,'İş Durdu')">İş Durdu</button>
-          <button class="hata-type-btn" onclick="toggleHataTur(this,'Diğer')">Diğer</button>
-        </div>
+        <div class="hata-type-grid" id="hataTurGrid"></div>
+        <div style="font-size:10.5px;color:var(--muted);margin:2px 0 8px">Aradığınız tür listede yoksa önce ⚙️ Yönetim &gt; Hata Türlerini Yönet'ten ekleyin.</div>
         <label class="field-label">AÇIKLAMA</label>
         <textarea id="fHataAciklama" placeholder="Hatayı açıklayın..." style="height:60px"></textarea>
         <input type="file" id="fHataGorsel" accept="image/*" multiple style="display:none" onchange="onHataGorselSec()" />
@@ -1588,6 +1591,23 @@
   </div>
 </div>
 
+<div id="hataTuruYonetimModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:450;align-items:center;justify-content:center">
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;margin:16px;max-width:400px;width:100%;max-height:80vh;display:flex;flex-direction:column">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--border)">
+      <span style="font-size:15px;font-weight:700;color:#fca5a5">⚠️ Hata Türleri</span>
+      <button onclick="document.getElementById('hataTuruYonetimModal').style.display='none'" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;line-height:1">✕</button>
+    </div>
+    <div style="padding:16px 18px;overflow-y:auto">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Kayıtlara hata eklerken seçebileceğiniz hata türlerini buradan yönetin. Yeni tür ekledikten sonra listede kalıcı olarak görünür, tekrar tekrar elle yazmanıza gerek kalmaz.</div>
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <input type="text" id="hataTuruAdInput" placeholder="örn: Onay, Zemin Sorunu" style="flex:1" onkeydown="if(event.key==='Enter')hataTuruEkle()" />
+        <button onclick="hataTuruEkle()" style="background:var(--red);color:#fff;border:none;border-radius:8px;padding:0 18px;font-size:20px;font-weight:700;cursor:pointer;font-family:inherit">+</button>
+      </div>
+      <div id="hataTuruListesi"></div>
+    </div>
+  </div>
+</div>
+
 <div id="raporOnizlemeModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:450;align-items:center;justify-content:center">
   <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;margin:16px;max-width:400px;width:100%;max-height:85vh;display:flex;flex-direction:column">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--border)">
@@ -1734,6 +1754,7 @@ sb.auth.onAuthStateChange((event, session) => {
       loadDenetimciler();
       loadMalzemeTurleri();
       loadGiderKategorileri();
+      loadHataTurleri();
       loadProjects().then(async () => {
         const ids = data.projects.map(p => p.id);
         if (!data.activeProjectId || !ids.includes(data.activeProjectId)) {
@@ -1752,7 +1773,7 @@ sb.auth.onAuthStateChange((event, session) => {
 });
 
 // ─── DATA ────────────────────────────────────────────────
-let data = { projects: [], deletedProjects: [], teams: [], denetimciler: [], malzemeTurleri: [], giderKategorileri: [], activeProjectId: localStorage.getItem('aktifProje') || null };
+let data = { projects: [], deletedProjects: [], teams: [], denetimciler: [], malzemeTurleri: [], giderKategorileri: [], hataTurleri: [], activeProjectId: localStorage.getItem('aktifProje') || null };
 let editingId = null;
 let tempMalzemeler = [];
 let tempHataTurler = [];
@@ -2529,7 +2550,8 @@ async function hizliDetay(entryId, tip, hataIdx = null) {
       tempHataTurler = []; tempHataGorseller = [];
       hataGiderilmeTemp = {};
       const fa = document.getElementById('fHataAciklama'); if (fa) fa.value = '';
-      document.querySelectorAll('.hata-type-btn').forEach(b => b.className = 'hata-type-btn');
+      renderHataTurButtons();
+      if (data.hataTurleri.length === 0) loadHataTurleri();
       const hgo = document.getElementById('hataGorselOnizleme'); if (hgo) hgo.innerHTML = '';
       _hataduzenleIdx = null;
       renderMevcutHatalar(sadeceBak);
@@ -4415,10 +4437,12 @@ function renderYonetimOzet() {
   const denEl = document.getElementById('yonetimDenetimciSayac');
   const malEl = document.getElementById('yonetimMalzemeSayac');
   const gkEl = document.getElementById('yonetimGiderKatSayac');
+  const htEl = document.getElementById('yonetimHataTuruSayac');
   if (ekipEl) ekipEl.textContent = (data.teams || []).length;
   if (denEl) denEl.textContent = (data.denetimciler || []).length;
   if (malEl) malEl.textContent = (data.malzemeTurleri || []).length;
   if (gkEl) gkEl.textContent = (data.giderKategorileri || []).length;
+  if (htEl) htEl.textContent = (data.hataTurleri || []).length;
 
   const projSayEl = document.getElementById('yonetimProjeSayisi');
   const ozetEkipEl = document.getElementById('yonetimOzetEkip');
@@ -4548,6 +4572,125 @@ function giderKategoriSil(id) {
     if (error) { toast('⚠️ ' + error.message, true); return; }
     toast('🗑 Kategori silindi');
     await loadGiderKategorileri();
+  });
+}
+
+// ─── HATA TÜRLERİ ───────────────────────────────────────────
+// Tablo henüz oluşturulmadıysa (veya boşsa) bu varsayılan liste kullanılır ve ilk açılışta tabloya tohumlanır.
+const HATA_TURU_VARSAYILAN = ['Onay', 'Eksik Malzeme', 'Yanlış Ölçü', 'Hatalı Döşeme', 'Zemin Sorunu', 'İş Durdu', 'Diğer'];
+
+let _hataTuruYukleniyor = null;
+
+function loadHataTurleri() {
+  if (_hataTuruYukleniyor) return _hataTuruYukleniyor;
+  _hataTuruYukleniyor = _loadHataTurleriGercek().finally(() => { _hataTuruYukleniyor = null; });
+  return _hataTuruYukleniyor;
+}
+
+async function _loadHataTurleriGercek() {
+  try {
+    const { data: turler, error } = await sb.from('hata_turleri').select('*').order('ad', { ascending: true });
+    if (error) { console.warn('Hata türleri yüklenemedi (tablo henüz yok olabilir):', error.message); renderHataTurButtons(); return; }
+
+    // Tablo var ama boş ve daha önce hiç tohumlanmamışsa, varsayılan türleri
+    // bir kereye mahsus DB'ye ekle ki "Yönetim"den düzenlenebilir/silinebilir olsunlar.
+    if ((turler || []).length === 0 && !localStorage.getItem('hataTuruTohumlandi')) {
+      localStorage.setItem('hataTuruTohumlandi', '1'); // önce kilitle ki paralel çağrı tekrar denemesin
+      const { error: seedErr } = await sb.from('hata_turleri').insert(HATA_TURU_VARSAYILAN.map(ad => ({ ad })));
+      if (!seedErr) {
+        const { data: yeniTurler } = await sb.from('hata_turleri').select('*').order('ad', { ascending: true });
+        data.hataTurleri = yeniTurler || [];
+        renderHataTurButtons();
+        renderHataTuruListesi();
+        renderYonetimOzet();
+        return;
+      }
+    }
+
+    data.hataTurleri = turler || [];
+    renderHataTurButtons();
+    renderHataTuruListesi();
+    renderYonetimOzet();
+  } catch (e) { console.warn('Hata türleri yüklenemedi'); renderHataTurButtons(); }
+}
+
+function renderHataTurButtons() {
+  const el = document.getElementById('hataTurGrid');
+  if (!el) return;
+  const kaynak = (data.hataTurleri && data.hataTurleri.length > 0)
+    ? data.hataTurleri.map(t => t.ad)
+    : HATA_TURU_VARSAYILAN;
+  el.innerHTML = kaynak.map(ad => {
+    const secili = tempHataTurler.includes(ad);
+    return `<button class="hata-type-btn${secili ? ' selected' : ''}" onclick="toggleHataTur(this,'${ad.replace(/'/g,"\\'")}')">${ad}</button>`;
+  }).join('');
+}
+
+function hataTuruYonetimAc() {
+  const input = document.getElementById('hataTuruAdInput');
+  if (input) { input.value = ''; delete input.dataset.editingId; }
+  const btn = document.querySelector('#hataTuruYonetimModal button[onclick="hataTuruEkle()"]');
+  if (btn) { btn.textContent = '+'; btn.style.background = 'var(--red)'; }
+  renderHataTuruListesi();
+  document.getElementById('hataTuruYonetimModal').style.display = 'flex';
+}
+
+function renderHataTuruListesi() {
+  const el = document.getElementById('hataTuruListesi');
+  if (!el) return;
+  if (!data.hataTurleri || data.hataTurleri.length === 0) {
+    el.innerHTML = `<div style="font-size:12px;color:var(--muted);text-align:center;padding:8px 0">Henüz hata türü eklenmedi. Varsayılan liste kullanılıyor: ${HATA_TURU_VARSAYILAN.join(', ')}.</div>`;
+    return;
+  }
+  el.innerHTML = data.hataTurleri.map(t => `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2);border-radius:8px;margin-bottom:6px">
+      <span style="font-size:13px;color:var(--text);font-weight:600">⚠️ ${t.ad}</span>
+      <div style="display:flex;align-items:center;gap:4px">
+        <button onclick="hataTuruDuzenle('${t.id}')" style="background:none;border:none;color:var(--blue);font-size:14px;cursor:pointer;padding:2px 6px">✎</button>
+        <button onclick="hataTuruSil('${t.id}')" style="background:none;border:none;color:var(--red);font-size:16px;cursor:pointer;padding:2px 6px">×</button>
+      </div>
+    </div>`).join('');
+}
+
+async function hataTuruDuzenle(id) {
+  const t = data.hataTurleri.find(x => x.id === id);
+  if (!t) return;
+  const input = document.getElementById('hataTuruAdInput');
+  const btn = document.querySelector('#hataTuruYonetimModal button[onclick="hataTuruEkle()"]');
+  input.value = t.ad;
+  input.focus();
+  input.dataset.editingId = id;
+  if (btn) { btn.textContent = '✓'; btn.style.background = '#10b981'; }
+}
+
+async function hataTuruEkle() {
+  const input = document.getElementById('hataTuruAdInput');
+  const ad = input?.value.trim();
+  if (!ad) { toast('⚠️ Hata türü adı girin', true); return; }
+  const editingId = input.dataset.editingId;
+  showLoading(editingId ? 'Güncelleniyor...' : 'Ekleniyor...');
+  const { error } = editingId
+    ? await sb.from('hata_turleri').update({ ad }).eq('id', editingId)
+    : await sb.from('hata_turleri').insert({ ad });
+  hideLoading();
+  if (error) { toast('⚠️ ' + error.message + (error.message.includes('does not exist') ? '\n"hata_turleri" tablosu Supabase\'de oluşturulmamış olabilir.' : ''), true); return; }
+  input.value = '';
+  delete input.dataset.editingId;
+  const btn = document.querySelector('#hataTuruYonetimModal button[onclick="hataTuruEkle()"]');
+  if (btn) { btn.textContent = '+'; btn.style.background = 'var(--red)'; }
+  toast(editingId ? '✅ Hata türü güncellendi' : '✅ Hata türü eklendi');
+  await loadHataTurleri();
+}
+
+function hataTuruSil(id) {
+  const t = data.hataTurleri.find(x => x.id === id);
+  silOnayla(`"${t?.ad || 'Bu hata türü'}" silinsin mi? Daha önce kaydedilmiş hata kayıtları etkilenmez.`, async () => {
+    showLoading('Siliniyor...');
+    const { error } = await sb.from('hata_turleri').delete().eq('id', id);
+    hideLoading();
+    if (error) { toast('⚠️ ' + error.message, true); return; }
+    toast('🗑 Hata türü silindi');
+    await loadHataTurleri();
   });
 }
 
