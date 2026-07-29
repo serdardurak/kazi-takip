@@ -1739,8 +1739,17 @@
   </div>
 </div>
 
-<div id="fotoModal" onclick="this.style.display='none'" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:500;align-items:center;justify-content:center;flex-direction:column;gap:12px">
-  <img id="fotoModalImg" style="max-width:95vw;max-height:80vh;border-radius:8px;object-fit:contain" />
+<div id="fotoModal" onclick="if(event.target===this) this.style.display='none'" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:500;align-items:center;justify-content:center;flex-direction:column;gap:10px">
+  <div style="position:relative;display:flex;align-items:center;justify-content:center;width:100%">
+    <button onclick="event.stopPropagation();fotoModalNav(-1)" id="fotoModalPrev" style="display:none;position:absolute;left:10px;z-index:2;width:46px;height:46px;border-radius:50%;background:linear-gradient(150deg, var(--yellow-light), var(--yellow));border:none;box-shadow:0 4px 14px rgba(0,0,0,0.5), 0 2px 6px rgba(0,0,0,0.4);cursor:pointer;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1e293b" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+    </button>
+    <img id="fotoModalImg" ontouchstart="fotoModalTouchStart(event)" ontouchend="fotoModalTouchEnd(event)" style="max-width:88vw;max-height:75vh;border-radius:8px;object-fit:contain" />
+    <button onclick="event.stopPropagation();fotoModalNav(1)" id="fotoModalNext" style="display:none;position:absolute;right:10px;z-index:2;width:46px;height:46px;border-radius:50%;background:linear-gradient(150deg, var(--yellow-light), var(--yellow));border:none;box-shadow:0 4px 14px rgba(0,0,0,0.5), 0 2px 6px rgba(0,0,0,0.4);cursor:pointer;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1e293b" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+    </button>
+  </div>
+  <div id="fotoModalSayac" style="display:none;color:var(--sub);font-size:12px;font-weight:600"></div>
   <div style="display:flex;gap:12px">
     <a id="fotoModalIndir" download style="background:var(--yellow);color:#0f172a;padding:10px 20px;border-radius:8px;font-weight:700;text-decoration:none">⬇ İndir</a>
     <button onclick="document.getElementById('fotoModal').style.display='none'" style="background:var(--border);color:var(--text);border:none;padding:10px 20px;border-radius:8px;cursor:pointer">✕ Kapat</button>
@@ -5117,12 +5126,65 @@ async function tempHatalarSil(idx) {
 }
 
 function fotoGoster(urlVeyaEl) {
-  const url = (urlVeyaEl && urlVeyaEl.tagName === 'IMG') ? urlVeyaEl.src : urlVeyaEl;
-  const modal = document.getElementById('fotoModal');
+  const el = (urlVeyaEl && urlVeyaEl.tagName === 'IMG') ? urlVeyaEl : null;
+  const url = el ? el.src : urlVeyaEl;
+  // Aynı grup içindeki (örn. aynı fotoğraf/görsel ızgarasındaki) tüm resimleri bul ki ileri/geri gidilebilsin
+  let liste = [url];
+  let idx = 0;
+  if (el && el.parentElement) {
+    const kardesler = Array.from(el.parentElement.querySelectorAll('img'));
+    if (kardesler.length > 1) {
+      liste = kardesler.map(img => img.src);
+      idx = kardesler.indexOf(el);
+    }
+  }
+  window._fotoModalListesi = liste;
+  window._fotoModalIndex = idx;
+  fotoModalGuncelle();
+  document.getElementById('fotoModal').style.display = 'flex';
+}
+
+function fotoModalGuncelle() {
+  const liste = window._fotoModalListesi || [];
+  const idx = window._fotoModalIndex || 0;
+  const url = liste[idx];
   document.getElementById('fotoModalImg').src = url;
   document.getElementById('fotoModalIndir').href = url;
-  modal.style.display = 'flex';
+  const cokMu = liste.length > 1;
+  const sayac = document.getElementById('fotoModalSayac');
+  const prevBtn = document.getElementById('fotoModalPrev');
+  const nextBtn = document.getElementById('fotoModalNext');
+  if (sayac) { sayac.style.display = cokMu ? 'block' : 'none'; sayac.textContent = cokMu ? `${idx + 1} / ${liste.length}` : ''; }
+  if (prevBtn) prevBtn.style.display = cokMu ? 'flex' : 'none';
+  if (nextBtn) nextBtn.style.display = cokMu ? 'flex' : 'none';
 }
+
+function fotoModalNav(yon) {
+  const liste = window._fotoModalListesi || [];
+  if (liste.length <= 1) return;
+  window._fotoModalIndex = ((window._fotoModalIndex || 0) + yon + liste.length) % liste.length;
+  fotoModalGuncelle();
+}
+
+let _fotoModalTouchX = null;
+function fotoModalTouchStart(ev) {
+  _fotoModalTouchX = ev.touches[0].clientX;
+}
+function fotoModalTouchEnd(ev) {
+  if (_fotoModalTouchX === null) return;
+  const dx = ev.changedTouches[0].clientX - _fotoModalTouchX;
+  _fotoModalTouchX = null;
+  if (Math.abs(dx) < 40) return;
+  fotoModalNav(dx > 0 ? -1 : 1);
+}
+
+document.addEventListener('keydown', (ev) => {
+  const modal = document.getElementById('fotoModal');
+  if (!modal || modal.style.display !== 'flex') return;
+  if (ev.key === 'ArrowLeft') fotoModalNav(-1);
+  else if (ev.key === 'ArrowRight') fotoModalNav(1);
+  else if (ev.key === 'Escape') modal.style.display = 'none';
+});
 
 function dosyaIndir(btn, etiket) {
   const url = btn.dataset.url;
