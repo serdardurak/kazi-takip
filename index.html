@@ -1384,6 +1384,10 @@
       </div>
     </div>
     <div class="detay-chip-row" id="detayChipRow"></div>
+    <div id="detayNavRow" style="display:flex;gap:8px;margin:2px 0 12px">
+      <button id="detayPrevBtn" onclick="detayNavGit(-1)" style="flex:1;background:none;border:1px solid var(--border);color:var(--text);border-radius:9px;padding:9px 6px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:5px">‹ Önceki Kayıt</button>
+      <button id="detayNextBtn" onclick="detayNavGit(1)" style="flex:1;background:none;border:1px solid var(--border);color:var(--text);border-radius:9px;padding:9px 6px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:5px">Sonraki Kayıt ›</button>
+    </div>
     <div id="detayModalIcerik"></div>
   </div>
 
@@ -5892,13 +5896,18 @@ function renderDashboard() {
       <div onclick="toggleEntry('${e.id}')" style="cursor:pointer">
         <div style="height:4px;background:${cizgiRengi}"></div>
         <div style="padding:10px 12px;position:relative">
-          <span id="tog-${e.id}" style="position:absolute;top:9px;right:10px;color:var(--muted);font-size:11px">▼</span>
+          <div style="position:absolute;top:9px;right:10px">
+            <button onclick="event.stopPropagation();toggleDetay('${e.id}')" style="background:rgba(100,116,139,0.15);border:1px solid var(--border);color:var(--sub);border-radius:6px;padding:3px 9px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">👁️ Detay</button>
+          </div>
           <div style="padding-right:16px">
             <span style="font-size:14px;font-weight:700;color:var(--text)">${gunKisa} ${tarihKisa}</span>${ustMeta.length > 0 ? ` <span style="font-size:10.5px;font-weight:600;color:var(--muted)">· ${ustMeta.join('&nbsp;&nbsp;')}</span>` : ''}
           </div>
           <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:8px;margin-top:6px">
             <div>${altMeta.length > 0 ? `<span style="font-size:10.5px;color:var(--muted)">${altMeta.join('&nbsp;&nbsp;')}</span>` : ''}</div>
-            <span style="font-size:16px;font-weight:900;color:${Number(e.kaziMetre) === 0 ? '#a78bfa' : 'var(--yellow)'};white-space:nowrap">${Number(e.kaziMetre) === 0 ? '🔧 Bakım' : `⛏ ${e.kaziMetre} m`}</span>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:16px;font-weight:900;color:${Number(e.kaziMetre) === 0 ? '#a78bfa' : 'var(--yellow)'};white-space:nowrap">${Number(e.kaziMetre) === 0 ? '🔧 Bakım' : `⛏ ${e.kaziMetre} m`}</span>
+              <span id="tog-${e.id}" style="color:var(--muted);font-size:11px">▼</span>
+            </div>
           </div>
         </div>
       </div>
@@ -5981,6 +5990,16 @@ function toggleDetay(id) {
   document.getElementById('detayGunAdi').textContent = gunAdi;
   document.getElementById('detayHeaderTarih').textContent = tarihStr;
   document.getElementById('detayProjeAdi').textContent = `🏗 ${proj.name}${proj.location ? ' · ' + proj.location : ''}`;
+
+  // Önceki/Sonraki kayıt gezinmesi (liste sırasıyla aynı: en yeni en üstte)
+  const navList = [...proj.entries].sort((a, b) => new Date(b.tarih) - new Date(a.tarih));
+  const navIndex = navList.findIndex(x => x.id === id);
+  window._detayNavList = navList;
+  window._detayNavIndex = navIndex;
+  const prevBtn = document.getElementById('detayPrevBtn');
+  const nextBtn = document.getElementById('detayNextBtn');
+  if (prevBtn) { prevBtn.disabled = navIndex <= 0; prevBtn.style.opacity = prevBtn.disabled ? '0.35' : '1'; prevBtn.style.cursor = prevBtn.disabled ? 'default' : 'pointer'; }
+  if (nextBtn) { nextBtn.disabled = navIndex >= navList.length - 1; nextBtn.style.opacity = nextBtn.disabled ? '0.35' : '1'; nextBtn.style.cursor = nextBtn.disabled ? 'default' : 'pointer'; }
   const statEl = document.getElementById('detayHeaderStat');
   const statLblEl = document.getElementById('detayHeaderStatLbl');
   statEl.textContent = bakimMi ? '🔧' : Number(e.kaziMetre).toLocaleString('tr-TR') + ' m';
@@ -6082,6 +6101,14 @@ function toggleDetay(id) {
     </div>`;
 
   showView('detay');
+}
+
+function detayNavGit(yon) {
+  const list = window._detayNavList;
+  if (!list) return;
+  const yeniIndex = window._detayNavIndex + yon;
+  if (yeniIndex < 0 || yeniIndex >= list.length) return;
+  toggleDetay(list[yeniIndex].id);
 }
 // ─── RAPOR ───────────────────────────────────────────────
 function renderRapor() {
