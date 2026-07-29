@@ -1722,6 +1722,23 @@
   </div>
 </div>
 
+<!-- DÜZENLE SEÇİM MODALI - "Düzenle" butonuna basınca hangi kısmı düzenlemek istediğini sorar -->
+<div id="duzenleSecimModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:600;align-items:center;justify-content:center">
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:20px;max-width:340px;width:100%">
+    <div style="font-size:15px;font-weight:800;color:var(--text);text-align:center;margin-bottom:4px">✏️ Neyi Düzenlemek İstersin?</div>
+    <div style="font-size:12px;color:var(--muted);text-align:center;margin-bottom:16px">Bu kayıtla ilgili düzenlemek istediğin bölümü seç</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <button onclick="duzenleSecimUygula('genel')" style="display:flex;align-items:center;gap:10px;width:100%;background:rgba(245,158,11,0.1);border:1.5px solid var(--yellow);color:var(--yellow-light);border-radius:10px;padding:12px 14px;font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit;text-align:left"><span style="font-size:18px">📋</span>Genel Bilgiler <span style="font-size:11px;color:var(--muted);font-weight:400">(tarih, metre, ekip, not)</span></button>
+      <button onclick="duzenleSecimUygula('malzeme')" style="display:flex;align-items:center;gap:10px;width:100%;background:rgba(59,130,246,0.1);border:1.5px solid var(--blue);color:var(--blue);border-radius:10px;padding:12px 14px;font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit;text-align:left"><span style="font-size:18px">🧱</span>Malzemeler</button>
+      <button onclick="duzenleSecimUygula('hata')" style="display:flex;align-items:center;gap:10px;width:100%;background:rgba(239,68,68,0.1);border:1.5px solid var(--red);color:#fca5a5;border-radius:10px;padding:12px 14px;font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit;text-align:left"><span style="font-size:18px">⚠️</span>Hatalı / Eksik İşlemler</button>
+      <button onclick="duzenleSecimUygula('foto')" style="display:flex;align-items:center;gap:10px;width:100%;background:rgba(16,185,129,0.1);border:1.5px solid #10b981;color:#10b981;border-radius:10px;padding:12px 14px;font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit;text-align:left"><span style="font-size:18px">📷</span>Fotoğraflar</button>
+      <button onclick="duzenleSecimUygula('kmz')" style="display:flex;align-items:center;gap:10px;width:100%;background:rgba(139,92,246,0.1);border:1.5px solid #8b5cf6;color:#a78bfa;border-radius:10px;padding:12px 14px;font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit;text-align:left"><span style="font-size:18px">📁</span>KMZ / KML Dosyası</button>
+      <button onclick="duzenleSecimUygula('onay')" style="display:flex;align-items:center;gap:10px;width:100%;background:rgba(6,182,212,0.1);border:1.5px solid #06b6d4;color:#06b6d4;border-radius:10px;padding:12px 14px;font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit;text-align:left"><span style="font-size:18px">✅</span>Saha Onayı</button>
+    </div>
+    <button onclick="duzenleSecimKapat()" style="width:100%;background:none;border:1px solid var(--border);color:var(--sub);border-radius:8px;padding:11px;font-size:13px;cursor:pointer;margin-top:14px;font-family:inherit">Vazgeç</button>
+  </div>
+</div>
+
 <div id="fotoModal" onclick="this.style.display='none'" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:500;align-items:center;justify-content:center;flex-direction:column;gap:12px">
   <img id="fotoModalImg" style="max-width:95vw;max-height:80vh;border-radius:8px;object-fit:contain" />
   <div style="display:flex;gap:12px">
@@ -2610,6 +2627,31 @@ async function startEdit(id) {
   if (entry.kmz) document.getElementById('kmzPanel')?.classList.add('open');
   renderMalzemeChips();
   updateBadges();
+}
+
+// ─── DÜZENLE SEÇİM MODALI ────────────────────────────────
+let _duzenleSecimEntryId = null;
+
+function duzenleSecimGoster(entryId) {
+  _duzenleSecimEntryId = entryId;
+  document.getElementById('duzenleSecimModal').style.display = 'flex';
+}
+
+function duzenleSecimKapat() {
+  document.getElementById('duzenleSecimModal').style.display = 'none';
+  _duzenleSecimEntryId = null;
+}
+
+function duzenleSecimUygula(tip) {
+  const entryId = _duzenleSecimEntryId;
+  document.getElementById('duzenleSecimModal').style.display = 'none';
+  _duzenleSecimEntryId = null;
+  if (!entryId) return;
+  if (tip === 'genel') {
+    startEdit(entryId);
+  } else {
+    hizliDetay(entryId, tip);
+  }
 }
 
 async function hizliDetay(entryId, tip, hataIdx = null) {
@@ -6097,7 +6139,7 @@ function toggleDetay(id) {
     <div style="display:flex;gap:8px;margin-top:20px;flex-wrap:wrap">
       <button onclick="gunlukRaporPaylas('${e.id}')" style="flex:1;min-width:100px;background:none;border:1px solid var(--border);color:var(--text);border-radius:9px;padding:11px 6px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit">📤 Paylaş</button>
       <button onclick="gunlukRaporPdf('${e.id}')" style="flex:1;min-width:100px;background:rgba(239,68,68,0.1);border:1px solid var(--red);color:var(--red);border-radius:9px;padding:11px 6px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit">📄 PDF</button>
-      ${proj.bitti !== true ? `<button onclick="startEdit('${e.id}')" style="flex:1;min-width:100px;background:var(--yellow);border:none;color:#0f172a;border-radius:9px;padding:11px 6px;font-size:12.5px;font-weight:800;cursor:pointer;font-family:inherit">✏️ Düzenle</button>` : ''}
+      ${proj.bitti !== true ? `<button onclick="duzenleSecimGoster('${e.id}')" style="flex:1;min-width:100px;background:var(--yellow);border:none;color:#0f172a;border-radius:9px;padding:11px 6px;font-size:12.5px;font-weight:800;cursor:pointer;font-family:inherit">✏️ Düzenle</button>` : ''}
     </div>`;
 
   showView('detay');
