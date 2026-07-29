@@ -11,6 +11,18 @@
   <link rel="apple-touch-icon" href="icon.svg">
   <link rel="manifest" href="data:application/json,{&quot;name&quot;:&quot;Kazı Takip&quot;,&quot;short_name&quot;:&quot;Kazı Takip&quot;,&quot;display&quot;:&quot;standalone&quot;,&quot;background_color&quot;:&quot;%230f172a&quot;,&quot;theme_color&quot;:&quot;%231e293b&quot;,&quot;start_url&quot;:&quot;/&quot;,&quot;icons&quot;:[{&quot;src&quot;:&quot;icon.svg&quot;,&quot;sizes&quot;:&quot;any&quot;,&quot;type&quot;:&quot;image/svg+xml&quot;}]}" />
   <title>Kazı Takip</title>
+  <script>
+    // Güvenlik: Bu sayfa başka bir sitenin iframe'i içinde açılmaya çalışılırsa
+    // (clickjacking saldırısı) sayfa içeriğini gizler. Not: Üst pencereye yönlendirme
+    // denemesi (top.location = ...) bazı tarayıcı/sandbox bağlamlarında try-catch ile
+    // yakalanamayan bir SecurityError fırlatabildiği için kullanılmıyor; bunun yerine
+    // hiçbir navigasyon izni gerektirmeyen "gizle" yöntemi tercih edildi.
+    try {
+      if (window.top !== window.self) {
+        document.documentElement.style.display = 'none';
+      }
+    } catch (e) { /* çapraz origin engeli - sessizce yok say */ }
+  </script>
 
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -640,10 +652,10 @@
   <div style="width:100%;max-width:320px;background:#1e293b;border:1px solid #334155;border-radius:14px;padding:24px">
     <div style="font-size:14px;font-weight:700;color:#e2e8f0;margin-bottom:16px;text-align:center">Giriş Yap</div>
     <label style="font-size:11px;color:#64748b;font-weight:700;letter-spacing:1px;display:block;margin-bottom:4px">E-POSTA</label>
-    <input id="loginMail" type="email" placeholder="ornek@gmail.com" style="width:100%;background:#0f172a;border:1px solid #334155;border-radius:8px;padding:12px;color:#e2e8f0;font-size:14px;margin-bottom:12px;font-family:inherit;box-sizing:border-box">
+    <input id="loginMail" type="email" autocomplete="username" placeholder="ornek@gmail.com" style="width:100%;background:#0f172a;border:1px solid #334155;border-radius:8px;padding:12px;color:#e2e8f0;font-size:14px;margin-bottom:12px;font-family:inherit;box-sizing:border-box">
     <label style="font-size:11px;color:#64748b;font-weight:700;letter-spacing:1px;display:block;margin-bottom:4px">ŞİFRE</label>
     <div style="position:relative">
-      <input id="loginSifre" type="password" placeholder="••••••••" style="width:100%;background:#0f172a;border:1px solid #334155;border-radius:8px;padding:12px 40px 12px 12px;color:#e2e8f0;font-size:14px;margin-bottom:16px;font-family:inherit;box-sizing:border-box">
+      <input id="loginSifre" type="password" autocomplete="current-password" placeholder="••••••••" style="width:100%;background:#0f172a;border:1px solid #334155;border-radius:8px;padding:12px 40px 12px 12px;color:#e2e8f0;font-size:14px;margin-bottom:16px;font-family:inherit;box-sizing:border-box">
       <button type="button" onclick="const i=document.getElementById('loginSifre');i.type=i.type==='password'?'text':'password';this.textContent=i.type==='password'?'👁':'🙈'" style="position:absolute;right:10px;top:12px;background:none;border:none;cursor:pointer;font-size:16px;color:#64748b">👁</button>
     </div>
     <div id="loginHata" style="display:none;color:#ef4444;font-size:12px;margin-bottom:12px;text-align:center"></div>
@@ -1736,6 +1748,26 @@ const SUPABASE_URL = 'https://hxfzidndvqoortcsknyw.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh4ZnppZG5kdnFvb3J0Y3Nrbnl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwNTkyMzMsImV4cCI6MjA5MzYzNTIzM30.Tr70mVn-ESwFneTVOkE1hICbAt-mEcf0_1B9eM-39pc';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+// ─── GÜVENLİK: HTML KAÇIŞ (XSS ÖNLEME) ─────────────────────
+// Kullanıcının girdiği her metni (proje adı, ekip adı, açıklama, dosya adı vb.)
+// innerHTML ile ekrana basmadan önce MUTLAKA esc() ile sarmalayın.
+// textContent/value atamalarında esc() KULLANMAYIN (çift kaçış görsel hataya yol açar).
+function esc(s) {
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
+
+// Excel/CSV formül enjeksiyonu koruması: hücre değeri =,+,-,@ ile başlıyorsa
+// Excel/Sheets bunu formül sanıp çalıştırabilir (örn. =HYPERLINK(...) veya =cmd|...).
+// Böyle değerlerin başına görünmez bir tire (') koyarak düz metin olarak kalmasını sağlarız.
+function xlsGuvenli(s) {
+  if (s === null || s === undefined) return '';
+  const str = String(s);
+  return /^[=+\-@\t\r]/.test(str) ? "'" + str : str;
+}
+
 // ─── AUTH ─────────────────────────────────────────────────
 async function girisYap() {
   const mail = document.getElementById('loginMail').value.trim();
@@ -1941,7 +1973,7 @@ function onKmzSec() {
   tempKmz = { file: f, name: f.name };
   document.getElementById('kmzOnizleme').innerHTML = `
     <div style="display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid #8b5cf6;border-radius:8px;padding:8px 12px">
-      <span>📁</span><span style="color:var(--text);font-size:13px;flex:1">${f.name}</span>
+      <span>📁</span><span style="color:var(--text);font-size:13px;flex:1">${esc(f.name)}</span>
       <button onclick="tempKmz=null;document.getElementById('kmzOnizleme').innerHTML='';document.getElementById('fKmz').value='';updateBadges()" style="background:none;border:none;color:var(--red);font-size:18px;cursor:pointer">×</button>
     </div>`;
   updateBadges();
@@ -1952,7 +1984,7 @@ function renderFotografOnizleme() {
   if (!div) return;
   div.innerHTML = tempFotograflar.map((f, i) => `
     <div style="position:relative;display:inline-block">
-      <img src="${f.url}" style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:2px solid var(--yellow)" loading="lazy"/>
+      <img src="${esc(f.url)}" style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:2px solid var(--yellow)" loading="lazy"/>
       <button onclick="tempFotograflar.splice(${i},1);renderFotografOnizleme()" style="position:absolute;top:-6px;right:-6px;background:var(--red);border:none;color:white;border-radius:50%;width:20px;height:20px;font-size:12px;cursor:pointer">×</button>
     </div>`).join('');
   const sayac = document.getElementById('fotografSayac');
@@ -1965,7 +1997,7 @@ function renderHataGorselOnizleme() {
   if (!div) return;
   div.innerHTML = tempHataGorseller.map((f, i) => `
     <div style="position:relative;display:inline-block">
-      <img src="${f.url}" style="width:70px;height:70px;object-fit:cover;border-radius:8px;border:2px solid var(--red)" loading="lazy"/>
+      <img src="${esc(f.url)}" style="width:70px;height:70px;object-fit:cover;border-radius:8px;border:2px solid var(--red)" loading="lazy"/>
       <button onclick="tempHataGorseller.splice(${i},1);renderHataGorselOnizleme()" style="position:absolute;top:-6px;right:-6px;background:var(--red);border:none;color:white;border-radius:50%;width:18px;height:18px;font-size:11px;cursor:pointer">×</button>
     </div>`).join('');
 }
@@ -2343,8 +2375,8 @@ async function fotografSil(entryId, idx, tip, hataIdx) {
       if (fotoListesi) {
         fotoListesi.innerHTML = fotograflar.map((f, i) => `
           <div style="position:relative">
-            <img src="${f.url}" onclick="fotoGoster('${f.url}')" loading="lazy" style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:2px solid var(--yellow);cursor:pointer"/>
-            <button onclick="window.open('${f.url}','_blank');toast('📥 Fotoğraf indiriliyor...')" class="foto-indir-btn">⬇</button>
+            <img src="${esc(f.url)}" onclick="fotoGoster(this)" loading="lazy" style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:2px solid var(--yellow);cursor:pointer"/>
+            <button data-url="${esc(f.url)}" onclick="dosyaIndir(this,'Fotoğraf')" class="foto-indir-btn">⬇</button>
             <button onclick="fotografSil('${entryId}',${i},'foto')" style="position:absolute;top:-6px;left:-6px;background:var(--red);border:none;color:white;border-radius:50%;width:20px;height:20px;font-size:12px;cursor:pointer;line-height:1">×</button>
           </div>`).join('');
         // Buton sayacını güncelle
@@ -2554,7 +2586,7 @@ async function startEdit(id) {
   const fotoDiv = document.getElementById('fotografOnizleme');
   fotoDiv.innerHTML = entry.fotograflar?.length > 0 ? entry.fotograflar.map((f, i) => `
     <div style="position:relative;display:inline-block">
-      <img src="${f.url}" style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:2px solid var(--yellow)" />
+      <img src="${esc(f.url)}" style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:2px solid var(--yellow)" />
       <button onclick="mevcutFotoSil('${id}',${i})" style="position:absolute;top:-6px;right:-6px;background:var(--red);border:none;color:white;border-radius:50%;width:20px;height:20px;font-size:12px;cursor:pointer">×</button>
     </div>`).join('') : '';
 
@@ -2562,7 +2594,7 @@ async function startEdit(id) {
   const projBitti = activeProject()?.bitti === true;
   kmzDiv.innerHTML = entry.kmz ? `
     <div style="display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--blue);border-radius:8px;padding:8px 12px">
-      <span>📁</span><span style="color:var(--text);font-size:13px;flex:1">${entry.kmz.name}</span>
+      <span>📁</span><span style="color:var(--text);font-size:13px;flex:1">${esc(entry.kmz.name)}</span>
       ${!projBitti ? `<button onclick="mevcutKmzSil('${id}')" style="background:none;border:none;color:var(--red);font-size:18px;cursor:pointer">×</button>` : ''}
     </div>` : '';
 
@@ -2993,7 +3025,7 @@ function gunlukRaporPdf(entryId) {
   const ekip = e.ekipId ? data.teams.find(t => t.id === e.ekipId) : null;
   const denetimciListesi = denetimciGorunumleri(e);
 
-  const malzRows = (e.malzemeler || []).map(m => `<tr><td>${m.name}</td><td style="font-weight:700">${m.miktar} ${m.birim}</td></tr>`).join('') || '';
+  const malzRows = (e.malzemeler || []).map(m => `<tr><td>${esc(m.name)}</td><td style="font-weight:700">${esc(m.miktar)} ${esc(m.birim)}</td></tr>`).join('') || '';
 
   const fotoBlok = (title, urls) => urls.length > 0 ? `
     <h2>${title} (${urls.length})</h2>
@@ -3004,12 +3036,12 @@ function gunlukRaporPdf(entryId) {
   const hataBlok = (e.hatalar || []).map((h, i) => `
     <div class="hata-kutu">
       <div class="hata-baslik">
-        <span>#${i+1} ${h.turler?.join(', ') || 'Hata'}</span>
+        <span>#${i+1} ${esc(h.turler?.join(', ') || 'Hata')}</span>
         <span class="pill ${h.giderildi ? 'yesil' : 'kirmizi'}">${h.giderildi ? '✓ Giderildi' : '● Açık'}</span>
       </div>
-      ${h.aciklama ? `<div class="p-metin">${h.aciklama}</div>` : ''}
-      ${h.gorseller?.length > 0 ? `<div class="foto-grid">${h.gorseller.map(g => `<img src="${g.url}" class="foto-buyuk"/>`).join('')}</div>` : ''}
-      ${h.giderildi && h.giderilmeNotu ? `<div class="cozum-kutu"><b>Çözüm notu:</b> ${h.giderilmeNotu}</div>` : ''}
+      ${h.aciklama ? `<div class="p-metin">${esc(h.aciklama)}</div>` : ''}
+      ${h.gorseller?.length > 0 ? `<div class="foto-grid">${h.gorseller.map(g => `<img src="${esc(g.url)}" class="foto-buyuk"/>`).join('')}</div>` : ''}
+      ${h.giderildi && h.giderilmeNotu ? `<div class="cozum-kutu"><b>Çözüm notu:</b> ${esc(h.giderilmeNotu)}</div>` : ''}
     </div>`).join('');
 
   const onayBlok = (e.sahaOnaylari || []).map((o, i) => `
@@ -3018,12 +3050,12 @@ function gunlukRaporPdf(entryId) {
         <span>#${i+1} Saha Onayı</span>
         ${o.tarih ? `<span class="pill yesil">${new Date(o.tarih).toLocaleDateString('tr-TR')}</span>` : ''}
       </div>
-      ${o.aciklama ? `<div class="p-metin">${o.aciklama}</div>` : ''}
-      ${o.gorseller?.length > 0 ? `<div class="foto-grid">${o.gorseller.map(g => `<img src="${g.url}" class="foto-buyuk"/>`).join('')}</div>` : ''}
+      ${o.aciklama ? `<div class="p-metin">${esc(o.aciklama)}</div>` : ''}
+      ${o.gorseller?.length > 0 ? `<div class="foto-grid">${o.gorseller.map(g => `<img src="${esc(g.url)}" class="foto-buyuk"/>`).join('')}</div>` : ''}
     </div>`).join('');
 
   const html = `<!DOCTYPE html><html lang="tr"><head><meta charset="utf-8">
-  <title>Günlük Saha Raporu - ${tarihStr}</title>
+  <title>Günlük Saha Raporu - ${esc(tarihStr)}</title>
   <style>
     body { font-family: Arial, sans-serif; padding: 24px; color: #1a1a1a; font-size: 13px; max-width: 900px; margin: 0 auto; }
     h1 { font-size: 20px; color: #92400e; border-bottom: 3px solid #f59e0b; padding-bottom: 8px; margin-bottom: 4px; }
@@ -3052,7 +3084,7 @@ function gunlukRaporPdf(entryId) {
     @media print { body { padding: 0; } }
   </style></head><body>
   <h1>📋 Günlük Saha Raporu</h1>
-  <div class="meta">🏗 ${proj.name}${proj.location ? ' - ' + proj.location : ''} &nbsp;|&nbsp; 📅 ${tarihStr}${ekip ? ` &nbsp;|&nbsp; 👷 ${ekip.ad}` : ''}${denetimciListesi.length > 0 ? ` &nbsp;|&nbsp; 🕵️ ${denetimciListesi.map(d => `${d.vakitEtiket ? d.vakitEtiket + ' ' : ''}${d.ad}${d.kurum ? ' (' + d.kurum + ')' : ''}`).join(', ')}` : ''} &nbsp;|&nbsp; Oluşturma: ${olusturmaStr}</div>
+  <div class="meta">🏗 ${esc(proj.name)}${proj.location ? ' - ' + esc(proj.location) : ''} &nbsp;|&nbsp; 📅 ${esc(tarihStr)}${ekip ? ` &nbsp;|&nbsp; 👷 ${esc(ekip.ad)}` : ''}${denetimciListesi.length > 0 ? ` &nbsp;|&nbsp; 🕵️ ${esc(denetimciListesi.map(d => `${d.vakitEtiket ? d.vakitEtiket + ' ' : ''}${d.ad}${d.kurum ? ' (' + d.kurum + ')' : ''}`).join(', '))}` : ''} &nbsp;|&nbsp; Oluşturma: ${olusturmaStr}</div>
 
   <div class="stats">
     <div class="stat-box"><div class="stat-val">${bakimMi ? '🔧' : Number(e.kaziMetre).toLocaleString('tr-TR') + ' m'}</div><div class="stat-lbl">${bakimMi ? 'Bakım/Onarım' : 'Kazıldı'}</div></div>
@@ -3061,7 +3093,7 @@ function gunlukRaporPdf(entryId) {
     <div class="stat-box"><div class="stat-val">${e.sahaOnaylari?.length || 0}</div><div class="stat-lbl">Saha Onayı</div></div>
   </div>
 
-  ${e.notlar ? `<h2>📝 Notlar</h2><div class="p-metin">${e.notlar}</div>` : ''}
+  ${e.notlar ? `<h2>📝 Notlar</h2><div class="p-metin">${esc(e.notlar)}</div>` : ''}
 
   ${malzRows ? `<h2>🧱 Malzemeler</h2><table><tr><th>Malzeme</th><th>Miktar</th></tr>${malzRows}</table>` : ''}
 
@@ -3104,7 +3136,7 @@ function projeRaporPdf() {
     malzMap[m.name] = (malzMap[m.name] || 0) + parseFloat(m.miktar || 0);
   }));
   const malzRows = Object.entries(malzMap).map(([n, t]) =>
-    `<tr><td>${n}</td><td>${t}</td></tr>`
+    `<tr><td>${esc(n)}</td><td>${esc(t)}</td></tr>`
   ).join('') || '<tr><td colspan="2" style="color:#999">Malzeme kaydı yok</td></tr>';
 
   // Ekip / Denetimci özetleri
@@ -3116,7 +3148,7 @@ function projeRaporPdf() {
   });
   const ekipRowsPdf = Object.entries(ekipMapPdf).sort((a, b) => b[1] - a[1]).map(([eid, toplam]) => {
     const isim = eid === '__bos__' ? 'Ekip Atanmamış' : (data.teams.find(t => t.id === eid)?.ad || 'Bilinmeyen Ekip');
-    return `<tr><td>${isim}</td><td style="font-weight:700">${toplam.toLocaleString('tr-TR', { maximumFractionDigits: 0 })} m</td></tr>`;
+    return `<tr><td>${esc(isim)}</td><td style="font-weight:700">${toplam.toLocaleString('tr-TR', { maximumFractionDigits: 0 })} m</td></tr>`;
   }).join('') || '<tr><td colspan="2" style="color:#999">Kayıt yok</td></tr>';
 
   const denMapPdf = {};
@@ -3128,7 +3160,7 @@ function projeRaporPdf() {
   const denRowsPdf = Object.entries(denMapPdf).sort((a, b) => b[1] - a[1]).map(([did, toplam]) => {
     const d = data.denetimciler.find(x => x.id === did);
     const isim = did === '__bos__' ? 'Denetimci Atanmamış' : (d ? d.ad + (d.kurum ? ' (' + d.kurum + ')' : '') : 'Bilinmeyen Denetimci');
-    return `<tr><td>${isim}</td><td style="font-weight:700">${toplam.toLocaleString('tr-TR', { maximumFractionDigits: 0 })} m</td></tr>`;
+    return `<tr><td>${esc(isim)}</td><td style="font-weight:700">${toplam.toLocaleString('tr-TR', { maximumFractionDigits: 0 })} m</td></tr>`;
   }).join('') || '<tr><td colspan="2" style="color:#999">Kayıt yok</td></tr>';
 
   // Günlük kazı geçmişi
@@ -3141,10 +3173,10 @@ function projeRaporPdf() {
     return `<tr${hataVar ? ' style="background:#fff5f5"' : ''}>
       <td>${new Date(e.tarih).toLocaleDateString('tr-TR')}</td>
       <td style="font-weight:700">${Number(e.kaziMetre) === 0 ? '🔧 Bakım' : e.kaziMetre + ' m'}</td>
-      <td>${ekipAdi}</td>
-      <td>${denStr}</td>
-      <td>${malzStr}</td>
-      <td>${hataVar ? '⚠️' : ''} ${(e.notlar || '').substring(0, 60)}</td>
+      <td>${esc(ekipAdi)}</td>
+      <td>${esc(denStr)}</td>
+      <td>${esc(malzStr)}</td>
+      <td>${hataVar ? '⚠️' : ''} ${esc((e.notlar || '').substring(0, 60))}</td>
     </tr>`;
   }).join('');
 
@@ -3160,7 +3192,7 @@ function projeRaporPdf() {
     </div>` : '';
 
   const html = `<!DOCTYPE html><html lang="tr"><head><meta charset="utf-8">
-  <title>${proj.name} - Proje Raporu</title>
+  <title>${esc(proj.name)} - Proje Raporu</title>
   <style>
     body { font-family: Arial, sans-serif; padding: 24px; color: #1a1a1a; font-size: 12px; max-width: 900px; margin: 0 auto; }
     h1 { font-size: 20px; color: #92400e; border-bottom: 3px solid #f59e0b; padding-bottom: 8px; margin-bottom: 4px; }
@@ -3181,7 +3213,7 @@ function projeRaporPdf() {
     table { page-break-inside: auto; }
     @media print { body { padding: 10px; } }
   </style></head><body>
-  <h1>⛏ ${proj.name}${proj.location ? ' — ' + proj.location : ''}</h1>
+  <h1>⛏ ${esc(proj.name)}${proj.location ? ' — ' + esc(proj.location) : ''}</h1>
   <div class="meta">📄 Proje Raporu &nbsp;|&nbsp; Oluşturma: ${tarihStr} &nbsp;|&nbsp; Dönem: ${ilk} → ${son}</div>
 
   <div class="stats">
@@ -3510,7 +3542,7 @@ function qrDosyaSecildi() {
   _qrSeciliDosya = f;
   const boyutMb = (f.size / (1024 * 1024)).toFixed(2);
   const ikon = f.type === 'application/pdf' ? '📄' : '🖼️';
-  onizleme.innerHTML = `${ikon} <strong>${f.name}</strong><br><span style="color:var(--muted)">${boyutMb} MB</span>`;
+  onizleme.innerHTML = `${ikon} <strong>${esc(f.name)}</strong><br><span style="color:var(--muted)">${boyutMb} MB</span>`;
   onizleme.style.display = 'block';
 }
 
@@ -3704,7 +3736,7 @@ function grafikCiz() {
       aci += dilim;
     });
     if (legend) legend.innerHTML = projler.map((p,i) =>
-      `<span style="color:${renkler[i%renkler.length]}">■</span> ${p.name}: ${Math.round(toplamlar[i]).toLocaleString('tr-TR')} m`
+      `<span style="color:${renkler[i%renkler.length]}">■</span> ${esc(p.name)}: ${Math.round(toplamlar[i]).toLocaleString('tr-TR')} m`
     ).join('&nbsp;&nbsp;');
   }
 }
@@ -3934,7 +3966,7 @@ async function verileriExcelYedekle() {
 
     // Projeler sayfası
     const projData = (projelerRes.data||[]).map(p => ({
-      'Proje Adı': p.ad, 'Konum': p.konum||'', 'Hedef Metre': p.hedef_metre||'',
+      'Proje Adı': xlsGuvenli(p.ad), 'Konum': xlsGuvenli(p.konum||''), 'Hedef Metre': p.hedef_metre||'',
       'Durum': p.bitti ? 'Tamamlandı' : 'Devam Ediyor', 'Oluşturma Tarihi': p.olusturma_tarihi
     }));
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(projData), '🏗 Projeler');
@@ -3947,30 +3979,30 @@ async function verileriExcelYedekle() {
     const denetimciMap = {};
     (denetimcilerRes.data||[]).forEach(d => denetimciMap[d.id] = d.ad + (d.kurum ? ' (' + d.kurum + ')' : ''));
     const kayitData = (kayitlarRes.data||[]).map(k => ({
-      'Proje': projMap[k.proje_id]||'', 'Tarih': k.tarih, 'Ekip': k.ekip_id ? (ekipMap[k.ekip_id]||'') : '',
-      'Denetimci': denetimciRowMetni(k, denetimciMap), 'Kazı Metre': k.kazi_metre,
-      'Notlar': k.notlar||'', 'Malzeme Sayısı': (k.malzemeler||[]).length,
+      'Proje': xlsGuvenli(projMap[k.proje_id]||''), 'Tarih': k.tarih, 'Ekip': k.ekip_id ? xlsGuvenli(ekipMap[k.ekip_id]||'') : '',
+      'Denetimci': xlsGuvenli(denetimciRowMetni(k, denetimciMap)), 'Kazı Metre': k.kazi_metre,
+      'Notlar': xlsGuvenli(k.notlar||''), 'Malzeme Sayısı': (k.malzemeler||[]).length,
       'Hata Sayısı': (k.hatalar||[]).length, 'Fotoğraf Sayısı': (k.fotograflar||[]).length,
-      'KMZ': k.kmz?.name || ''
+      'KMZ': xlsGuvenli(k.kmz?.name || '')
     }));
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(kayitData), '📋 Kayıtlar');
 
     // Ekipler sayfası
     if ((ekiplerRes.data||[]).length > 0) {
-      const ekipData = ekiplerRes.data.map(t => ({ 'Ekip Adı': t.ad }));
+      const ekipData = ekiplerRes.data.map(t => ({ 'Ekip Adı': xlsGuvenli(t.ad) }));
       XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(ekipData), '👷 Ekipler');
     }
 
     // Denetimciler sayfası
     if ((denetimcilerRes.data||[]).length > 0) {
-      const denetimciData = denetimcilerRes.data.map(d => ({ 'Denetimci Adı': d.ad, 'Kurum / Firma': d.kurum||'' }));
+      const denetimciData = denetimcilerRes.data.map(d => ({ 'Denetimci Adı': xlsGuvenli(d.ad), 'Kurum / Firma': xlsGuvenli(d.kurum||'') }));
       XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(denetimciData), '🕵️ Denetimciler');
     }
 
     // Giderler sayfası
     const giderData = (giderlerRes.data||[]).map(g => ({
-      'Tarih': g.tarih, 'Kategori': g.kategori, 'Açıklama': g.aciklama||'',
-      'Tutar (₺)': g.tutar, 'Proje': projMap[g.proje_id]||''
+      'Tarih': g.tarih, 'Kategori': xlsGuvenli(g.kategori), 'Açıklama': xlsGuvenli(g.aciklama||''),
+      'Tutar (₺)': g.tutar, 'Proje': xlsGuvenli(projMap[g.proje_id]||'')
     }));
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(giderData), '💸 Giderler');
 
@@ -3998,11 +4030,11 @@ async function verileriPdfYedekle() {
     ]);
 
     const projMap = {};
-    (projelerRes.data||[]).forEach(p => projMap[p.id] = p.ad);
+    (projelerRes.data||[]).forEach(p => projMap[p.id] = esc(p.ad));
     const ekipMap = {};
-    (ekiplerRes.data||[]).forEach(t => ekipMap[t.id] = t.ad);
+    (ekiplerRes.data||[]).forEach(t => ekipMap[t.id] = esc(t.ad));
     const denetimciMap = {};
-    (denetimcilerRes.data||[]).forEach(d => denetimciMap[d.id] = d.ad + (d.kurum ? ' (' + d.kurum + ')' : ''));
+    (denetimcilerRes.data||[]).forEach(d => denetimciMap[d.id] = esc(d.ad) + (d.kurum ? ' (' + esc(d.kurum) + ')' : ''));
 
     const tarihStr = new Date().toLocaleDateString('tr-TR');
     let html = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>
@@ -4039,14 +4071,14 @@ async function verileriPdfYedekle() {
     // Projeler
     html += `<h2>🏗 Projeler (${(projelerRes.data||[]).length})</h2><table><tr><th>Proje Adı</th><th>Konum</th><th>Hedef</th><th>Durum</th></tr>`;
     (projelerRes.data||[]).forEach(p => {
-      html += `<tr><td>${p.ad}</td><td>${p.konum||'-'}</td><td>${p.hedef_metre ? p.hedef_metre+' m' : '-'}</td><td>${p.bitti?'Tamamlandı':'Devam Ediyor'}</td></tr>`;
+      html += `<tr><td>${esc(p.ad)}</td><td>${esc(p.konum)||'-'}</td><td>${p.hedef_metre ? p.hedef_metre+' m' : '-'}</td><td>${p.bitti?'Tamamlandı':'Devam Ediyor'}</td></tr>`;
     });
     html += `</table>`;
 
     // Kayıtlar
     html += `<h2>📋 Kayıtlar (${(kayitlarRes.data||[]).length})</h2><table><tr><th>Proje</th><th>Tarih</th><th>Ekip</th><th>Denetimci</th><th>Metre</th><th>Notlar</th></tr>`;
     (kayitlarRes.data||[]).sort((a,b)=>a.tarih.localeCompare(b.tarih)).forEach(k => {
-      html += `<tr><td>${projMap[k.proje_id]||'-'}</td><td>${new Date(k.tarih).toLocaleDateString('tr-TR')}</td><td>${k.ekip_id ? (ekipMap[k.ekip_id]||'-') : '-'}</td><td>${denetimciRowMetni(k, denetimciMap) || '-'}</td><td>${k.kazi_metre} m</td><td>${(k.notlar||'').substring(0,60)}</td></tr>`;
+      html += `<tr><td>${projMap[k.proje_id]||'-'}</td><td>${new Date(k.tarih).toLocaleDateString('tr-TR')}</td><td>${k.ekip_id ? (ekipMap[k.ekip_id]||'-') : '-'}</td><td>${denetimciRowMetni(k, denetimciMap) || '-'}</td><td>${k.kazi_metre} m</td><td>${esc((k.notlar||'').substring(0,60))}</td></tr>`;
     });
     html += `</table>`;
 
@@ -4070,9 +4102,9 @@ async function verileriPdfYedekle() {
       ekiplerRes.data.slice().sort((a,b)=>(ekipStats[b.id]?.toplam||0)-(ekipStats[a.id]?.toplam||0)).forEach(t => {
         const s = ekipStats[t.id];
         if (s) {
-          html += `<tr><td>👷 ${t.ad}</td><td style="font-weight:700">${Math.round(s.toplam).toLocaleString('tr-TR')} m</td><td>${s.sayi}</td><td>${[...s.projeler].join(', ')}</td><td>${new Date(s.ilk).toLocaleDateString('tr-TR')} → ${new Date(s.son).toLocaleDateString('tr-TR')}</td></tr>`;
+          html += `<tr><td>👷 ${esc(t.ad)}</td><td style="font-weight:700">${Math.round(s.toplam).toLocaleString('tr-TR')} m</td><td>${s.sayi}</td><td>${[...s.projeler].join(', ')}</td><td>${new Date(s.ilk).toLocaleDateString('tr-TR')} → ${new Date(s.son).toLocaleDateString('tr-TR')}</td></tr>`;
         } else {
-          html += `<tr><td>👷 ${t.ad}</td><td colspan="4" style="color:#999">Henüz kayıt yok</td></tr>`;
+          html += `<tr><td>👷 ${esc(t.ad)}</td><td colspan="4" style="color:#999">Henüz kayıt yok</td></tr>`;
         }
       });
       html += `</table>`;
@@ -4106,7 +4138,7 @@ async function verileriPdfYedekle() {
       html += `<table><tr><th>Denetimci</th><th>Toplam Kazı</th><th>Kayıt Sayısı</th><th>Denetlediği Projeler</th><th>İlk / Son Kazı</th></tr>`;
       denetimcilerRes.data.slice().sort((a,b)=>(denetimciStats[b.id]?.toplam||0)-(denetimciStats[a.id]?.toplam||0)).forEach(d => {
         const s = denetimciStats[d.id];
-        const adKurum = d.ad + (d.kurum ? ' (' + d.kurum + ')' : '');
+        const adKurum = esc(d.ad) + (d.kurum ? ' (' + esc(d.kurum) + ')' : '');
         if (s) {
           html += `<tr><td>🕵️ ${adKurum}</td><td style="font-weight:700">${Math.round(s.toplam).toLocaleString('tr-TR')} m</td><td>${s.sayi}</td><td>${[...s.projeler].join(', ')}</td><td>${new Date(s.ilk).toLocaleDateString('tr-TR')} → ${new Date(s.son).toLocaleDateString('tr-TR')}</td></tr>`;
         } else {
@@ -4125,7 +4157,7 @@ async function verileriPdfYedekle() {
     // Giderler
     html += `<h2>💸 Giderler (${(giderlerRes.data||[]).length})</h2><table><tr><th>Tarih</th><th>Kategori</th><th>Açıklama</th><th>Tutar</th></tr>`;
     (giderlerRes.data||[]).sort((a,b)=>a.tarih.localeCompare(b.tarih)).forEach(g => {
-      html += `<tr><td>${new Date(g.tarih).toLocaleDateString('tr-TR')}</td><td>${g.kategori}</td><td>${g.aciklama||'-'}</td><td>${parseFloat(g.tutar).toLocaleString('tr-TR')} ₺</td></tr>`;
+      html += `<tr><td>${new Date(g.tarih).toLocaleDateString('tr-TR')}</td><td>${esc(g.kategori)}</td><td>${esc(g.aciklama)||'-'}</td><td>${parseFloat(g.tutar).toLocaleString('tr-TR')} ₺</td></tr>`;
     });
     html += `</table>`;
 
@@ -4196,7 +4228,7 @@ function renderEkipSelect() {
   const sel = document.getElementById('fEkip');
   if (!sel) return;
   const secili = sel.value;
-  sel.innerHTML = '<option value="">Ekip seçilmedi</option>' + data.teams.map(t => `<option value="${t.id}">${t.ad}</option>`).join('');
+  sel.innerHTML = '<option value="">Ekip seçilmedi</option>' + data.teams.map(t => `<option value="${t.id}">${esc(t.ad)}</option>`).join('');
   if (secili) sel.value = secili;
 }
 
@@ -4205,7 +4237,7 @@ function renderEkipFiltre() {
     const sel = document.getElementById(id);
     if (!sel) return;
     const secili = sel.value;
-    sel.innerHTML = '<option value="">Tüm Ekipler</option>' + data.teams.map(t => `<option value="${t.id}">${t.ad}</option>`).join('') + '<option value="__bos__">Ekip Atanmamış</option>';
+    sel.innerHTML = '<option value="">Tüm Ekipler</option>' + data.teams.map(t => `<option value="${t.id}">${esc(t.ad)}</option>`).join('') + '<option value="__bos__">Ekip Atanmamış</option>';
     if (secili) sel.value = secili;
   });
 }
@@ -4228,7 +4260,7 @@ function renderEkipler() {
   }
   el.innerHTML = data.teams.map(t => `
     <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:rgba(139,92,246,0.06);border:1px solid rgba(139,92,246,0.2);border-radius:8px;margin-bottom:6px">
-      <span style="font-size:13px;color:var(--text);font-weight:600">👷 ${t.ad}</span>
+      <span style="font-size:13px;color:var(--text);font-weight:600">👷 ${esc(t.ad)}</span>
       <div style="display:flex;align-items:center;gap:4px">
         <button onclick="ekipDuzenle('${t.id}')" style="background:none;border:none;color:var(--blue);font-size:14px;cursor:pointer;padding:2px 6px">✎</button>
         <button onclick="ekipSil('${t.id}')" style="background:none;border:none;color:var(--red);font-size:16px;cursor:pointer;padding:2px 6px">×</button>
@@ -4295,7 +4327,7 @@ function renderMalzemeSelect() {
   if (!sel) return;
   const secili = sel.value;
   sel.innerHTML = '<option value="">Malzeme Seç</option>'
-    + data.malzemeTurleri.map(t => `<option value="${t.ad}">${t.ad}</option>`).join('');
+    + data.malzemeTurleri.map(t => `<option value="${esc(t.ad)}">${esc(t.ad)}</option>`).join('');
   if (secili) sel.value = secili;
 }
 
@@ -4317,7 +4349,7 @@ function renderMalzemeTurleri() {
   }
   el.innerHTML = data.malzemeTurleri.map(t => `
     <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.2);border-radius:8px;margin-bottom:6px">
-      <span style="font-size:13px;color:var(--text);font-weight:600">🧱 ${t.ad}</span>
+      <span style="font-size:13px;color:var(--text);font-weight:600">🧱 ${esc(t.ad)}</span>
       <div style="display:flex;align-items:center;gap:4px">
         <button onclick="malzemeTuruDuzenle('${t.id}')" style="background:none;border:none;color:var(--blue);font-size:14px;cursor:pointer;padding:2px 6px">✎</button>
         <button onclick="malzemeTuruSil('${t.id}')" style="background:none;border:none;color:var(--red);font-size:16px;cursor:pointer;padding:2px 6px">×</button>
@@ -4385,7 +4417,7 @@ function renderDenetimciFiltre() {
     const sel = document.getElementById(id);
     if (!sel) return;
     const secili = sel.value;
-    sel.innerHTML = '<option value="">Tüm Denetimciler</option>' + data.denetimciler.map(d => `<option value="${d.id}">${d.ad}${d.kurum ? ' — ' + d.kurum : ''}</option>`).join('') + '<option value="__bos__">Denetimci Atanmamış</option>';
+    sel.innerHTML = '<option value="">Tüm Denetimciler</option>' + data.denetimciler.map(d => `<option value="${d.id}">${esc(d.ad)}${d.kurum ? ' — ' + esc(d.kurum) : ''}</option>`).join('') + '<option value="__bos__">Denetimci Atanmamış</option>';
     if (secili) sel.value = secili;
   });
 }
@@ -4393,7 +4425,7 @@ function renderDenetimciFiltre() {
 function renderDenetimciSelect() {
   const sel = document.getElementById('fDenetimciEkle');
   if (!sel) return;
-  sel.innerHTML = '<option value="">Denetimci seçin...</option>' + data.denetimciler.map(d => `<option value="${d.id}">${d.ad}${d.kurum ? ' — ' + d.kurum : ''}</option>`).join('');
+  sel.innerHTML = '<option value="">Denetimci seçin...</option>' + data.denetimciler.map(d => `<option value="${d.id}">${esc(d.ad)}${d.kurum ? ' — ' + esc(d.kurum) : ''}</option>`).join('');
   renderFormDenetimciListe();
 }
 
@@ -4451,7 +4483,7 @@ function renderFormDenetimciListe() {
   if (formDenetimSecimleri.length === 0) { wrap.innerHTML = ''; return; }
   wrap.innerHTML = formDenetimSecimleri.map((s, i) => {
     const d = data.denetimciler.find(x => x.id === s.id);
-    const adKurum = d ? (d.ad + (d.kurum ? ' — ' + d.kurum : '')) : 'Bilinmeyen denetimci';
+    const adKurum = d ? (esc(d.ad) + (d.kurum ? ' — ' + esc(d.kurum) : '')) : 'Bilinmeyen denetimci';
     const vakitEt = VAKIT_ETIKETLERI[s.vakit] || '';
     return `<div style="display:flex;align-items:center;gap:8px;background:rgba(6,182,212,0.08);border:1px solid rgba(6,182,212,0.3);border-radius:8px;padding:7px 10px">
       ${vakitEt ? `<span style="font-size:11px;color:#67e8f9;flex-shrink:0;font-weight:800;white-space:nowrap">${vakitEt}</span>` : ''}
@@ -4482,8 +4514,8 @@ function renderDenetimciler() {
   el.innerHTML = data.denetimciler.map(d => `
     <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:rgba(6,182,212,0.06);border:1px solid rgba(6,182,212,0.2);border-radius:8px;margin-bottom:6px">
       <div>
-        <div style="font-size:13px;color:var(--text);font-weight:600">🕵️ ${d.ad}</div>
-        ${d.kurum ? `<div style="font-size:11px;color:var(--sub);margin-top:1px">${d.kurum}</div>` : ''}
+        <div style="font-size:13px;color:var(--text);font-weight:600">🕵️ ${esc(d.ad)}</div>
+        ${d.kurum ? `<div style="font-size:11px;color:var(--sub);margin-top:1px">${esc(d.kurum)}</div>` : ''}
       </div>
       <div style="display:flex;align-items:center;gap:4px">
         <button onclick="denetimciDuzenle('${d.id}')" style="background:none;border:none;color:var(--blue);font-size:14px;cursor:pointer;padding:2px 6px">✎</button>
@@ -4564,7 +4596,7 @@ function renderGiderKategoriSelect() {
     ? data.giderKategorileri.map(k => k.ad)
     : GIDER_KATEGORI_VARSAYILAN;
   sel.innerHTML = '<option value="">Seçin...</option>'
-    + kaynak.map(ad => `<option>${ad}</option>`).join('')
+    + kaynak.map(ad => `<option>${esc(ad)}</option>`).join('')
     + '<option>Diğer</option>';
   if (secili) sel.value = secili;
 }
@@ -4587,7 +4619,7 @@ function renderGiderKategoriListesi() {
   }
   el.innerHTML = data.giderKategorileri.map(k => `
     <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2);border-radius:8px;margin-bottom:6px">
-      <span style="font-size:13px;color:var(--text);font-weight:600">💸 ${k.ad}</span>
+      <span style="font-size:13px;color:var(--text);font-weight:600">💸 ${esc(k.ad)}</span>
       <div style="display:flex;align-items:center;gap:4px">
         <button onclick="giderKategoriDuzenle('${k.id}')" style="background:none;border:none;color:var(--blue);font-size:14px;cursor:pointer;padding:2px 6px">✎</button>
         <button onclick="giderKategoriSil('${k.id}')" style="background:none;border:none;color:var(--red);font-size:16px;cursor:pointer;padding:2px 6px">×</button>
@@ -4684,7 +4716,7 @@ function renderHataTurButtons() {
     : HATA_TURU_VARSAYILAN;
   el.innerHTML = kaynak.map(ad => {
     const secili = tempHataTurler.includes(ad);
-    return `<button class="hata-type-btn${secili ? ' selected' : ''}" onclick="toggleHataTur(this,'${ad.replace(/'/g,"\\'")}')">${ad}</button>`;
+    return `<button class="hata-type-btn${secili ? ' selected' : ''}" data-ad="${esc(ad)}" onclick="toggleHataTur(this,this.dataset.ad)">${esc(ad)}</button>`;
   }).join('');
 }
 
@@ -4706,7 +4738,7 @@ function renderHataTuruListesi() {
   }
   el.innerHTML = data.hataTurleri.map(t => `
     <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2);border-radius:8px;margin-bottom:6px">
-      <span style="font-size:13px;color:var(--text);font-weight:600">⚠️ ${t.ad}</span>
+      <span style="font-size:13px;color:var(--text);font-weight:600">⚠️ ${esc(t.ad)}</span>
       <div style="display:flex;align-items:center;gap:4px">
         <button onclick="hataTuruDuzenle('${t.id}')" style="background:none;border:none;color:var(--blue);font-size:14px;cursor:pointer;padding:2px 6px">✎</button>
         <button onclick="hataTuruSil('${t.id}')" style="background:none;border:none;color:var(--red);font-size:16px;cursor:pointer;padding:2px 6px">×</button>
@@ -4804,9 +4836,33 @@ function denetimciSil(id) {
 }
 
 let _entryPage = 0;
-const ENTRY_PAGE_SIZE = 30;
+const ENTRY_PAGE_SIZE = 15;
 let _entryHasMore = false;
 let _entryTotalCount = 0;
+// Üst istatistik kartları (toplam metre, ortalama, hata sayısı, ilerleme çubuğu) sayfalamadan
+// etkilenmesin diye projenin TÜM kayıtları üzerinden hesaplanan hafif bir toplam önbelleği.
+let _projeIstatistik = {};
+
+async function loadProjeIstatistik(projeId) {
+  if (!projeId) return;
+  try {
+    const { data: rows, error } = await sb.from('kayitlar')
+      .select('kazi_metre, hatalar, hata')
+      .eq('proje_id', projeId);
+    if (error || !rows) return;
+    let total = 0, kaziSayisi = 0, hataSayisi = 0;
+    rows.forEach(k => {
+      const km = parseFloat(k.kazi_metre) || 0;
+      total += km;
+      if (km > 0) kaziSayisi++;
+      hataSayisi += (k.hatalar?.length || (k.hata?.var ? 1 : 0));
+    });
+    _projeIstatistik[projeId] = { total, kaziSayisi, hataSayisi };
+    // Aktif proje hâlâ bu proje ise kartları hemen güncelle
+    const aktif = activeProject();
+    if (aktif && aktif.id === projeId) renderDashboard();
+  } catch (e) { /* sessiz geç - istatistik kartı sayfalanmış veriyle geri düşer */ }
+}
 
 async function loadEntries(projeId, sessiz = false, sayfa = 0) {
   if (!projeId) return;
@@ -4870,6 +4926,7 @@ async function loadEntries(projeId, sessiz = false, sayfa = 0) {
       if (sayfa === 0) {
         proj.entries = yeniKayitlar;
         _entryTotalCount = count || 0;
+        loadProjeIstatistik(projeId); // arka planda, üst kartlar için tam toplamı çeker
       } else {
         proj.entries = [...proj.entries, ...yeniKayitlar];
       }
@@ -5013,11 +5070,18 @@ async function tempHatalarSil(idx) {
   } catch(err) { hideLoading(); toast('⚠️ ' + (err.message||'Bağlantı hatası'), true); }
 }
 
-function fotoGoster(url) {
+function fotoGoster(urlVeyaEl) {
+  const url = (urlVeyaEl && urlVeyaEl.tagName === 'IMG') ? urlVeyaEl.src : urlVeyaEl;
   const modal = document.getElementById('fotoModal');
   document.getElementById('fotoModalImg').src = url;
   document.getElementById('fotoModalIndir').href = url;
   modal.style.display = 'flex';
+}
+
+function dosyaIndir(btn, etiket) {
+  const url = btn.dataset.url;
+  if (url) window.open(url, '_blank');
+  toast(`📥 ${etiket} indiriliyor...`);
 }
 
 // ─── ÇOKLU HATA SİSTEMİ ─────────────────────────────────
@@ -5091,6 +5155,7 @@ async function hataEkleVeKaydet() {
   const proj = activeProject();
   const entry = proj?.entries.find(e => e.id === entryId);
   if (entry) { entry.hatalar = yeniHatalar; entry.hata = hata; }
+  if (proj) loadProjeIstatistik(proj.id); // üst kartlardaki hata sayısını tazele
 
   // Formu sıfırla
   tempHataTurler = [];
@@ -5154,11 +5219,11 @@ async function renderMevcutHatalar(sadeceBak = false) {
         ${!sadeceBak ? `<button onclick="hataDuzenle(${i})" style="background:rgba(59,130,246,0.15);border:1px solid var(--blue);color:var(--blue);border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;font-family:inherit">✏️ Düzenle</button>
         <button onclick="tempHatalarSil(${i})" style="background:rgba(239,68,68,0.15);border:1px solid var(--red);color:var(--red);border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;font-family:inherit">🗑 Sil</button>` : ''}
       </div>
-      ${h.turler.length > 0 ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:4px">${h.turler.map(t => `<span style="background:rgba(239,68,68,0.2);color:#fca5a5;border-radius:20px;padding:2px 8px;font-size:11px">${t}</span>`).join('')}</div>` : ''}
-      ${h.aciklama ? `<div style="color:#fca5a5;font-size:12px;white-space:pre-wrap">📋 ${h.aciklama}</div>` : ''}
+      ${h.turler.length > 0 ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:4px">${h.turler.map(t => `<span style="background:rgba(239,68,68,0.2);color:#fca5a5;border-radius:20px;padding:2px 8px;font-size:11px">${esc(t)}</span>`).join('')}</div>` : ''}
+      ${h.aciklama ? `<div style="color:#fca5a5;font-size:12px;white-space:pre-wrap">📋 ${esc(h.aciklama)}</div>` : ''}
       ${h.gorseller?.length > 0 ? `<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px">${h.gorseller.map((g, gi) => `
         <div style="position:relative">
-          <img src="${g.url}" onclick="fotoGoster('${g.url}')" style="width:60px;height:60px;object-fit:cover;border-radius:6px;border:1px solid var(--red);cursor:pointer">
+          <img src="${esc(g.url)}" onclick="fotoGoster(this)" style="width:60px;height:60px;object-fit:cover;border-radius:6px;border:1px solid var(--red);cursor:pointer">
           ${!sadeceBak ? `<button onclick="silOnayla('Bu görseli silmek istediğine emin misin?', async () => { 
             const g = tempHatalar[${i}].gorseller[${gi}];
             if (g && g.path) await sb.storage.from('kazi-dosyalar').remove([g.path]);
@@ -5178,7 +5243,7 @@ async function renderMevcutHatalar(sadeceBak = false) {
         <div style="margin-top:8px;padding:8px 10px;background:rgba(16,185,129,0.06);border-left:3px solid #10b981;border-radius:4px">
           <div style="font-size:11px;color:#10b981;font-weight:700">✅ GİDERİLDİ ${h.giderilmeTarihi ? '(' + new Date(h.giderilmeTarihi).toLocaleDateString('tr-TR') + ')' : ''}</div>
           ${h.giderilmeNotu ? `<div style="font-size:12px;color:var(--text);margin-top:2px;white-space:pre-wrap">${h.giderilmeNotu.replace(/</g,'&lt;')}</div>` : ''}
-          ${h.giderilmeGorseller?.length > 0 ? `<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px">${h.giderilmeGorseller.map(g => `<img src="${g.url}" onclick="fotoGoster('${g.url}')" style="width:56px;height:56px;object-fit:cover;border-radius:6px;border:1px solid #10b981;cursor:pointer">`).join('')}</div>` : ''}
+          ${h.giderilmeGorseller?.length > 0 ? `<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px">${h.giderilmeGorseller.map(g => `<img src="${esc(g.url)}" onclick="fotoGoster(this)" style="width:56px;height:56px;object-fit:cover;border-radius:6px;border:1px solid #10b981;cursor:pointer">`).join('')}</div>` : ''}
           ${!sadeceBak ? `<button onclick="hataGiderilmeGeriAl(${i})" style="width:100%;background:none;border:1px solid var(--border);color:var(--sub);border-radius:8px;padding:7px;font-size:11px;cursor:pointer;font-family:inherit;margin-top:8px">↩️ Giderildi İşaretini Geri Al</button>` : ''}
         </div>
       ` : (!sadeceBak ? (
@@ -5229,7 +5294,7 @@ function renderHataGiderilmeOnizleme(i) {
   if (!onizleme) return;
   onizleme.innerHTML = (hataGiderilmeTemp[i]?.gorseller || []).map((f, gi) => `
     <div style="position:relative;display:inline-block">
-      <img src="${f.url}" style="width:56px;height:56px;object-fit:cover;border-radius:6px;border:2px solid #10b981" loading="lazy"/>
+      <img src="${esc(f.url)}" style="width:56px;height:56px;object-fit:cover;border-radius:6px;border:2px solid #10b981" loading="lazy"/>
       <button onclick="hataGiderilmeTemp[${i}].gorseller.splice(${gi},1);renderHataGiderilmeOnizleme(${i})" style="position:absolute;top:-6px;right:-6px;background:var(--red);border:none;color:white;border-radius:50%;width:18px;height:18px;font-size:11px;cursor:pointer">×</button>
     </div>`).join('');
 }
@@ -5324,7 +5389,7 @@ function renderOnayGorselOnizleme() {
   if (!div) return;
   div.innerHTML = tempOnayGorseller.map((f, i) => `
     <div style="position:relative;display:inline-block">
-      <img src="${f.url}" style="width:70px;height:70px;object-fit:cover;border-radius:8px;border:2px solid #06b6d4" loading="lazy"/>
+      <img src="${esc(f.url)}" style="width:70px;height:70px;object-fit:cover;border-radius:8px;border:2px solid #06b6d4" loading="lazy"/>
       <button onclick="tempOnayGorseller.splice(${i},1);renderOnayGorselOnizleme()" style="position:absolute;top:-6px;right:-6px;background:var(--red);border:none;color:white;border-radius:50%;width:18px;height:18px;font-size:11px;cursor:pointer">×</button>
     </div>`).join('');
 }
@@ -5467,10 +5532,10 @@ function renderMevcutOnaylar(sadeceBak = false) {
         ${!sadeceBak ? `<button onclick="onayDuzenle(${i})" style="background:rgba(59,130,246,0.15);border:1px solid var(--blue);color:var(--blue);border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;font-family:inherit">✏️ Düzenle</button>
         <button onclick="tempOnaylarSil(${i})" style="background:rgba(239,68,68,0.15);border:1px solid var(--red);color:var(--red);border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;font-family:inherit">🗑 Sil</button>` : ''}
       </div>
-      ${o.aciklama ? `<div style="color:#67e8f9;font-size:12px;white-space:pre-wrap">📋 ${o.aciklama}</div>` : ''}
+      ${o.aciklama ? `<div style="color:#67e8f9;font-size:12px;white-space:pre-wrap">📋 ${esc(o.aciklama)}</div>` : ''}
       ${o.gorseller?.length > 0 ? `<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px">${o.gorseller.map((g, gi) => `
         <div style="position:relative">
-          <img src="${g.url}" onclick="fotoGoster('${g.url}')" style="width:60px;height:60px;object-fit:cover;border-radius:6px;border:1px solid #06b6d4;cursor:pointer">
+          <img src="${esc(g.url)}" onclick="fotoGoster(this)" style="width:60px;height:60px;object-fit:cover;border-radius:6px;border:1px solid #06b6d4;cursor:pointer">
           ${!sadeceBak ? `<button onclick="silOnayla('Bu görseli silmek istediğine emin misin?', async () => {
             const g = tempOnaylar[${i}].gorseller[${gi}];
             if (g && g.path) await sb.storage.from('kazi-dosyalar').remove([g.path]);
@@ -5520,8 +5585,8 @@ async function renderMevcutFotolar(entryId, fotograflar, sadeceBak = false) {
   if (tempFotolar.length === 0) { div.innerHTML = ''; return; }
   div.innerHTML = tempFotolar.map((f, i) => `
     <div style="position:relative">
-      <img src="${f.url}" onclick="fotoGoster('${f.url}')" loading="lazy" class="foto-thumb"/>
-      <button onclick="window.open('${f.url}','_blank');toast('📥 Fotoğraf indiriliyor...')" class="foto-indir-btn">⬇</button>
+      <img src="${esc(f.url)}" onclick="fotoGoster(this)" loading="lazy" class="foto-thumb"/>
+      <button data-url="${esc(f.url)}" onclick="dosyaIndir(this,'Fotoğraf')" class="foto-indir-btn">⬇</button>
       ${!sadeceBak ? `<button onclick="silOnayla('Bu görseli silmek istediğine emin misin?', async () => {
         const foto = tempFotolar[${i}];
         if (foto && foto.path) await sb.storage.from('kazi-dosyalar').remove([foto.path]);
@@ -5592,7 +5657,7 @@ async function renderMevcutMalzemeler(entryId, malzemeler, sadeceBak = false) {
   if (tempMalzemeler.length === 0) { div.innerHTML = ''; return; }
   div.innerHTML = tempMalzemeler.map((m, i) => `
     <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:8px;margin-bottom:6px;gap:8px">
-      <span style="color:var(--text);font-size:13px">🧱 ${m.name} — <strong>${m.miktar} ${m.birim}</strong></span>
+      <span style="color:var(--text);font-size:13px">🧱 ${esc(m.name)} — <strong>${esc(m.miktar)} ${esc(m.birim)}</strong></span>
       ${!sadeceBak ? `<div style="display:flex;align-items:center;gap:4px;flex-shrink:0">
         <button onclick="malzemeDuzenle('${entryId}', ${i})" style="background:none;border:1px solid var(--blue);color:var(--blue);border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;font-family:inherit">✎</button>
         <button onclick="silOnayla('Bu malzemeyi silmek istediğine emin misin?', async () => {
@@ -5702,7 +5767,7 @@ function renderMalzemeChips() {
   const el = document.getElementById('malzemeChips');
   if (!el) return;
   el.innerHTML = tempMalzemeler.map((m, i) =>
-    `<div class="chip">${m.name} — ${m.miktar} ${m.birim}<button class="chip-del" onclick="removeMalzeme(${i})">×</button></div>`
+    `<div class="chip">${esc(m.name)} — ${esc(m.miktar)} ${esc(m.birim)}<button class="chip-del" onclick="removeMalzeme(${i})">×</button></div>`
   ).join('');
 }
 
@@ -5733,16 +5798,21 @@ function renderDashboard() {
   if (!proj) { empty.style.display = 'block'; content.style.display = 'none'; return; }
   empty.style.display = 'none'; content.style.display = 'block';
 
+  // Not: proj.entries sayfalanmış olabilir (bkz. ENTRY_PAGE_SIZE). Üst istatistik kartları
+  // her zaman TÜM proje verisini yansıtsın diye _projeIstatistik önbelleği varsa o kullanılır;
+  // henüz yüklenmediyse (ilk render anı) geçici olarak sayfalanmış veriden hesaplanır.
+  const istat = _projeIstatistik[proj.id];
   const kaziEntries = proj.entries.filter(e => Number(e.kaziMetre) > 0);
-  const total = proj.entries.reduce((s, e) => s + e.kaziMetre, 0);
-  const avg = kaziEntries.length ? (total / kaziEntries.length).toFixed(1) : '-';
+  const total = istat ? istat.total : proj.entries.reduce((s, e) => s + e.kaziMetre, 0);
+  const kaziSayisi = istat ? istat.kaziSayisi : kaziEntries.length;
+  const avg = kaziSayisi ? (total / kaziSayisi).toFixed(1) : '-';
   document.getElementById('statMetre').textContent = total.toLocaleString('tr-TR', {maximumFractionDigits:0}) + ' m';
   const statKayit = document.getElementById('statKayit');
-  if (statKayit) statKayit.textContent = kaziEntries.length;
+  if (statKayit) statKayit.textContent = kaziSayisi;
   const statGunEl = document.getElementById('statGun');
-  if (statGunEl) statGunEl.textContent = kaziEntries.length;
+  if (statGunEl) statGunEl.textContent = kaziSayisi;
   document.getElementById('statOrt').textContent = avg !== '-' ? avg + ' m' : '-';
-  const toplamHata = proj.entries.reduce((s, e) => s + (e.hatalar?.length || (e.hata?.var ? 1 : 0)), 0);
+  const toplamHata = istat ? istat.hataSayisi : proj.entries.reduce((s, e) => s + (e.hatalar?.length || (e.hata?.var ? 1 : 0)), 0);
   document.getElementById('statHata').textContent = toplamHata;
 
   // İlerleme çubuğu
@@ -5767,7 +5837,7 @@ function renderDashboard() {
       const kalanEl = document.getElementById('ilerlemeKalan');
       if (yapilan) yapilan.textContent = total.toLocaleString('tr-TR') + ' m';
       if (hedefEl) hedefEl.textContent = hm + ' m';
-      const avgGun = kaziEntries.length > 0 ? total / kaziEntries.length : 0;
+      const avgGun = kaziSayisi > 0 ? total / kaziSayisi : 0;
       const tahminiGun = avgGun > 0 ? Math.ceil(parseFloat(kalan) / avgGun) : 0;
       if (kalanEl) kalanEl.textContent = kalan + ' m';
       const tahminiEl = document.getElementById('ilerlemeTahmini');
@@ -5791,7 +5861,7 @@ function renderDashboard() {
 
   if (sorted.length === 0) {
     list.innerHTML = aramaKelime
-      ? `<div class="empty" style="grid-column:1/-1"><div class="empty-text">🔍 "${aramaKelime}" için sonuç yok.</div></div>`
+      ? `<div class="empty" style="grid-column:1/-1"><div class="empty-text">🔍 "${esc(aramaKelime)}" için sonuç yok.</div></div>`
       : `<div class="empty" style="grid-column:1/-1"><div class="empty-text">Henüz kayıt yok.</div><button onclick="showView('kayit')" style="margin-top:16px;background:var(--yellow);color:#0f172a;border:none;border-radius:10px;padding:14px 32px;font-size:15px;font-weight:900;cursor:pointer;font-family:inherit">➕ Kayıt Ekle</button></div>`;
     return;
   }
@@ -5811,8 +5881,8 @@ function renderDashboard() {
     if (hataVar) ustMeta.push(`⚠️ ${e.hatalar?.length > 0 ? e.hatalar.length : ''}`);
 
     const altMeta = [];
-    if (ekipAdi) altMeta.push(`👷 ${ekipAdi}`);
-    denetimciListesi.forEach(d => altMeta.push(`🕵️ ${d.vakitEtiket ? d.vakitEtiket + ' ' : ''}${d.ad}`));
+    if (ekipAdi) altMeta.push(`👷 ${esc(ekipAdi)}`);
+    denetimciListesi.forEach(d => altMeta.push(`🕵️ ${d.vakitEtiket ? esc(d.vakitEtiket) + ' ' : ''}${esc(d.ad)}`));
     const cizgiRengi = hataVar ? 'var(--red)' : 'var(--border)';
 
     return `
@@ -5894,7 +5964,7 @@ function detayModalKapat() {
 
 function mentionVurgula(text) {
   if (!text) return '';
-  return text.replace(/@(\S+)/g, '<span class="detay-mention">@$1</span>');
+  return esc(text).replace(/@(\S+)/g, '<span class="detay-mention">@$1</span>');
 }
 
 function toggleDetay(id) {
@@ -5926,9 +5996,9 @@ function toggleDetay(id) {
   if (hataSayisi > 0) chips.push(`<span class="detay-chip">⚠️ <b style="color:#fca5a5">${hataSayisi}</b> hata</span>`);
   if (onaySayisi > 0) chips.push(`<span class="detay-chip">✅ <b style="color:#10b981">${onaySayisi}</b> onay</span>`);
   if (e.kmz) chips.push(`<span class="detay-chip">📁 KMZ</span>`);
-  if (e.ekipId && data.teams.find(t => t.id === e.ekipId)) chips.push(`<span class="detay-chip">👷 <b>${data.teams.find(t => t.id === e.ekipId).ad}</b></span>`);
+  if (e.ekipId && data.teams.find(t => t.id === e.ekipId)) chips.push(`<span class="detay-chip">👷 <b>${esc(data.teams.find(t => t.id === e.ekipId).ad)}</b></span>`);
   denetimciGorunumleri(e).forEach(den => {
-    chips.push(`<span class="detay-chip">🕵️ ${den.vakitEtiket ? den.vakitEtiket + ' ' : ''}<b>${den.ad}</b>${den.kurum ? ' · ' + den.kurum : ''}</span>`);
+    chips.push(`<span class="detay-chip">🕵️ ${den.vakitEtiket ? esc(den.vakitEtiket) + ' ' : ''}<b>${esc(den.ad)}</b>${den.kurum ? ' · ' + esc(den.kurum) : ''}</span>`);
   });
   const chipRow = document.getElementById('detayChipRow');
   chipRow.innerHTML = chips.join('');
@@ -5944,17 +6014,17 @@ function toggleDetay(id) {
     ${e.notlar ? `<div class="detay-metin" style="padding-top:16px">📝 ${mentionVurgula(e.notlar)}</div>` : ''}
     ${e.malzemeler?.length > 0 ? `
       <div class="detay-sec-label">🧱 Malzemeler</div>
-      ${e.malzemeler.map(m => `<div class="detay-malzeme-row"><span>${m.name}</span><span>${m.miktar} ${m.birim}</span></div>`).join('')}` : ''}
+      ${e.malzemeler.map(m => `<div class="detay-malzeme-row"><span>${esc(m.name)}</span><span>${esc(m.miktar)} ${esc(m.birim)}</span></div>`).join('')}` : ''}
     ${e.fotograflar?.length > 0 ? `
       <div class="detay-sec-label">📷 Fotoğraflar (${e.fotograflar.length})</div>
       <div class="detay-foto-grid">
-        ${e.fotograflar.map(f => `<img src="${f.url}" onclick="fotoGoster('${f.url}')" loading="lazy" class="detay-foto-thumb"/>`).join('')}
+        ${e.fotograflar.map(f => `<img src="${esc(f.url)}" onclick="fotoGoster(this)" loading="lazy" class="detay-foto-thumb"/>`).join('')}
       </div>` : ''}
     ${e.kmz ? `
       <div class="detay-sec-label">📁 Dosya</div>
       <div style="display:flex;align-items:center;gap:8px">
-        <span style="color:var(--text);font-size:13px;flex:1">${e.kmz.name}</span>
-        <button onclick="window.open('${e.kmz.url}','_blank');toast('📥 KMZ indiriliyor...')" style="color:var(--sub);background:none;font-size:12px;border:1px solid var(--border);border-radius:6px;padding:5px 10px;cursor:pointer">İndir ⬇</button>
+        <span style="color:var(--text);font-size:13px;flex:1">${esc(e.kmz.name)}</span>
+        <button data-url="${esc(e.kmz.url)}" onclick="dosyaIndir(this,'KMZ')" style="color:var(--sub);background:none;font-size:12px;border:1px solid var(--border);border-radius:6px;padding:5px 10px;cursor:pointer">İndir ⬇</button>
       </div>` : ''}
     ${tlItems.length > 0 ? `
       <div class="detay-sec-label">📋 Saha Kayıtları (${tlItems.length})</div>
@@ -5967,12 +6037,12 @@ function toggleDetay(id) {
               <span class="detay-tl-dot hata">⚠</span>
               <div class="detay-tl-card">
                 <div class="detay-tl-top">
-                  <span class="detay-tl-etiket">${h.turler?.length > 0 ? h.turler[0] : 'Hata'}</span>
-                  ${h.turler?.length > 1 ? h.turler.slice(1).map(t => `<span class="detay-tl-tag">${t}</span>`).join('') : ''}
+                  <span class="detay-tl-etiket">${h.turler?.length > 0 ? esc(h.turler[0]) : 'Hata'}</span>
+                  ${h.turler?.length > 1 ? h.turler.slice(1).map(t => `<span class="detay-tl-tag">${esc(t)}</span>`).join('') : ''}
                   ${saat ? `<span class="detay-tl-tarih">${saat}</span>` : ''}
                 </div>
                 ${h.aciklama ? `<div class="detay-metin">${mentionVurgula(h.aciklama)}</div>` : ''}
-                ${h.gorseller?.length > 0 ? `<div class="detay-foto-grid">${h.gorseller.map(g=>`<img src="${g.url}" onclick="fotoGoster('${g.url}')" loading="lazy" class="detay-foto-thumb"/>`).join('')}</div>` : ''}
+                ${h.gorseller?.length > 0 ? `<div class="detay-foto-grid">${h.gorseller.map(g=>`<img src="${esc(g.url)}" onclick="fotoGoster(this)" loading="lazy" class="detay-foto-thumb"/>`).join('')}</div>` : ''}
                 <div style="display:flex;margin-top:9px">
                   <span class="detay-tl-pill ${h.giderildi ? 'cozuldu' : 'acik'}">${h.giderildi ? '✓ Giderildi' : '● Açık'}</span>
                 </div>
@@ -5996,7 +6066,7 @@ function toggleDetay(id) {
                   ${saat ? `<span class="detay-tl-tarih">${saat}</span>` : ''}
                 </div>
                 ${o.aciklama ? `<div class="detay-metin">${mentionVurgula(o.aciklama)}</div>` : ''}
-                ${o.gorseller?.length > 0 ? `<div class="detay-foto-grid">${o.gorseller.map(g=>`<img src="${g.url}" onclick="fotoGoster('${g.url}')" loading="lazy" class="detay-foto-thumb"/>`).join('')}</div>` : ''}
+                ${o.gorseller?.length > 0 ? `<div class="detay-foto-grid">${o.gorseller.map(g=>`<img src="${esc(g.url)}" onclick="fotoGoster(this)" loading="lazy" class="detay-foto-thumb"/>`).join('')}</div>` : ''}
                 <div style="display:flex;margin-top:9px">
                   <span class="detay-tl-pill cozuldu">✓ Onaylandı</span>
                 </div>
@@ -6079,7 +6149,7 @@ function renderRapor() {
     const tahminiLabel = proj.hedefMetre > 0
       ? (tahminiGunSonuc > 0 ? ` <span style="font-size:12px;color:var(--muted);font-weight:400">(${tahminiGunSonuc} gün kaldı)</span>` : ` <span style="font-size:12px;color:#10b981;font-weight:400">(Tamamlandı)</span>`)
       : '';
-    titleEl.innerHTML = `📊 ${proj.name}${tahminiLabel}`;
+    titleEl.innerHTML = `📊 ${esc(proj.name)}${tahminiLabel}`;
   }
   setTimeout(grafikCiz, 100);
 
@@ -6090,8 +6160,8 @@ function renderRapor() {
     document.getElementById('hataOzetBody').innerHTML = hataEntries.map(e =>
       `<tr>
               <td>${new Date(e.tarih).toLocaleDateString('tr-TR')}</td>
-              <td>${e.hatalar?.length > 0 ? e.hatalar.map(h => h.turler?.join('/') || '-').join(' | ') : (e.hata?.turler?.join(', ') || '-')}</td>
-              <td style="color:#fca5a5">${e.hatalar?.length > 0 ? e.hatalar.map(h => h.aciklama || '').filter(Boolean).join(' | ') : (e.hata?.aciklama || '-')}</td>
+              <td>${e.hatalar?.length > 0 ? esc(e.hatalar.map(h => h.turler?.join('/') || '-').join(' | ')) : esc(e.hata?.turler?.join(', ') || '-')}</td>
+              <td style="color:#fca5a5">${e.hatalar?.length > 0 ? esc(e.hatalar.map(h => h.aciklama || '').filter(Boolean).join(' | ')) : esc(e.hata?.aciklama || '-')}</td>
             </tr>`
     ).join('');
   } else hataCard.style.display = 'none';
@@ -6289,14 +6359,14 @@ async function renderAylikRapor() {
   hideLoading();
 
   const tumProjeler = {};
-  data.projects.forEach(p => tumProjeler[p.id] = p.name);
-  (data.deletedProjects || []).forEach(p => tumProjeler[p.id] = p.name + ' (silindi)');
+  data.projects.forEach(p => tumProjeler[p.id] = esc(p.name));
+  (data.deletedProjects || []).forEach(p => tumProjeler[p.id] = esc(p.name) + ' (silindi)');
 
   const tumEkipler = {};
-  data.teams.forEach(t => tumEkipler[t.id] = t.ad);
+  data.teams.forEach(t => tumEkipler[t.id] = esc(t.ad));
 
   const tumDenetimciler = {};
-  data.denetimciler.forEach(d => tumDenetimciler[d.id] = d.ad + (d.kurum ? ' (' + d.kurum + ')' : ''));
+  data.denetimciler.forEach(d => tumDenetimciler[d.id] = esc(d.ad) + (d.kurum ? ' (' + esc(d.kurum) + ')' : ''));
 
   // Ekip filtresi uygula
   const ekipFiltre = document.getElementById('aylikRaporEkipFiltre')?.value || '';
@@ -6516,12 +6586,12 @@ function giderRaporPdf() {
   const tarihStr = new Date().toLocaleDateString('tr-TR');
 
   const katRows = veri.katSatirlar.map(([k, t]) =>
-    `<tr><td>${k}</td><td style="font-weight:700">${t.toLocaleString('tr-TR')} ₺</td><td>${veri.toplam > 0 ? ((t / veri.toplam) * 100).toFixed(0) : 0}%</td></tr>`
+    `<tr><td>${esc(k)}</td><td style="font-weight:700">${t.toLocaleString('tr-TR')} ₺</td><td>${veri.toplam > 0 ? ((t / veri.toplam) * 100).toFixed(0) : 0}%</td></tr>`
   ).join('') || '<tr><td colspan="3" style="color:#999">Kayıt yok</td></tr>';
 
   const sorted = [...veri.donemGiderler].sort((a, b) => a.tarih.localeCompare(b.tarih));
   const detayRows = sorted.map(g =>
-    `<tr><td>${new Date(g.tarih).toLocaleDateString('tr-TR')}</td><td>${g.kategori}</td><td>${g.aciklama || '-'}</td><td style="font-weight:700">${parseFloat(g.tutar).toLocaleString('tr-TR')} ₺</td></tr>`
+    `<tr><td>${new Date(g.tarih).toLocaleDateString('tr-TR')}</td><td>${esc(g.kategori)}</td><td>${esc(g.aciklama) || '-'}</td><td style="font-weight:700">${parseFloat(g.tutar).toLocaleString('tr-TR')} ₺</td></tr>`
   ).join('');
 
   const gunSayisi = new Set(veri.donemGiderler.map(g => g.tarih)).size;
@@ -6651,8 +6721,8 @@ function exportExcel(filtreliKayitlar, dosyaEki) {
   ));
 
   const projBilgi = [
-    ['Proje Adı', proj.name],
-    ['Konum / Bölge', proj.location || '-'],
+    ['Proje Adı', xlsGuvenli(proj.name)],
+    ['Konum / Bölge', xlsGuvenli(proj.location || '-')],
     ['Rapor Tarihi', bugun],
   ];
   projBilgi.forEach(([etiket, deger], i) => {
@@ -6730,13 +6800,13 @@ function exportExcel(filtreliKayitlar, dosyaEki) {
       i + 1,
       new Date(e.tarih).toLocaleDateString('tr-TR'),
       e.kaziMetre,
-      ekipAdiXls,
-      denStrXls,
-      e.malzemeler.map(m => `${m.name}: ${m.miktar} ${m.birim}`).join(' | ') || '-',
-      e.notlar || '-',
+      xlsGuvenli(ekipAdiXls),
+      xlsGuvenli(denStrXls),
+      xlsGuvenli(e.malzemeler.map(m => `${m.name}: ${m.miktar} ${m.birim}`).join(' | ') || '-'),
+      xlsGuvenli(e.notlar || '-'),
       isHata ? '⚠ EVET' : '✓ Hayır',
-      isHata ? (e.hatalar?.length > 0 ? e.hatalar.map(h => h.turler?.join('/') || '').filter(Boolean).join(' | ') : (e.hata?.turler?.join(', ') || '-')) : '-',
-      isHata ? (e.hatalar?.length > 0 ? e.hatalar.map(h => h.aciklama || '').filter(Boolean).join(' | ') : (e.hata?.aciklama || '-')) : '-',
+      xlsGuvenli(isHata ? (e.hatalar?.length > 0 ? e.hatalar.map(h => h.turler?.join('/') || '').filter(Boolean).join(' | ') : (e.hata?.turler?.join(', ') || '-')) : '-'),
+      xlsGuvenli(isHata ? (e.hatalar?.length > 0 ? e.hatalar.map(h => h.aciklama || '').filter(Boolean).join(' | ') : (e.hata?.aciklama || '-')) : '-'),
     ];
 
     satirVeriler.forEach((v, j) => {
@@ -6770,7 +6840,7 @@ function exportExcel(filtreliKayitlar, dosyaEki) {
   }));
   const malzemeListesi = Object.entries(malzemeMap).map(([k, t]) => {
     const [name, birim] = k.split('||');
-    return [name, t, birim];
+    return [xlsGuvenli(name), t, birim];
   });
 
   if (malzemeListesi.length > 0) {
@@ -6818,8 +6888,8 @@ function exportExcel(filtreliKayitlar, dosyaEki) {
       const row = i + 2;
       const bg = i % 2 === 0 ? 'FEE2E2' : 'FEF2F2';
       wsHata['!rows'].push({ hpt: 20 });
-      const tumTurler = e.hatalar?.length > 0 ? e.hatalar.map(h => h.turler?.join('/') || '').filter(Boolean).join(' | ') : (e.hata?.turler?.join(', ') || '-');
-      const tumAciklama = e.hatalar?.length > 0 ? e.hatalar.map(h => h.aciklama || '').filter(Boolean).join(' | ') : (e.hata?.aciklama || '-');
+      const tumTurler = xlsGuvenli(e.hatalar?.length > 0 ? e.hatalar.map(h => h.turler?.join('/') || '').filter(Boolean).join(' | ') : (e.hata?.turler?.join(', ') || '-'));
+      const tumAciklama = xlsGuvenli(e.hatalar?.length > 0 ? e.hatalar.map(h => h.aciklama || '').filter(Boolean).join(' | ') : (e.hata?.aciklama || '-'));
       const vals = [
         i + 1,
         new Date(e.tarih).toLocaleDateString('tr-TR'),
@@ -7047,8 +7117,8 @@ function renderGiderList() {
             <div style="display:flex;align-items:center;padding:10px 14px;gap:8px;border-bottom:1px solid rgba(51,65,85,0.5)">
               <div style="font-size:20px">${giderIkon(g.kategori)}</div>
               <div style="flex:1">
-                <div style="font-size:13px;font-weight:600;color:var(--text)">${g.kategori}</div>
-                ${g.aciklama ? `<div style="font-size:11px;color:var(--muted)">${g.aciklama}</div>` : ''}
+                <div style="font-size:13px;font-weight:600;color:var(--text)">${esc(g.kategori)}</div>
+                ${g.aciklama ? `<div style="font-size:11px;color:var(--muted)">${esc(g.aciklama)}</div>` : ''}
               </div>
               <div style="font-size:14px;font-weight:700;color:var(--yellow)">${parseFloat(g.tutar).toLocaleString('tr-TR')} ₺</div>
               <button onclick="editGider('${g.id}')" style="background:none;border:1px solid var(--blue);color:var(--blue);border-radius:6px;padding:5px 8px;font-size:12px;cursor:pointer">✏️</button>
@@ -7296,11 +7366,11 @@ async function projeDetayAc(id) {
     const denetimciListesi = denetimSecimleriNormalize(k.denetim_secimleri, k.denetimci_id)
       .map(s => data.denetimciler.find(d => d.id === s.id))
       .filter(Boolean)
-      .map(d => '🕵️ ' + d.ad);
+      .map(d => '🕵️ ' + esc(d.ad));
     return `<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px dashed var(--border);font-size:12px">
       <div>
         <div style="color:var(--text)">${new Date(k.tarih).toLocaleDateString('tr-TR')}</div>
-        <div style="color:var(--sub);font-size:11px">${[ekip ? '👷 ' + ekip.ad : '', ...denetimciListesi].filter(Boolean).join(' · ') || '-'}</div>
+        <div style="color:var(--sub);font-size:11px">${[ekip ? '👷 ' + esc(ekip.ad) : '', ...denetimciListesi].filter(Boolean).join(' · ') || '-'}</div>
       </div>
       <div style="color:${Number(k.kazi_metre) === 0 ? '#a78bfa' : 'var(--yellow)'};font-weight:700">${Number(k.kazi_metre) === 0 ? '🔧 Bakım' : Number(k.kazi_metre).toLocaleString('tr-TR', { maximumFractionDigits: 0 }) + ' m'}</div>
     </div>`;
@@ -7311,8 +7381,8 @@ async function projeDetayAc(id) {
       <span class="scard-kod">${kodMap[p.id] || ''}</span>
       ${durum}
     </div>
-    <div style="font-size:16px;font-weight:800;text-transform:uppercase;color:${bitti ? 'var(--text)' : 'var(--yellow)'}">${p.name}</div>
-    ${p.location ? `<div style="font-size:12px;color:var(--sub);margin-top:2px">📍 ${p.location}</div>` : ''}
+    <div style="font-size:16px;font-weight:800;text-transform:uppercase;color:${bitti ? 'var(--text)' : 'var(--yellow)'}">${esc(p.name)}</div>
+    ${p.location ? `<div style="font-size:12px;color:var(--sub);margin-top:2px">📍 ${esc(p.location)}</div>` : ''}
     ${ruler}
     <div class="stats-row" style="margin-top:12px">
       <div class="stat-card" style="border-top-color:#f59e0b">
@@ -7358,8 +7428,8 @@ function renderModalProjList() {
     return `<div onclick="switchProject('${p.id}');toggleProjModal()" style="padding:12px 16px;cursor:pointer;border-bottom:1px solid var(--border);background:${isActive ? 'rgba(245,158,11,0.1)' : 'transparent'};display:flex;align-items:center;gap:10px">
       ${isActive ? '<span style="color:var(--yellow)">●</span>' : '<span style="color:var(--muted)">○</span>'}
       <div>
-        <div style="font-size:14px;font-weight:600;color:var(--text)">${p.name}</div>
-        ${p.location ? `<div style="font-size:11px;color:var(--muted)">${p.location}</div>` : ''}
+        <div style="font-size:14px;font-weight:600;color:var(--text)">${esc(p.name)}</div>
+        ${p.location ? `<div style="font-size:11px;color:var(--muted)">${esc(p.location)}</div>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -7421,8 +7491,8 @@ function renderProjeler() {
             </div>
           </div>
           <div onclick="projeDetayAc('${p.id}')">
-            <div class="scard-isim">${p.name}</div>
-            ${p.location ? `<div class="scard-konum">📍 ${p.location}</div>` : ''}
+            <div class="scard-isim">${esc(p.name)}</div>
+            ${p.location ? `<div class="scard-konum">📍 ${esc(p.location)}</div>` : ''}
           </div>
           <div class="scard-divider"></div>
           ${ruler}
@@ -7448,8 +7518,8 @@ function renderSilinenler() {
   list.innerHTML = deleted.map(p => `
     <div style="display:flex;align-items:center;padding:12px 14px;border-bottom:1px solid var(--border);gap:10px;opacity:0.75">
       <div style="flex:1">
-        <div style="font-size:14px;font-weight:600;color:var(--muted)">🗑 ${p.name}</div>
-        ${p.location ? `<div style="font-size:11px;color:var(--muted)">${p.location}</div>` : ''}
+        <div style="font-size:14px;font-weight:600;color:var(--muted)">🗑 ${esc(p.name)}</div>
+        ${p.location ? `<div style="font-size:11px;color:var(--muted)">${esc(p.location)}</div>` : ''}
       </div>
       <button onclick="projeyiGeriGetir('${p.id}')" style="background:none;border:1px solid #10b981;color:#10b981;border-radius:6px;padding:5px 8px;font-size:12px;cursor:pointer" title="Geri Getir">↩ Geri Al</button>
       <button onclick="projeyiKaliciSil('${p.id}')" style="background:none;border:1px solid var(--red);color:var(--red);border-radius:6px;padding:5px 8px;font-size:12px;cursor:pointer" title="Kalıcı Sil">🗑</button>
