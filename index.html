@@ -3179,14 +3179,17 @@ function gunlukRaporPdf(entryId) {
 
 function projeRaporPdf() {
   const proj = activeProject();
-  if (!proj || proj.entries.length === 0) { toast('⚠️ Proje veya kayıt yok', true); return; }
+  // Not: proj.entries sayfalanmış olabilir (bkz. ENTRY_PAGE_SIZE). PDF her zaman TÜM proje
+  // verisini yansıtsın diye _raporTumKayitlar önbelleği varsa o kullanılır.
+  const tumKayitlarPdf = proj ? (_raporTumKayitlar[proj.id] || proj.entries) : [];
+  if (!proj || tumKayitlarPdf.length === 0) { toast('⚠️ Proje veya kayıt yok', true); return; }
 
-  const kaziEntries = proj.entries.filter(e => Number(e.kaziMetre) > 0);
-  const toplam = proj.entries.reduce((s, e) => s + e.kaziMetre, 0);
+  const kaziEntries = tumKayitlarPdf.filter(e => Number(e.kaziMetre) > 0);
+  const toplam = tumKayitlarPdf.reduce((s, e) => s + e.kaziMetre, 0);
   const gun = kaziEntries.length;
   const ort = gun > 0 ? (toplam / gun).toFixed(1) : '0';
-  const hataCount = proj.entries.filter(e => e.hatalar?.length > 0 || e.hata?.var).length;
-  const tarihler = proj.entries.map(e => new Date(e.tarih));
+  const hataCount = tumKayitlarPdf.filter(e => e.hatalar?.length > 0 || e.hata?.var).length;
+  const tarihler = tumKayitlarPdf.map(e => new Date(e.tarih));
   const ilk = new Date(Math.min(...tarihler)).toLocaleDateString('tr-TR');
   const son = new Date(Math.max(...tarihler)).toLocaleDateString('tr-TR');
   const kaziTarihler = kaziEntries.map(e => new Date(e.tarih));
@@ -3196,7 +3199,7 @@ function projeRaporPdf() {
 
   // Malzeme özeti
   const malzMap = {};
-  proj.entries.forEach(e => (e.malzemeler || []).forEach(m => {
+  tumKayitlarPdf.forEach(e => (e.malzemeler || []).forEach(m => {
     malzMap[m.name] = (malzMap[m.name] || 0) + parseFloat(m.miktar || 0);
   }));
   const malzRows = Object.entries(malzMap).map(([n, t]) =>
@@ -3205,7 +3208,7 @@ function projeRaporPdf() {
 
   // Ekip / Denetimci özetleri
   const ekipMapPdf = {};
-  proj.entries.forEach(e => {
+  tumKayitlarPdf.forEach(e => {
     const key = e.ekipId || '__bos__';
     if (!ekipMapPdf[key]) ekipMapPdf[key] = 0;
     ekipMapPdf[key] += parseFloat(e.kaziMetre || 0);
@@ -3216,7 +3219,7 @@ function projeRaporPdf() {
   }).join('') || '<tr><td colspan="2" style="color:#999">Kayıt yok</td></tr>';
 
   const denMapPdf = {};
-  proj.entries.forEach(e => {
+  tumKayitlarPdf.forEach(e => {
     const secimler = denetimSecimleriNormalize(e.denetimSecimleri, e.denetimciId);
     const keys = secimler.length > 0 ? secimler.map(s => s.id) : ['__bos__'];
     keys.forEach(key => { denMapPdf[key] = (denMapPdf[key] || 0) + parseFloat(e.kaziMetre || 0); });
@@ -3228,7 +3231,7 @@ function projeRaporPdf() {
   }).join('') || '<tr><td colspan="2" style="color:#999">Kayıt yok</td></tr>';
 
   // Günlük kazı geçmişi
-  const sortedEntries = [...proj.entries].sort((a, b) => new Date(a.tarih) - new Date(b.tarih));
+  const sortedEntries = [...tumKayitlarPdf].sort((a, b) => new Date(a.tarih) - new Date(b.tarih));
   const entryRows = sortedEntries.map(e => {
     const hataVar = e.hatalar?.length > 0 || e.hata?.var;
     const malzStr = (e.malzemeler || []).map(m => `${m.name} ${m.miktar} ${m.birim}`).join(', ') || '-';
@@ -3326,12 +3329,15 @@ function projeRaporPdf() {
 
 function projeRaporPaylas() {
   const proj = activeProject();
-  if (!proj || proj.entries.length === 0) { toast('⚠️ Proje veya kayıt yok', true); return; }
-  const kaziEntries = proj.entries.filter(e => Number(e.kaziMetre) > 0);
-  const toplam = proj.entries.reduce((s, e) => s + e.kaziMetre, 0);
+  // Not: proj.entries sayfalanmış olabilir (bkz. ENTRY_PAGE_SIZE). Paylaşım metni her zaman
+  // TÜM proje verisini yansıtsın diye _raporTumKayitlar önbelleği varsa o kullanılır.
+  const tumKayitlarPaylas = proj ? (_raporTumKayitlar[proj.id] || proj.entries) : [];
+  if (!proj || tumKayitlarPaylas.length === 0) { toast('⚠️ Proje veya kayıt yok', true); return; }
+  const kaziEntries = tumKayitlarPaylas.filter(e => Number(e.kaziMetre) > 0);
+  const toplam = tumKayitlarPaylas.reduce((s, e) => s + e.kaziMetre, 0);
   const ort = kaziEntries.length > 0 ? (toplam / kaziEntries.length).toFixed(1) : '0';
-  const hataCount = proj.entries.filter(e => e.hatalar?.length > 0 || e.hata?.var).length;
-  const tarihlerMs = proj.entries.map(e => new Date(e.tarih).getTime());
+  const hataCount = tumKayitlarPaylas.filter(e => e.hatalar?.length > 0 || e.hata?.var).length;
+  const tarihlerMs = tumKayitlarPaylas.map(e => new Date(e.tarih).getTime());
   const ilk = new Date(Math.min(...tarihlerMs)).toLocaleDateString('tr-TR');
   const son = new Date(Math.max(...tarihlerMs)).toLocaleDateString('tr-TR');
   const kaziTarihlerMs = kaziEntries.map(e => new Date(e.tarih).getTime());
@@ -3339,16 +3345,16 @@ function projeRaporPaylas() {
   const ortTakvim = takvimGunSayisi > 0 ? (toplam / takvimGunSayisi).toFixed(1) : '0';
   const hedefStr = proj.hedefMetre > 0 ? `\n🎯 Hedef: ${proj.hedefMetre} m (%${((toplam/proj.hedefMetre)*100).toLocaleString("tr-TR",{maximumFractionDigits:0})} tamamlandı)` : '';
   const malzMap = {};
-  proj.entries.forEach(e => (e.malzemeler || []).forEach(m => { malzMap[m.name] = (malzMap[m.name] || 0) + parseFloat(m.miktar || 0); }));
+  tumKayitlarPaylas.forEach(e => (e.malzemeler || []).forEach(m => { malzMap[m.name] = (malzMap[m.name] || 0) + parseFloat(m.miktar || 0); }));
   const malzStr = Object.entries(malzMap).length > 0 ? Object.entries(malzMap).map(([n, t]) => `   • ${n}: ${t}`).join('\n') : '   • Yok';
   const ekipMapP = {};
-  proj.entries.forEach(e => { const key = e.ekipId || '__bos__'; ekipMapP[key] = (ekipMapP[key] || 0) + parseFloat(e.kaziMetre || 0); });
+  tumKayitlarPaylas.forEach(e => { const key = e.ekipId || '__bos__'; ekipMapP[key] = (ekipMapP[key] || 0) + parseFloat(e.kaziMetre || 0); });
   const ekipStrP = Object.entries(ekipMapP).sort((a, b) => b[1] - a[1]).map(([eid, t]) => {
     const isim = eid === '__bos__' ? 'Ekip Atanmamış' : (data.teams.find(x => x.id === eid)?.ad || 'Bilinmeyen Ekip');
     return `   • ${isim}: ${t.toLocaleString('tr-TR', { maximumFractionDigits: 0 })} m`;
   }).join('\n') || '   • Yok';
   const denMapP = {};
-  proj.entries.forEach(e => {
+  tumKayitlarPaylas.forEach(e => {
     const secimler = denetimSecimleriNormalize(e.denetimSecimleri, e.denetimciId);
     const keys = secimler.length > 0 ? secimler.map(s => s.id) : ['__bos__'];
     keys.forEach(key => { denMapP[key] = (denMapP[key] || 0) + parseFloat(e.kaziMetre || 0); });
@@ -3358,7 +3364,7 @@ function projeRaporPaylas() {
     const isim = did === '__bos__' ? 'Denetimci Atanmamış' : (d ? d.ad + (d.kurum ? ' (' + d.kurum + ')' : '') : 'Bilinmeyen Denetimci');
     return `   • ${isim}: ${t.toLocaleString('tr-TR', { maximumFractionDigits: 0 })} m`;
   }).join('\n') || '   • Yok';
-  const hataEntries = proj.entries.filter(e => e.hatalar?.length > 0 || e.hata?.var);
+  const hataEntries = tumKayitlarPaylas.filter(e => e.hatalar?.length > 0 || e.hata?.var);
   const hataStr = hataEntries.length > 0 ? hataEntries.map(e => {
     const tarih = new Date(e.tarih).toLocaleDateString('tr-TR');
     const hatalar = e.hatalar?.length > 0
@@ -3712,9 +3718,13 @@ function grafikCiz() {
   ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
   ctx.clearRect(0, 0, W, H);
 
+  // Not: proj.entries sayfalanmış olabilir (bkz. ENTRY_PAGE_SIZE). Grafik de rapor sekmesi
+  // gibi TÜM proje verisini yansıtsın diye _raporTumKayitlar önbelleği varsa o kullanılır.
+  const tumKayitlarGraf = proj ? (_raporTumKayitlar[proj.id] || proj.entries) : [];
+
   if (_aktifGrafTab === 'gunluk') {
-    if (!proj || !proj.entries.length) { _grafBosBilgi(ctx, W, H, 'Kayıt yok'); return; }
-    const sorted = [...proj.entries].sort((a,b) => a.tarih.localeCompare(b.tarih)).slice(-30);
+    if (!proj || !tumKayitlarGraf.length) { _grafBosBilgi(ctx, W, H, 'Kayıt yok'); return; }
+    const sorted = [...tumKayitlarGraf].sort((a,b) => a.tarih.localeCompare(b.tarih)).slice(-30);
     const max = Math.max(...sorted.map(e => e.kaziMetre));
     const pad = { top:30, bot:40, left:10, right:10 };
     const bw = (W - pad.left - pad.right) / sorted.length - 2;
@@ -3749,9 +3759,9 @@ function grafikCiz() {
     if (legend) legend.textContent = `Son ${sorted.length} günlük kazı (m)`;
 
   } else if (_aktifGrafTab === 'aylik') {
-    if (!proj || !proj.entries.length) { _grafBosBilgi(ctx, W, H, 'Kayıt yok'); return; }
+    if (!proj || !tumKayitlarGraf.length) { _grafBosBilgi(ctx, W, H, 'Kayıt yok'); return; }
     const ayMap = {};
-    proj.entries.forEach(e => {
+    tumKayitlarGraf.forEach(e => {
       const ay = e.tarih.substring(0,7);
       ayMap[ay] = (ayMap[ay]||0) + e.kaziMetre;
     });
@@ -4906,6 +4916,50 @@ let _entryTotalCount = 0;
 // Üst istatistik kartları (toplam metre, ortalama, hata sayısı, ilerleme çubuğu) sayfalamadan
 // etkilenmesin diye projenin TÜM kayıtları üzerinden hesaplanan hafif bir toplam önbelleği.
 let _projeIstatistik = {};
+// Rapor sekmesi ve grafik de aynı şekilde sayfalamadan etkilenmesin diye projenin TÜM
+// kayıtlarını (tam liste, sadece toplamları değil) ayrıca tutan önbellek.
+let _raporTumKayitlar = {};
+
+async function loadRaporTumKayitlar(projeId) {
+  if (!projeId) return;
+  try {
+    let tumKayitlar = [];
+    let sayfa = 0;
+    const SAYFA_BOYUTU = 1000;
+    const kolonlar = () => {
+      let k = 'id, tarih, kazi_metre, ekip_id, notlar, malzemeler, hatalar, hata, fotograflar, kmz';
+      if (!_sahaOnaylariDesteklenmiyor) k += ', saha_onaylari';
+      if (!_denetimciDesteklenmiyor) k += ', denetimci_id';
+      if (!_denetimSecimleriDesteklenmiyor) k += ', denetim_secimleri';
+      return k;
+    };
+    while (true) {
+      const from = sayfa * SAYFA_BOYUTU;
+      const to = from + SAYFA_BOYUTU - 1;
+      const { data: rows, error } = await sb.from('kayitlar')
+        .select(kolonlar())
+        .eq('proje_id', projeId)
+        .order('tarih', { ascending: false })
+        .range(from, to);
+      if (error || !rows) break;
+      tumKayitlar = tumKayitlar.concat(rows);
+      if (rows.length < SAYFA_BOYUTU) break;
+      sayfa++;
+    }
+    _raporTumKayitlar[projeId] = tumKayitlar.map(k => ({
+      id: k.id, tarih: k.tarih, kaziMetre: parseFloat(k.kazi_metre), ekipId: k.ekip_id || null,
+      denetimciId: k.denetimci_id || null,
+      denetimSecimleri: k.denetim_secimleri || [],
+      malzemeler: k.malzemeler || [], notlar: k.notlar || '',
+      hata: k.hata || { var: false }, hatalar: k.hatalar || [],
+      fotograflar: k.fotograflar || [], kmz: k.kmz || null,
+      sahaOnaylari: k.saha_onaylari || [],
+    }));
+    // Aktif proje hâlâ bu proje ise rapor sekmesini (ve içindeki grafiği) tam veriyle tazele
+    const aktif = activeProject();
+    if (aktif && aktif.id === projeId) renderRapor();
+  } catch (e) { /* sessiz geç - rapor sayfalanmış veriyle geri düşer */ }
+}
 
 async function loadProjeIstatistik(projeId) {
   if (!projeId) return;
@@ -4991,6 +5045,7 @@ async function loadEntries(projeId, sessiz = false, sayfa = 0) {
         proj.entries = yeniKayitlar;
         _entryTotalCount = count || 0;
         loadProjeIstatistik(projeId); // arka planda, üst kartlar için tam toplamı çeker
+        loadRaporTumKayitlar(projeId); // arka planda, rapor sekmesi ve grafik için tam liste çeker
       } else {
         proj.entries = [...proj.entries, ...yeniKayitlar];
       }
@@ -6261,11 +6316,16 @@ function renderRapor() {
   if (!proj) { empty.style.display = 'block'; content.style.display = 'none'; return; }
   empty.style.display = 'none'; content.style.display = 'block';
 
-  const kaziEntries = proj.entries.filter(e => Number(e.kaziMetre) > 0);
-  const total = proj.entries.reduce((s, e) => s + e.kaziMetre, 0);
+  // Not: proj.entries sayfalanmış olabilir (bkz. ENTRY_PAGE_SIZE). Rapor sekmesi ve grafik
+  // her zaman TÜM proje verisini yansıtsın diye _raporTumKayitlar önbelleği varsa o kullanılır;
+  // henüz yüklenmediyse (ilk render anı) geçici olarak sayfalanmış veriden hesaplanır.
+  const tumKayitlar = _raporTumKayitlar[proj.id] || proj.entries;
+
+  const kaziEntries = tumKayitlar.filter(e => Number(e.kaziMetre) > 0);
+  const total = tumKayitlar.reduce((s, e) => s + e.kaziMetre, 0);
   const avg = kaziEntries.length ? (total / kaziEntries.length) : 0;
   const avgStr = avg > 0 ? avg.toLocaleString('tr-TR', {maximumFractionDigits:1}) + ' m' : '-';
-  const hataCount = proj.entries.filter(e => e.hatalar?.length > 0 || e.hata?.var).length;
+  const hataCount = tumKayitlar.filter(e => e.hatalar?.length > 0 || e.hata?.var).length;
   const titleEl = document.getElementById('raporTitle');
 
   document.getElementById('rStatMetre').textContent = total.toLocaleString('tr-TR', {maximumFractionDigits:0}) + ' m';
@@ -6326,7 +6386,7 @@ function renderRapor() {
   const hataCard = document.getElementById('hataOzetCard');
   if (hataCount > 0) {
     hataCard.style.display = 'block';
-    const hataEntries = proj.entries.filter(e => e.hatalar?.length > 0 || e.hata?.var).sort((a,b) => new Date(b.tarih)-new Date(a.tarih));
+    const hataEntries = tumKayitlar.filter(e => e.hatalar?.length > 0 || e.hata?.var).sort((a,b) => new Date(b.tarih)-new Date(a.tarih));
     document.getElementById('hataOzetBody').innerHTML = hataEntries.map(e =>
       `<tr>
               <td>${new Date(e.tarih).toLocaleDateString('tr-TR')}</td>
@@ -6337,7 +6397,7 @@ function renderRapor() {
   } else hataCard.style.display = 'none';
 
   const map = {};
-  proj.entries.forEach(e => e.malzemeler.forEach(m => {
+  tumKayitlar.forEach(e => e.malzemeler.forEach(m => {
     const k = m.name + '||' + m.birim;
     map[k] = (map[k] || 0) + parseFloat(m.miktar || 0);
   }));
@@ -6350,7 +6410,7 @@ function renderRapor() {
     ).join('');
   } else ozCard.style.display = 'none';
 
-  const sorted = [...proj.entries].sort((a, b) => new Date(b.tarih) - new Date(a.tarih));
+  const sorted = [...tumKayitlar].sort((a, b) => new Date(b.tarih) - new Date(a.tarih));
   document.getElementById('raporEntryBody').innerHTML = sorted.map(e => {
     const ekipAdi = e.ekipId ? (data.teams.find(t => t.id === e.ekipId)?.ad || '-') : '-';
     const denStr = denetimciGorunumleri(e).map(d => d.ad).join(', ') || '-';
@@ -6359,7 +6419,7 @@ function renderRapor() {
 
   // Ekiplere göre toplam
   const ekipMapR = {};
-  proj.entries.forEach(e => {
+  tumKayitlar.forEach(e => {
     const key = e.ekipId || '__bos__';
     if (!ekipMapR[key]) ekipMapR[key] = { toplam: 0 };
     ekipMapR[key].toplam += parseFloat(e.kaziMetre || 0);
@@ -6377,7 +6437,7 @@ function renderRapor() {
 
   // Denetimcilere göre toplam
   const denMapR = {};
-  proj.entries.forEach(e => {
+  tumKayitlar.forEach(e => {
     const secimler = denetimSecimleriNormalize(e.denetimSecimleri, e.denetimciId);
     const keys = secimler.length > 0 ? secimler.map(s => s.id) : ['__bos__'];
     keys.forEach(key => {
@@ -6832,18 +6892,21 @@ function exportExcel(filtreliKayitlar, dosyaEki) {
   }
   const proj = activeProject();
   if (!proj) { islemBildir('Önce proje seçin!', null, true); return; }
-  if (proj.entries.length === 0) { islemBildir('Kayıt yok!', null, true); return; }
-  const kayitlar = filtreliKayitlar || proj.entries;
+  // Not: proj.entries sayfalanmış olabilir (bkz. ENTRY_PAGE_SIZE). Excel her zaman TÜM proje
+  // verisini yansıtsın diye _raporTumKayitlar önbelleği varsa o kullanılır.
+  const tumKayitlarXls = _raporTumKayitlar[proj.id] || proj.entries;
+  if (tumKayitlarXls.length === 0) { islemBildir('Kayıt yok!', null, true); return; }
+  const kayitlar = filtreliKayitlar || tumKayitlarXls;
   const sorted = [...kayitlar].sort((a, b) => new Date(a.tarih) - new Date(b.tarih));
   const wb = XLSX.utils.book_new();
   const bugun = new Date().toLocaleDateString('tr-TR');
-  const kaziEntriesXls = proj.entries.filter(e => Number(e.kaziMetre) > 0);
-  const toplam = proj.entries.reduce((s, e) => s + e.kaziMetre, 0);
+  const kaziEntriesXls = tumKayitlarXls.filter(e => Number(e.kaziMetre) > 0);
+  const toplam = tumKayitlarXls.reduce((s, e) => s + e.kaziMetre, 0);
   const ort = kaziEntriesXls.length > 0 ? (toplam / kaziEntriesXls.length).toFixed(1) : '0';
   const tarihlerMsXls = kaziEntriesXls.map(e => new Date(e.tarih).getTime());
   const takvimGunSayisiXls = kaziEntriesXls.length > 0 ? Math.round((Math.max(...tarihlerMsXls) - Math.min(...tarihlerMsXls)) / 86400000) + 1 : 0;
   const ortTakvimXls = takvimGunSayisiXls > 0 ? (toplam / takvimGunSayisiXls).toFixed(1) : '0';
-  const hataCount = proj.entries.filter(e => e.hatalar?.length > 0 || e.hata?.var).length;
+  const hataCount = tumKayitlarXls.filter(e => e.hatalar?.length > 0 || e.hata?.var).length;
 
   // ── YARDIMCI STİL FONKSİYONLARI ───────────────────────
   const stil = (font = {}, fill = {}, alignment = {}, border = false) => ({
