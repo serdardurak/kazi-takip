@@ -3847,7 +3847,11 @@ async function verileriYedekle() {
       giderler: giderlerRes.data || []
     };
     const json = JSON.stringify(yedek, null, 2);
-    const dosyaAdi = `kazi-takip-yedek_${new Date().toISOString().split('T')[0]}.json`;
+    const _simdi = new Date();
+    const _gg = String(_simdi.getDate()).padStart(2,'0');
+    const _aa = String(_simdi.getMonth()+1).padStart(2,'0');
+    const _yyyy = _simdi.getFullYear();
+    const dosyaAdi = `KzTakip-Yedek-${_gg}-${_aa}-${_yyyy}.json`;
     const ozet = `${yedek.projeler.length} proje, ${yedek.kayitlar.length} kayıt, ${yedek.giderler.length} gider`;
 
     // Gerçek bir Blob olarak indir (data: URI yerine — mobilde daha güvenilir,
