@@ -1211,6 +1211,10 @@
         📥 Supabase Yedeği Al (JSON)
       </button>
 
+      <button id="yedekPaylasBtn" onclick="yedekPaylas()" style="display:none;width:100%;background:rgba(16,185,129,0.1);border:1.5px solid #10b981;color:#10b981;border-radius:10px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:8px">
+        📧 Paylaş / Mail Gönder
+      </button>
+
       <div style="display:flex;gap:8px;margin-bottom:8px">
         <button onclick="verileriExcelYedekle()" style="flex:1;background:rgba(16,185,129,0.1);border:1.5px solid #10b981;color:#10b981;border-radius:10px;padding:12px 8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">
           📊 Excel
@@ -3823,6 +3827,10 @@ function _grafBosBilgi(ctx, W, H, mesaj) {
 }
 
 // ─── VERİ YEDEKLEME ────────────────────────────────────
+let _sonYedekBlob = null;
+let _sonYedekDosyaAdi = null;
+let _sonYedekOzet = null;
+
 async function verileriYedekle() {
   showLoading('Yedek hazırlanıyor...');
   try {
@@ -3839,42 +3847,77 @@ async function verileriYedekle() {
       giderler: giderlerRes.data || []
     };
     const json = JSON.stringify(yedek, null, 2);
-    const tarihStr = new Date().toLocaleString('tr-TR');
     const dosyaAdi = `kazi-takip-yedek_${new Date().toISOString().split('T')[0]}.json`;
     const ozet = `${yedek.projeler.length} proje, ${yedek.kayitlar.length} kayıt, ${yedek.giderler.length} gider`;
-    hideLoading();
 
-    const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(json);
-    const html = `<!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Kazı Takip Yedek</title>
-<style>
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{background:#0f172a;color:#e2e8f0;font-family:system-ui,sans-serif;padding:24px;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
-  h2{color:#f59e0b;font-size:18px}
-  p{color:#94a3b8;font-size:13px;text-align:center;line-height:1.6}
-  a.btn{display:block;width:100%;max-width:320px;background:#f59e0b;color:#0f172a;border:none;border-radius:10px;padding:15px;font-size:15px;font-weight:900;cursor:pointer;text-align:center;text-decoration:none}
-  .info{background:#1e293b;border:1px solid #334155;border-radius:8px;padding:12px;font-size:12px;color:#64748b;line-height:1.6;max-width:320px;text-align:center}
-</style></head><body>
-<h2>💾 Kazı Takip Yedek</h2>
-<p>📅 ${tarihStr}<br>📊 ${ozet}</p>
-<a class="btn" id="dlBtn" href="${dataUri}" download="${dosyaAdi}">📥 İndir: ${dosyaAdi}</a>
-<div class="info">İndirme başlamazsa butona uzun basıp<br>"Bağlantıyı indir" seçeneğini deneyin.</div>
-<script>
-  // Sayfa açılınca otomatik indir
-  window.addEventListener('load', function() {
-    document.getElementById('dlBtn').click();
-  });
-<\/script>
-</body></html>`;
-
-    const blob = new Blob([html], { type: 'text/html' });
+    // Gerçek bir Blob olarak indir (data: URI yerine — mobilde daha güvenilir,
+    // "hangi uygulamayla aç" seçeneğine düşmesini engeller)
+    const blob = new Blob([json], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
-    window.open(url, '_blank');
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = dosyaAdi;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+
+    // Paylaş/e-posta butonu için sakla
+    _sonYedekBlob = blob;
+    _sonYedekDosyaAdi = dosyaAdi;
+    _sonYedekOzet = ozet;
+    const paylasBtn = document.getElementById('yedekPaylasBtn');
+    if (paylasBtn) paylasBtn.style.display = 'block';
+
+    hideLoading();
+    toast(`✅ Yedek indirildi: ${ozet}`);
   } catch(err) {
     hideLoading();
     toast('⚠️ Yedekleme hatası: ' + (err.message||'Bağlantı hatası'), true);
   }
+}
+
+// Son alınan yedeği telefonun paylaşım menüsüyle gönder (Mail dahil)
+async function yedekPaylas() {
+  if (!_sonYedekBlob) { toast('⚠️ Önce yedek alın', true); return; }
+  const dosya = new File([_sonYedekBlob], _sonYedekDosyaAdi, { type: 'application/json' });
+
+  // 1) Dosyalı paylaşımı dene (tarayıcı destekliyorsa)
+  if (navigator.canShare && navigator.canShare({ files: [dosya] })) {
+    try {
+      await navigator.share({
+        files: [dosya],
+        title: 'Kazı Takip Yedek',
+        text: _sonYedekOzet || ''
+      });
+      return; // başarılı
+    } catch(err) {
+      if (err.name === 'AbortError') return; // kullanıcı iptal etti, sorun yok
+      // izin/başka bir hata → aşağıdaki yedek yönteme geç
+    }
+  }
+
+  // 2) Dosyasız metin paylaşımını dene (bazı tarayıcılarda bu izin verilir)
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: 'Kazı Takip Yedek',
+        text: `${_sonYedekOzet || ''}\n\nNot: Dosya paylaşımı bu tarayıcıda desteklenmiyor. "${_sonYedekDosyaAdi}" dosyası cihazınızın İndirilenler klasörüne kaydedildi, mail'e elle ekleyebilirsiniz.`
+      });
+      return;
+    } catch(err) {
+      if (err.name === 'AbortError') return;
+    }
+  }
+
+  // 3) Son çare: e-posta uygulamasını konu/gövde dolu şekilde aç.
+  // (mailto ile dosya eklenemez — kullanıcı indirilen dosyayı elle eklemeli)
+  const konu = encodeURIComponent('Kazı Takip Yedek - ' + _sonYedekDosyaAdi);
+  const govde = encodeURIComponent(
+    `${_sonYedekOzet || ''}\n\n"${_sonYedekDosyaAdi}" dosyası cihazınızın İndirilenler klasörüne kaydedildi.\nLütfen bu e-postaya o dosyayı elle ekleyip gönderin.`
+  );
+  window.location.href = `mailto:?subject=${konu}&body=${govde}`;
+  toast('ℹ️ Mail uygulaması açılıyor. Az önce indirilen dosyayı elle ekleyin.', true);
 }
 
 // ─── VERİLERİ İÇE AKTAR (GÜVENLİ) ─────────────────────
