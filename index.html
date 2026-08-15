@@ -64,7 +64,6 @@
     }
     .header-left { display: flex; align-items: center; gap: 10px; }
     .app-title { font-size: 18px; font-weight: 900; color: var(--yellow); letter-spacing: 3px; }
-    .app-sub { font-size: 10px; color: var(--muted); }
     .active-badge {
       display: flex; align-items: center; gap: 6px;
       background: var(--bg); border: 1px solid var(--yellow);
@@ -352,16 +351,6 @@
       font-weight: 700; cursor: pointer; font-family: inherit; font-size: 13px;
       white-space: nowrap;
     }
-    .btn-icon-edit {
-      border: 1px solid var(--blue); color: var(--blue);
-      background: none; border-radius: 6px; padding: 7px 12px;
-      font-size: 12px; cursor: pointer; font-family: inherit;
-    }
-    .btn-icon-del {
-      border: 1px solid var(--red); color: var(--red);
-      background: none; border-radius: 6px; padding: 7px 12px;
-      font-size: 12px; cursor: pointer; font-family: inherit;
-    }
 
     /* CHIPS */
     .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
@@ -371,46 +360,13 @@
       border-radius: 20px; padding: 5px 10px; font-size: 12px; color: var(--yellow-light);
     }
     .chip-del { background: none; border: none; color: var(--red); font-size: 16px; cursor: pointer; line-height: 1; }
-    .chip-readonly {
-      background: var(--bg); border: 1px solid var(--border);
-      border-radius: 20px; padding: 5px 10px; font-size: 12px; color: var(--sub);
-    }
 
     /* ENTRY CARDS */
-    .entry-card {
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: 8px; margin-bottom: 8px; overflow: hidden;
-    }
-    .entry-header {
-      display: flex; align-items: center; padding: 13px 14px;
-      gap: 8px; cursor: pointer; user-select: none;
-    }
-    .entry-date { flex: 1; font-size: 13px; color: var(--text); }
-    .entry-metre { font-size: 15px; font-weight: 800; color: var(--yellow); }
-    .entry-toggle { color: var(--muted); font-size: 12px; }
     .entry-body {
       border-top: 1px solid var(--border); padding: 12px 14px;
       background: var(--bg); display: none;
     }
     .entry-body.open { display: block; }
-    .entry-detail { font-size: 13px; color: var(--sub); margin-bottom: 6px; }
-    .entry-actions { display: flex; gap: 8px; margin-top: 10px; }
-
-    /* PROJECT LIST */
-    .project-row {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 12px; border-radius: 8px; margin-bottom: 8px;
-      border: 1px solid var(--border); background: var(--bg);
-      cursor: pointer;
-    }
-    .project-row.active-proj { border-color: var(--yellow); }
-    .proj-info { display: flex; align-items: center; gap: 8px; }
-    .proj-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
-    .proj-name { font-size: 15px; font-weight: 700; color: var(--text); }
-    .proj-name.active-text { color: var(--yellow); }
-    .proj-loc { font-size: 11px; color: var(--muted); margin-top: 2px; }
-    .proj-meta { font-size: 11px; color: var(--sub); margin-top: 2px; }
-    .proj-del { background: none; border: none; font-size: 20px; cursor: pointer; padding: 4px; }
 
     /* TABLE */
     .tbl { width: 100%; border-collapse: collapse; }
@@ -467,28 +423,6 @@
     .panel.open { display: block; }
 
     /* HATA KAYDI */
-    .hata-toggle-row {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-top: 18px; margin-bottom: 8px;
-    }
-    .hata-toggle-label { font-size: 11px; color: var(--sub); font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
-    .toggle-switch {
-      position: relative; width: 44px; height: 24px;
-    }
-    .toggle-switch input { opacity: 0; width: 0; height: 0; }
-    .toggle-slider {
-      position: absolute; inset: 0; background: var(--border);
-      border-radius: 24px; cursor: pointer; transition: 0.2s;
-    }
-    .toggle-slider:before {
-      content: ''; position: absolute;
-      width: 18px; height: 18px; left: 3px; bottom: 3px;
-      background: white; border-radius: 50%; transition: 0.2s;
-    }
-    .toggle-switch input:checked + .toggle-slider { background: var(--red); }
-    .toggle-switch input:checked + .toggle-slider:before { transform: translateX(20px); }
-    .hata-wrap { display: none; background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.25); border-radius: 8px; padding: 12px; margin-bottom: 8px; }
-    .hata-wrap.open { display: block; }
     .hata-type-grid { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
     .hata-type-btn {
       border: 1px solid var(--border); background: var(--bg);
@@ -497,11 +431,6 @@
     }
     .hata-type-btn.selected { border-color: var(--red); background: rgba(239,68,68,0.15); color: #fca5a5; }
 
-    .hata-badge {
-      display: inline-block; background: rgba(239,68,68,0.15);
-      border: 1px solid var(--red); color: #fca5a5;
-      border-radius: 6px; padding: 3px 8px; font-size: 11px; margin-left: 6px;
-    }
     .giderildi-badge {
       display: inline-block; background: rgba(16,185,129,0.15);
       border: 1px solid #10b981; color: #10b981;
@@ -513,11 +442,7 @@
     .panel-header { display:flex;align-items:center;justify-content:space-between;margin-bottom:10px; }
     .foto-indir-btn { position:absolute;bottom:2px;right:2px;background:rgba(0,0,0,0.7);border-radius:4px;padding:2px 4px;font-size:10px;color:white;text-decoration:none; }
     .foto-thumb { width:85px;height:85px;object-fit:cover;border-radius:8px;border:2px solid var(--yellow);cursor:pointer; }
-    .foto-thumb-sm { width:80px;height:80px;object-fit:cover;border-radius:8px;border:2px solid var(--yellow);cursor:pointer; }
     .foto-sil-btn { position:absolute;top:-6px;left:-6px;background:var(--red);border:none;color:white;border-radius:50%;width:22px;height:22px;font-size:13px;cursor:pointer;line-height:1; }
-    .hata-tag { background:rgba(239,68,68,0.2);color:#fca5a5;border-radius:20px;padding:3px 10px;font-size:11px; }
-    .hata-gorsel-thumb { width:72px;height:72px;object-fit:cover;border-radius:6px;border:1px solid var(--red);cursor:pointer; }
-    .silme-btn-kirmizi { background:none;border:1px solid var(--red);color:var(--red);border-radius:50%;width:22px;height:22px;font-size:13px;cursor:pointer;line-height:1; }
 
     /* DETAY MODAL — sade, tek vurgulu tasarım */
     .detay-eyebrow {
@@ -537,10 +462,6 @@
     .detay-header-stat .val { display: block; font-size: 21px; font-weight: 900; color: var(--yellow); line-height: 1.1; white-space: nowrap; }
     .detay-header-stat .lbl { display: block; font-size: 10px; font-weight: 700; letter-spacing: .5px; color: var(--muted); text-transform: uppercase; margin-top: 2px; }
     .detay-header-stat.bakim .val { color: var(--sub); font-size: 15px; }
-    .detay-close-btn {
-      margin-top: 1px; flex-shrink: 0; background: none; border: none; color: var(--sub);
-      cursor: pointer; font-size: 18px; line-height: 1; padding: 4px;
-    }
     .detay-chip-row { display: flex; gap: 14px; flex-wrap: wrap; padding: 12px 0; margin-bottom: 4px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
     .detay-chip { font-size: 11.5px; font-weight: 600; color: var(--sub); display: flex; align-items: center; gap: 5px; }
     .detay-chip b { color: var(--text); font-weight: 700; }
@@ -594,11 +515,7 @@
 
   
     /* Utility classes */
-    .btn-sil-kirmizi { background:none;border:1px solid var(--red);color:var(--red);border-radius:6px;padding:4px 8px;font-size:12px;cursor:pointer;font-family:inherit; }
-    .btn-duzenle-mavi { background:none;border:1px solid var(--blue);color:var(--blue);border-radius:6px;padding:4px 8px;font-size:12px;cursor:pointer;font-family:inherit; }
-    .btn-iptal { flex:1;background:none;border:1px solid var(--border);color:var(--sub);border-radius:8px;padding:12px;font-size:14px;cursor:pointer;font-family:inherit; }
-    .foto-wrap-80 { width:80px;height:80px;object-fit:cover;border-radius:8px;border:2px solid var(--yellow);cursor:pointer; }
-    .hata-sil-x { position:absolute;top:-6px;right:-6px;background:var(--red);border:none;color:white;border-radius:50%;width:22px;height:22px;font-size:13px;cursor:pointer;line-height:1; }
+
 </style>
 </head>
 <body>
@@ -3190,7 +3107,8 @@ function projeRaporPdf() {
 
   const kaziEntries = tumKayitlarPdf.filter(e => Number(e.kaziMetre) > 0);
   const toplam = tumKayitlarPdf.reduce((s, e) => s + e.kaziMetre, 0);
-  const gun = kaziEntries.length;
+  // Aynı günde birden fazla ekip çalışması olabilir; gün sayısı benzersiz tarihlere göre hesaplanır
+  const gun = new Set(kaziEntries.map(e => e.tarih)).size;
   const ort = gun > 0 ? (toplam / gun).toFixed(1) : '0';
   const hataCount = tumKayitlarPdf.filter(e => e.hatalar?.length > 0 || e.hata?.var).length;
   const tarihler = tumKayitlarPdf.map(e => new Date(e.tarih));
@@ -3339,7 +3257,9 @@ function projeRaporPaylas() {
   if (!proj || tumKayitlarPaylas.length === 0) { toast('⚠️ Proje veya kayıt yok', true); return; }
   const kaziEntries = tumKayitlarPaylas.filter(e => Number(e.kaziMetre) > 0);
   const toplam = tumKayitlarPaylas.reduce((s, e) => s + e.kaziMetre, 0);
-  const ort = kaziEntries.length > 0 ? (toplam / kaziEntries.length).toFixed(1) : '0';
+  // Aynı günde birden fazla ekip çalışması olabilir; gün sayısı benzersiz tarihlere göre hesaplanır
+  const kaziGunSayisi = new Set(kaziEntries.map(e => e.tarih)).size;
+  const ort = kaziGunSayisi > 0 ? (toplam / kaziGunSayisi).toFixed(1) : '0';
   const hataCount = tumKayitlarPaylas.filter(e => e.hatalar?.length > 0 || e.hata?.var).length;
   const tarihlerMs = tumKayitlarPaylas.map(e => new Date(e.tarih).getTime());
   const ilk = new Date(Math.min(...tarihlerMs)).toLocaleDateString('tr-TR');
@@ -3376,7 +3296,7 @@ function projeRaporPaylas() {
       : `      - ${e.hata?.turler?.join(', ') || 'Belirtilmemiş'}${e.hata?.aciklama ? ': ' + e.hata.aciklama : ''}`;
     return `   📅 ${tarih}\n${hatalar}`;
   }).join('\n') : '   • Yok';
-  const metin = `📊 *PROJE RAPORU*\n🏗 ${proj.name}${proj.location ? ' - ' + proj.location : ''}\n\n📅 ${ilk} → ${son}\n⛏ Toplam Kazı: *${toplam.toLocaleString("tr-TR",{maximumFractionDigits:0})} m*\n📈 Günlük Ort. (çalışılan gün): ${ort} m\n📊 Günlük Ort. (takvim günü): ${ortTakvim} m\n📅 Kazı Günü: ${kaziEntries.length} gün${hedefStr}\n⚠️ Hatalı Gün: ${hataCount}\n\n👷 Ekiplere Göre:\n${ekipStrP}\n\n🕵️ Denetimcilere Göre:\n${denStrP}\n\n🧱 Toplam Malzeme:\n${malzStr}\n\n⚠️ Hata Detayları:\n${hataStr}`;
+  const metin = `📊 *PROJE RAPORU*\n🏗 ${proj.name}${proj.location ? ' - ' + proj.location : ''}\n\n📅 ${ilk} → ${son}\n⛏ Toplam Kazı: *${toplam.toLocaleString("tr-TR",{maximumFractionDigits:0})} m*\n📈 Günlük Ort. (çalışılan gün): ${ort} m\n📊 Günlük Ort. (takvim günü): ${ortTakvim} m\n📅 Kazı Günü: ${kaziGunSayisi} gün${hedefStr}\n⚠️ Hatalı Gün: ${hataCount}\n\n👷 Ekiplere Göre:\n${ekipStrP}\n\n🕵️ Denetimcilere Göre:\n${denStrP}\n\n🧱 Toplam Malzeme:\n${malzStr}\n\n⚠️ Hata Detayları:\n${hataStr}`;
   paylas(metin, 'Proje Raporu');
 }
 
@@ -3556,24 +3476,6 @@ function _giderRaporGoster() {
   // Paylaş butonuna bağla
   window._raporOnizlemeMevcutMetin = metin;
   window._giderRaporVeri = { ayAdi, ikon, basStr, bitStr, tarihAralikStr, haftaStr, donemGiderler, katSatirlar, toplam };
-}
-
-function giderRaporPaylas() {
-  if (giderler.length === 0) { toast('⚠️ Gider kaydı yok', true); return; }
-  giderRaporOnizle();
-}
-
-function kmzIndir(url, ad) {
-  // Android için en güvenilir yöntem
-  const a = document.createElement('a');
-  a.setAttribute('href', url);
-  a.setAttribute('download', ad);
-  a.setAttribute('target', '_blank');
-  a.style.display = 'none';
-  document.body.appendChild(a);
-  a.click();
-  setTimeout(() => document.body.removeChild(a), 500);
-  toast('📥 KMZ açılıyor...');
 }
 
 // ─── QR KOD ──────────────────────────────────────────────
@@ -4062,16 +3964,21 @@ async function verileriIceAktar(input) {
 }
 
 
+// Excel (SheetJS/XLSX) kütüphanesini tembel yükler; zaten yüklüyse callback'i hemen çalıştırır.
+// Not: verileriExcelYedekle() ve exportExcel() daha önce bu 9 satırlık yükleme mantığını
+// birebir kopyalamıştı; tek yerde toplanarak bakım kolaylaştırıldı.
+function ensureXLSX(callback) {
+  if (typeof XLSX !== 'undefined') { callback(); return; }
+  showLoading('Excel kütüphanesi yükleniyor...');
+  const s = document.createElement('script');
+  s.src = 'https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js';
+  s.onload = () => { hideLoading(); callback(); };
+  s.onerror = () => { hideLoading(); toast('⚠️ Excel kütüphanesi yüklenemedi', true); };
+  document.head.appendChild(s);
+}
+
 async function verileriExcelYedekle() {
-  if (typeof XLSX === 'undefined') {
-    showLoading('Excel kütüphanesi yükleniyor...');
-    const s = document.createElement('script');
-    s.src = 'https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js';
-    s.onload = () => { hideLoading(); verileriExcelYedekle(); };
-    s.onerror = () => { hideLoading(); toast('⚠️ Excel kütüphanesi yüklenemedi', true); };
-    document.head.appendChild(s);
-    return;
-  }
+  if (typeof XLSX === 'undefined') { ensureXLSX(verileriExcelYedekle); return; }
 
   showLoading('Excel hazırlanıyor...');
   try {
@@ -5012,17 +4919,19 @@ async function loadProjeIstatistik(projeId) {
   if (!projeId) return;
   try {
     const { data: rows, error } = await sb.from('kayitlar')
-      .select('kazi_metre, hatalar, hata')
+      .select('kazi_metre, hatalar, hata, tarih')
       .eq('proje_id', projeId);
     if (error || !rows) return;
     let total = 0, kaziSayisi = 0, hataSayisi = 0;
+    const kaziGunleri = new Set();
     rows.forEach(k => {
       const km = parseFloat(k.kazi_metre) || 0;
       total += km;
-      if (km > 0) kaziSayisi++;
+      if (km > 0) { kaziSayisi++; kaziGunleri.add(k.tarih); }
       hataSayisi += (k.hatalar?.length || (k.hata?.var ? 1 : 0));
     });
-    _projeIstatistik[projeId] = { total, kaziSayisi, hataSayisi };
+    // Aynı günde birden fazla ekip çalışması olabilir; gunSayisi benzersiz tarihleri sayar (kaziSayisi ham kayıt sayısıdır)
+    _projeIstatistik[projeId] = { total, kaziSayisi, gunSayisi: kaziGunleri.size, hataSayisi };
     // Aktif proje hâlâ bu proje ise kartları hemen güncelle
     const aktif = activeProject();
     if (aktif && aktif.id === projeId) renderDashboard();
@@ -6026,15 +5935,17 @@ function updateStats() {
   const proj = activeProject();
   if (!proj) return;
   const kaziEntries = proj.entries.filter(e => Number(e.kaziMetre) > 0);
+  // Aynı günde birden fazla ekip çalışması olabilir; gün sayısı benzersiz tarihlere göre hesaplanır
+  const gunSayisi = new Set(kaziEntries.map(e => e.tarih)).size;
   const total = proj.entries.reduce((s, e) => s + e.kaziMetre, 0);
-  const avg = kaziEntries.length > 0 ? (total / kaziEntries.length).toFixed(1) : total.toFixed(1);
+  const avg = gunSayisi > 0 ? (total / gunSayisi).toFixed(1) : total.toFixed(1);
   const toplamHata = proj.entries.reduce((s, e) => s + (e.hatalar?.length || (e.hata?.var ? 1 : 0)), 0);
   const sm = document.getElementById('statMetre');
   const so = document.getElementById('statOrt');
   const sh = document.getElementById('statHata');
   if (sm) sm.textContent = total.toLocaleString('tr-TR', {maximumFractionDigits:0}) + ' m';
   const statGunEl = document.getElementById('statGun');
-  if (statGunEl) statGunEl.textContent = kaziEntries.length;
+  if (statGunEl) statGunEl.textContent = gunSayisi;
   if (so) so.textContent = avg + ' m';
   if (sh) sh.textContent = toplamHata;
 }
@@ -6054,12 +5965,14 @@ function renderDashboard() {
   const kaziEntries = proj.entries.filter(e => Number(e.kaziMetre) > 0);
   const total = istat ? istat.total : proj.entries.reduce((s, e) => s + e.kaziMetre, 0);
   const kaziSayisi = istat ? istat.kaziSayisi : kaziEntries.length;
-  const avg = kaziSayisi ? (total / kaziSayisi).toFixed(1) : '-';
+  // Aynı günde birden fazla ekip çalışması olabilir; gün sayısı benzersiz tarihlere göre hesaplanır
+  const gunSayisi = istat ? istat.gunSayisi : new Set(kaziEntries.map(e => e.tarih)).size;
+  const avg = gunSayisi ? (total / gunSayisi).toFixed(1) : '-';
   document.getElementById('statMetre').textContent = total.toLocaleString('tr-TR', {maximumFractionDigits:0}) + ' m';
   const statKayit = document.getElementById('statKayit');
   if (statKayit) statKayit.textContent = kaziSayisi;
   const statGunEl = document.getElementById('statGun');
-  if (statGunEl) statGunEl.textContent = kaziSayisi;
+  if (statGunEl) statGunEl.textContent = gunSayisi;
   document.getElementById('statOrt').textContent = avg !== '-' ? avg + ' m' : '-';
   const toplamHata = istat ? istat.hataSayisi : proj.entries.reduce((s, e) => s + (e.hatalar?.length || (e.hata?.var ? 1 : 0)), 0);
   document.getElementById('statHata').textContent = toplamHata;
@@ -6086,7 +5999,7 @@ function renderDashboard() {
       const kalanEl = document.getElementById('ilerlemeKalan');
       if (yapilan) yapilan.textContent = total.toLocaleString('tr-TR') + ' m';
       if (hedefEl) hedefEl.textContent = hm + ' m';
-      const avgGun = kaziSayisi > 0 ? total / kaziSayisi : 0;
+      const avgGun = gunSayisi > 0 ? total / gunSayisi : 0;
       const tahminiGun = avgGun > 0 ? Math.ceil(parseFloat(kalan) / avgGun) : 0;
       if (kalanEl) kalanEl.textContent = kalan + ' m';
       const tahminiEl = document.getElementById('ilerlemeTahmini');
@@ -6210,10 +6123,6 @@ function toggleEntry(id) {
   if (!body) return;
   const open = body.classList.toggle('open');
   if (tog) tog.textContent = open ? '▲' : '▼';
-}
-
-function detayModalKapat() {
-  geriGit();
 }
 
 function mentionVurgula(text) {
@@ -6369,14 +6278,16 @@ function renderRapor() {
   const tumKayitlar = _raporTumKayitlar[proj.id] || proj.entries;
 
   const kaziEntries = tumKayitlar.filter(e => Number(e.kaziMetre) > 0);
+  // Aynı günde birden fazla ekip çalışması olabilir; gün sayısı benzersiz tarihlere göre hesaplanır
+  const gunSayisi = new Set(kaziEntries.map(e => e.tarih)).size;
   const total = tumKayitlar.reduce((s, e) => s + e.kaziMetre, 0);
-  const avg = kaziEntries.length ? (total / kaziEntries.length) : 0;
+  const avg = gunSayisi ? (total / gunSayisi) : 0;
   const avgStr = avg > 0 ? avg.toLocaleString('tr-TR', {maximumFractionDigits:1}) + ' m' : '-';
   const hataCount = tumKayitlar.filter(e => e.hatalar?.length > 0 || e.hata?.var).length;
   const titleEl = document.getElementById('raporTitle');
 
   document.getElementById('rStatMetre').textContent = total.toLocaleString('tr-TR', {maximumFractionDigits:0}) + ' m';
-  document.getElementById('rStatGun').textContent = kaziEntries.length;
+  document.getElementById('rStatGun').textContent = gunSayisi;
   document.getElementById('rStatOrt').textContent = avgStr;
 
   const rStatOrtTakvimEl = document.getElementById('rStatOrtTakvim');
@@ -6409,7 +6320,7 @@ function renderRapor() {
       if (hedefEl) hedefEl.textContent = proj.hedefMetre + ' m';
       const kalanEl = document.getElementById('raporKalan');
       if (kalanEl) kalanEl.textContent = kalan + ' m';
-      const avgGunR = kaziEntries.length > 0 ? total / kaziEntries.length : 0;
+      const avgGunR = gunSayisi > 0 ? total / gunSayisi : 0;
       const kalanSayi = Math.max(0, proj.hedefMetre - total);
       tahminiGunSonuc = (avgGunR > 0 && kalanSayi > 0) ? Math.ceil(kalanSayi / avgGunR) : 0;
       const raporTahmini = document.getElementById('raporTahmini');
@@ -6928,15 +6839,7 @@ function giderRaporPdf() {
 }
 
 function exportExcel(filtreliKayitlar, dosyaEki) {
-  if (typeof XLSX === 'undefined') {
-    showLoading('Excel kütüphanesi yükleniyor...');
-    const s = document.createElement('script');
-    s.src = 'https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js';
-    s.onload = () => { hideLoading(); exportExcel(filtreliKayitlar, dosyaEki); };
-    s.onerror = () => { hideLoading(); toast('⚠️ Excel kütüphanesi yüklenemedi', true); };
-    document.head.appendChild(s);
-    return;
-  }
+  if (typeof XLSX === 'undefined') { ensureXLSX(() => exportExcel(filtreliKayitlar, dosyaEki)); return; }
   const proj = activeProject();
   if (!proj) { islemBildir('Önce proje seçin!', null, true); return; }
   // Not: proj.entries sayfalanmış olabilir (bkz. ENTRY_PAGE_SIZE). Excel her zaman TÜM proje
@@ -6948,8 +6851,10 @@ function exportExcel(filtreliKayitlar, dosyaEki) {
   const wb = XLSX.utils.book_new();
   const bugun = new Date().toLocaleDateString('tr-TR');
   const kaziEntriesXls = tumKayitlarXls.filter(e => Number(e.kaziMetre) > 0);
+  // Aynı günde birden fazla ekip çalışması olabilir; gün sayısı benzersiz tarihlere göre hesaplanır
+  const gunSayisiXls = new Set(kaziEntriesXls.map(e => e.tarih)).size;
   const toplam = tumKayitlarXls.reduce((s, e) => s + e.kaziMetre, 0);
-  const ort = kaziEntriesXls.length > 0 ? (toplam / kaziEntriesXls.length).toFixed(1) : '0';
+  const ort = gunSayisiXls > 0 ? (toplam / gunSayisiXls).toFixed(1) : '0';
   const tarihlerMsXls = kaziEntriesXls.map(e => new Date(e.tarih).getTime());
   const takvimGunSayisiXls = kaziEntriesXls.length > 0 ? Math.round((Math.max(...tarihlerMsXls) - Math.min(...tarihlerMsXls)) / 86400000) + 1 : 0;
   const ortTakvimXls = takvimGunSayisiXls > 0 ? (toplam / takvimGunSayisiXls).toFixed(1) : '0';
@@ -7024,7 +6929,7 @@ function exportExcel(filtreliKayitlar, dosyaEki) {
 
   const istatistikler = [
     ['📏 Toplam Kazı', `${toplam.toLocaleString("tr-TR",{maximumFractionDigits:0})} m`, 'F59E0B', '1C1917'],
-    ['📅 Toplam Gün', `${kaziEntriesXls.length} gün`, '3B82F6', '0C1A2E'],
+    ['📅 Toplam Gün', `${gunSayisiXls} gün`, '3B82F6', '0C1A2E'],
     ['📈 Günlük Ort. (çalışılan gün)', `${ort} m`, '10B981', '052E16'],
     ['📊 Günlük Ort. (takvim günü)', `${ortTakvimXls} m`, 'EC4899', '2D0A1F'],
     ['⚠️ Hatalı İşlem', `${hataCount} adet`, hataCount > 0 ? 'EF4444' : '10B981', hataCount > 0 ? '2D0A0A' : '052E16'],
@@ -7722,13 +7627,19 @@ function renderProjeler() {
   if (data.projects.length === 0) { card.style.display = 'none'; } else { card.style.display = 'block'; }
 
   // Tüm projelerin toplam metrajını çek
-  sb.from('kayitlar').select('proje_id, kazi_metre').then(({ data: kayitlar }) => {
+  sb.from('kayitlar').select('proje_id, kazi_metre, tarih').then(({ data: kayitlar }) => {
     if (kayitlar) {
       const toplamMap = {};
       const kayitSayiMap = {};
+      const gunSetMap = {};
       kayitlar.forEach(k => {
         toplamMap[k.proje_id] = (toplamMap[k.proje_id] || 0) + parseFloat(k.kazi_metre || 0);
-        if (parseFloat(k.kazi_metre || 0) > 0) kayitSayiMap[k.proje_id] = (kayitSayiMap[k.proje_id] || 0) + 1;
+        if (parseFloat(k.kazi_metre || 0) > 0) {
+          kayitSayiMap[k.proje_id] = (kayitSayiMap[k.proje_id] || 0) + 1;
+          // Aynı günde birden fazla ekip çalışması olabilir; gün sayısı benzersiz tarihlere göre hesaplanır
+          if (!gunSetMap[k.proje_id]) gunSetMap[k.proje_id] = new Set();
+          gunSetMap[k.proje_id].add(k.tarih);
+        }
       });
       renderProjeToplamRapor(toplamMap);
       const kodMap = {};
@@ -7739,7 +7650,8 @@ function renderProjeler() {
         const toplam = toplamMap[p.id] || 0;
         const bitti = p.bitti === true;
         const kayitSayisi = kayitSayiMap[p.id] || 0;
-        const gunlukOrt = kayitSayisi > 0 ? toplam / kayitSayisi : 0;
+        const gunSayisi = gunSetMap[p.id] ? gunSetMap[p.id].size : 0;
+        const gunlukOrt = gunSayisi > 0 ? toplam / gunSayisi : 0;
         const kalan = p.hedefMetre > 0 ? Math.max(0, p.hedefMetre - toplam) : 0;
         const tahminiGun = (gunlukOrt > 0 && kalan > 0) ? Math.ceil(kalan / gunlukOrt) : 0;
         const yuzde = p.hedefMetre > 0 ? Math.min(100, (toplam / p.hedefMetre) * 100) : 0;
