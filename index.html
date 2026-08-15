@@ -6028,26 +6028,36 @@ function renderDashboard() {
     return;
   }
 
-  list.innerHTML = sorted.map(e => {
-    const ekipAdi = e.ekipId ? (data.teams.find(t => t.id === e.ekipId)?.ad || '') : '';
-    const denetimciListesi = denetimciGorunumleri(e);
-    const hataVar = e.hatalar?.length > 0 || e.hata?.var;
-    const tarihKisa = new Date(e.tarih).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
-    const gunKisa = new Date(e.tarih).toLocaleDateString('tr-TR', { weekday: 'short' });
+  // Aynı tarihe ait birden fazla ekip kaydı olabilir; bunları tek tarih başlığı altında grupluyoruz
+  const gunGruplari = [];
+  sorted.forEach(e => {
+    const son = gunGruplari[gunGruplari.length - 1];
+    if (son && son.tarih === e.tarih) son.entries.push(e);
+    else gunGruplari.push({ tarih: e.tarih, entries: [e] });
+  });
 
-    const ustMeta = [];
-    if (e.malzemeler?.length > 0) ustMeta.push(`🧱 ${e.malzemeler.length}`);
-    if (e.fotograflar?.length > 0) ustMeta.push(`📷 ${e.fotograflar.length}`);
-    if (e.kmz) ustMeta.push(`📁 KMZ`);
-    if (e.notlar) ustMeta.push(`📝`);
-    if (hataVar) ustMeta.push(`⚠️ ${e.hatalar?.length > 0 ? e.hatalar.length : ''}`);
+  list.innerHTML = gunGruplari.map(grup => {
+    const tarihKisa = new Date(grup.tarih).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
+    const gunKisa = new Date(grup.tarih).toLocaleDateString('tr-TR', { weekday: 'short' });
+    const gunToplam = grup.entries.reduce((s, e) => s + (Number(e.kaziMetre) || 0), 0);
 
-    const altMeta = [];
-    if (ekipAdi) altMeta.push(`👷 ${esc(ekipAdi)}`);
-    denetimciListesi.forEach(d => altMeta.push(`🕵️ ${d.vakitEtiket ? esc(d.vakitEtiket) + ' ' : ''}${esc(d.ad)}`));
-    const cizgiRengi = hataVar ? 'var(--red)' : 'var(--border)';
+    const kartlar = grup.entries.map(e => {
+      const ekipAdi = e.ekipId ? (data.teams.find(t => t.id === e.ekipId)?.ad || '') : '';
+      const denetimciListesi = denetimciGorunumleri(e);
+      const hataVar = e.hatalar?.length > 0 || e.hata?.var;
 
-    return `
+      const ustMeta = [];
+      if (e.malzemeler?.length > 0) ustMeta.push(`🧱 ${e.malzemeler.length}`);
+      if (e.fotograflar?.length > 0) ustMeta.push(`📷 ${e.fotograflar.length}`);
+      if (e.kmz) ustMeta.push(`📁 KMZ`);
+      if (e.notlar) ustMeta.push(`📝`);
+      if (hataVar) ustMeta.push(`⚠️ ${e.hatalar?.length > 0 ? e.hatalar.length : ''}`);
+
+      const altMeta = [];
+      denetimciListesi.forEach(d => altMeta.push(`🕵️ ${d.vakitEtiket ? esc(d.vakitEtiket) + ' ' : ''}${esc(d.ad)}`));
+      const cizgiRengi = hataVar ? 'var(--red)' : 'var(--border)';
+
+      return `
     <div id="card-${e.id}" style="background:var(--card);border:1px solid ${hataVar ? 'rgba(239,68,68,0.5)' : 'var(--border)'};border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.3)">
 
       <!-- Üst satır - tıklayınca menü akordiyon olarak açılır -->
@@ -6058,7 +6068,7 @@ function renderDashboard() {
             <button onclick="event.stopPropagation();toggleDetay('${e.id}')" style="background:rgba(100,116,139,0.15);border:1px solid var(--border);color:var(--sub);border-radius:6px;padding:3px 9px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">👁️ Detay</button>
           </div>
           <div style="padding-right:16px">
-            <span style="font-size:14px;font-weight:700;color:var(--text)">${gunKisa} ${tarihKisa}</span>${ustMeta.length > 0 ? ` <span style="font-size:10.5px;font-weight:600;color:var(--muted)">· ${ustMeta.join('&nbsp;&nbsp;')}</span>` : ''}
+            <span style="font-size:14px;font-weight:700;color:var(--text)">${ekipAdi ? '👷 ' + esc(ekipAdi) : 'Ekip Atanmamış'}</span>${ustMeta.length > 0 ? ` <span style="font-size:10.5px;font-weight:600;color:var(--muted)">· ${ustMeta.join('&nbsp;&nbsp;')}</span>` : ''}
           </div>
           <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:8px;margin-top:6px">
             <div>${altMeta.length > 0 ? `<span style="font-size:10.5px;color:var(--muted)">${altMeta.join('&nbsp;&nbsp;')}</span>` : ''}</div>
@@ -6099,6 +6109,18 @@ function renderDashboard() {
             🗑<span style="font-size:9px;font-weight:700">Sil</span>
           </button>` : ''}
         </div>
+      </div>
+    </div>`;
+    }).join('');
+
+    return `
+    <div class="kayit-gun-grup" style="margin-bottom:4px">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;padding:6px 4px;margin-top:6px">
+        <span style="font-size:13px;font-weight:800;color:var(--yellow-light);letter-spacing:0.3px">📅 ${gunKisa} ${tarihKisa}</span>
+        ${grup.entries.length > 1 ? `<span style="font-size:11px;font-weight:700;color:var(--muted)">${grup.entries.length} ekip · toplam ${gunToplam.toLocaleString('tr-TR')} m</span>` : ''}
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        ${kartlar}
       </div>
     </div>`;
   }).join('');
