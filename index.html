@@ -277,6 +277,44 @@
     .stat-value { font-size: 16px; font-weight: 900; margin: 4px 0 2px; }
     .stat-label { font-size: 9px; color: var(--muted); }
 
+    /* YÖNETİM — sade akordeon bileşeni */
+    .yon-acc {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 10px; margin-bottom: 10px; overflow: hidden;
+    }
+    .yon-acc-head {
+      display: flex; align-items: center; gap: 11px; padding: 14px 15px;
+      cursor: pointer; -webkit-tap-highlight-color: transparent; user-select: none;
+    }
+    .yon-acc-icon {
+      font-size: 17px; flex-shrink: 0; width: 30px; height: 30px; border-radius: 8px;
+      background: rgba(148,163,184,0.1); display: flex; align-items: center; justify-content: center;
+    }
+    .yon-acc-title { display: block; font-size: 13.5px; font-weight: 800; color: var(--text); }
+    .yon-acc-sub { display: block; font-size: 11px; color: var(--muted); margin-top: 1px; }
+    .yon-acc-badge {
+      flex-shrink: 0; background: rgba(148,163,184,0.15); color: var(--sub);
+      font-size: 11px; font-weight: 800; border-radius: 20px; padding: 3px 9px;
+    }
+    .yon-acc-chev { flex-shrink: 0; color: var(--muted); font-size: 11px; transition: transform 0.2s ease; }
+    .yon-acc.open .yon-acc-chev { transform: rotate(180deg); }
+    .yon-acc-body { display: none; padding: 2px 15px 15px; border-top: 1px solid var(--border); }
+    .yon-acc.open .yon-acc-body { display: block; padding-top: 13px; }
+
+    /* Tanımlar listesi — tek tip, sade satırlar */
+    .yon-item {
+      display: flex; align-items: center; gap: 11px; width: 100%; text-align: left;
+      background: var(--bg); border: 1px solid var(--border); color: var(--text);
+      border-radius: 9px; padding: 11px 12px; cursor: pointer; font-family: inherit;
+    }
+    .yon-item-icon { font-size: 17px; flex-shrink: 0; width: 30px; text-align: center; }
+    .yon-item-name { display: block; font-size: 13.5px; font-weight: 700; }
+    .yon-item-badge {
+      flex-shrink: 0; background: rgba(245,158,11,0.12); color: var(--yellow-light);
+      font-size: 11px; font-weight: 800; border-radius: 20px; padding: 3px 9px;
+    }
+    .yon-item-chev { flex-shrink: 0; color: var(--muted); font-size: 14px; }
+
     /* RAPOR — bölüm başlıkları ve araç çubuğu (daha sade/profesyonel görünüm) */
     .rp-eyebrow {
       display: flex; align-items: center; gap: 8px; margin: 22px 0 10px;
@@ -824,6 +862,18 @@
             <div class="stat-label">Günlük Ort. (takvim günü)</div>
           </div>
         </div>
+        <div class="stats-row">
+          <div class="stat-card" style="border-top-color:#06b6d4">
+            <div class="stat-icon">✅</div>
+            <div class="stat-value" id="rStatOnay" style="color:#06b6d4">0</div>
+            <div class="stat-label">Toplam Saha Onayı</div>
+          </div>
+          <div class="stat-card" style="border-top-color:#ef4444">
+            <div class="stat-icon">⚠️</div>
+            <div class="stat-value" id="rStatHata" style="color:#ef4444">0</div>
+            <div class="stat-label">Hatalı Gün</div>
+          </div>
+        </div>
         <!-- Hedef İlerleme -->
         <div id="raporHedefCard" style="display:none;margin-top:12px">
           <div style="display:flex;justify-content:space-between;margin-bottom:6px">
@@ -854,19 +904,44 @@
       </div>
 
       <div class="rp-eyebrow">🧱 Malzeme &amp; Kalite</div>
-      <div class="card" id="malzemeOzetCard" style="display:none">
-        <div class="card-title">🧱 Malzeme Özeti</div>
-        <table class="tbl">
-          <thead><tr><th>Malzeme</th><th>Toplam</th><th>Birim</th></tr></thead>
-          <tbody id="malzemeOzetBody"></tbody>
-        </table>
+      <div class="yon-acc" id="malzemeOzetCard" style="display:none">
+        <div class="yon-acc-head" onclick="rpAccToggle('malzemeOzetCard')">
+          <span class="yon-acc-icon">🧱</span>
+          <span style="flex:1;min-width:0"><span class="yon-acc-title">Malzeme Özeti</span></span>
+          <span class="yon-acc-chev">▾</span>
+        </div>
+        <div class="yon-acc-body">
+          <table class="tbl">
+            <thead><tr><th>Malzeme</th><th>Toplam</th><th>Birim</th></tr></thead>
+            <tbody id="malzemeOzetBody"></tbody>
+          </table>
+        </div>
       </div>
-      <div class="card" id="hataOzetCard" style="display:none">
-        <div class="card-title" style="color:#fca5a5">⚠️ Hatalı / Eksik İşlemler</div>
-        <table class="tbl">
-          <thead><tr><th>Tarih</th><th>Tür</th><th>Açıklama</th></tr></thead>
-          <tbody id="hataOzetBody"></tbody>
-        </table>
+      <div class="yon-acc" id="hataTuruOzetCard" style="display:none">
+        <div class="yon-acc-head" onclick="rpAccToggle('hataTuruOzetCard')">
+          <span class="yon-acc-icon">⚠️</span>
+          <span style="flex:1;min-width:0"><span class="yon-acc-title" style="color:#fca5a5">Hata Türü Özeti (Kategori Bazlı)</span></span>
+          <span class="yon-acc-chev">▾</span>
+        </div>
+        <div class="yon-acc-body">
+          <table class="tbl">
+            <thead><tr><th>Hata Türü</th><th>Adet</th><th>Giderilmemiş</th></tr></thead>
+            <tbody id="hataTuruOzetBody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="yon-acc" id="hataOzetCard" style="display:none">
+        <div class="yon-acc-head" onclick="rpAccToggle('hataOzetCard')">
+          <span class="yon-acc-icon">⚠️</span>
+          <span style="flex:1;min-width:0"><span class="yon-acc-title" style="color:#fca5a5">Hatalı / Eksik İşlemler</span></span>
+          <span class="yon-acc-chev">▾</span>
+        </div>
+        <div class="yon-acc-body">
+          <table class="tbl">
+            <thead><tr><th>Tarih</th><th>Tür</th><th>Açıklama</th></tr></thead>
+            <tbody id="hataOzetBody"></tbody>
+          </table>
+        </div>
       </div>
 
       <div class="rp-eyebrow">📅 Günlük Geçmiş</div>
@@ -1021,8 +1096,10 @@
   </div>
 
   <!-- VIEW: PROJELER -->
-  <!-- VIEW: YÖNETİM -->
+  <!-- VIEW: YÖNETİM (sadeleştirilmiş) -->
   <div class="view" id="view-yonetim">
+
+    <!-- Genel Durum -->
     <div class="card" id="yonetimOzetCard">
       <div class="card-title">📊 Genel Durum</div>
       <div class="stats-row" style="margin-bottom:0">
@@ -1049,139 +1126,149 @@
       </div>
     </div>
 
+    <!-- Tanımlar — sade, tek tip liste -->
     <div class="card">
-      <div class="card-title">⚙️ Yönetim Menüsü</div>
-      <div style="font-size:11.5px;color:var(--muted);margin:-4px 0 12px">Ekip, denetmen, malzeme ve gider kategorisi tanımlarıyla QR kod oluşturucu artık tek yerde. Aşağıdan yönetmek istediğin bölümü seç.</div>
-
-      <div id="yonetimMenu" style="display:flex;flex-direction:column;gap:8px">
-        <button type="button" onclick="ekipYonetimAc()" style="display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:rgba(139,92,246,0.08);border:1.5px solid rgba(139,92,246,0.4);color:var(--text);border-radius:10px;padding:12px 13px;cursor:pointer;font-family:inherit">
-          <span style="font-size:20px;flex-shrink:0">👷</span>
-          <span style="flex:1;min-width:0">
-            <span style="display:block;font-size:13.5px;font-weight:800;color:#c4b5fd">Ekipleri Yönet</span>
-            <span style="display:block;font-size:11px;color:var(--muted);margin-top:1px">Saha ekiplerini ekle, düzenle veya sil</span>
-          </span>
-          <span id="yonetimEkipSayac" style="flex-shrink:0;background:rgba(139,92,246,0.2);color:#c4b5fd;font-size:11px;font-weight:800;border-radius:20px;padding:3px 9px">0</span>
-          <span style="flex-shrink:0;color:var(--muted);font-size:15px">›</span>
+      <div class="card-title">📋 Tanımlar</div>
+      <div id="yonetimMenu" style="display:flex;flex-direction:column;gap:7px">
+        <button type="button" class="yon-item" onclick="ekipYonetimAc()">
+          <span class="yon-item-icon">👷</span>
+          <span style="flex:1;min-width:0"><span class="yon-item-name">Ekipler</span></span>
+          <span id="yonetimEkipSayac" class="yon-item-badge">0</span>
+          <span class="yon-item-chev">›</span>
         </button>
-
-        <button type="button" onclick="denetimciYonetimAc()" style="display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:rgba(6,182,212,0.08);border:1.5px solid rgba(6,182,212,0.4);color:var(--text);border-radius:10px;padding:12px 13px;cursor:pointer;font-family:inherit">
-          <span style="font-size:20px;flex-shrink:0">🕵️</span>
-          <span style="flex:1;min-width:0">
-            <span style="display:block;font-size:13.5px;font-weight:800;color:#67e8f9">Denetmenleri Yönet</span>
-            <span style="display:block;font-size:11px;color:var(--muted);margin-top:1px">Denetmen adı ve kurum/firma bilgilerini yönet</span>
-          </span>
-          <span id="yonetimDenetimciSayac" style="flex-shrink:0;background:rgba(6,182,212,0.2);color:#67e8f9;font-size:11px;font-weight:800;border-radius:20px;padding:3px 9px">0</span>
-          <span style="flex-shrink:0;color:var(--muted);font-size:15px">›</span>
+        <button type="button" class="yon-item" onclick="denetimciYonetimAc()">
+          <span class="yon-item-icon">🕵️</span>
+          <span style="flex:1;min-width:0"><span class="yon-item-name">Denetmenler</span></span>
+          <span id="yonetimDenetimciSayac" class="yon-item-badge">0</span>
+          <span class="yon-item-chev">›</span>
         </button>
-
-        <button type="button" onclick="malzemeYonetimAc()" style="display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:rgba(59,130,246,0.08);border:1.5px solid rgba(59,130,246,0.4);color:var(--text);border-radius:10px;padding:12px 13px;cursor:pointer;font-family:inherit">
-          <span style="font-size:20px;flex-shrink:0">🧱</span>
-          <span style="flex:1;min-width:0">
-            <span style="display:block;font-size:13.5px;font-weight:800;color:#93c5fd">Malzeme Türlerini Yönet</span>
-            <span style="display:block;font-size:11px;color:var(--muted);margin-top:1px">Kayıtlarda seçilecek malzeme türlerini yönet</span>
-          </span>
-          <span id="yonetimMalzemeSayac" style="flex-shrink:0;background:rgba(59,130,246,0.2);color:#93c5fd;font-size:11px;font-weight:800;border-radius:20px;padding:3px 9px">0</span>
-          <span style="flex-shrink:0;color:var(--muted);font-size:15px">›</span>
+        <button type="button" class="yon-item" onclick="malzemeYonetimAc()">
+          <span class="yon-item-icon">🧱</span>
+          <span style="flex:1;min-width:0"><span class="yon-item-name">Malzeme Türleri</span></span>
+          <span id="yonetimMalzemeSayac" class="yon-item-badge">0</span>
+          <span class="yon-item-chev">›</span>
         </button>
-
-        <button type="button" onclick="giderKategoriYonetimAc()" style="display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:rgba(16,185,129,0.08);border:1.5px solid rgba(16,185,129,0.4);color:var(--text);border-radius:10px;padding:12px 13px;cursor:pointer;font-family:inherit">
-          <span style="font-size:20px;flex-shrink:0">💸</span>
-          <span style="flex:1;min-width:0">
-            <span style="display:block;font-size:13.5px;font-weight:800;color:#6ee7b7">Gider Kategorilerini Yönet</span>
-            <span style="display:block;font-size:11px;color:var(--muted);margin-top:1px">Gider eklerken seçilecek kategorileri yönet</span>
-          </span>
-          <span id="yonetimGiderKatSayac" style="flex-shrink:0;background:rgba(16,185,129,0.2);color:#6ee7b7;font-size:11px;font-weight:800;border-radius:20px;padding:3px 9px">0</span>
-          <span style="flex-shrink:0;color:var(--muted);font-size:15px">›</span>
+        <button type="button" class="yon-item" onclick="giderKategoriYonetimAc()">
+          <span class="yon-item-icon">💸</span>
+          <span style="flex:1;min-width:0"><span class="yon-item-name">Gider Kategorileri</span></span>
+          <span id="yonetimGiderKatSayac" class="yon-item-badge">0</span>
+          <span class="yon-item-chev">›</span>
         </button>
-
-        <button type="button" onclick="hataTuruYonetimAc()" style="display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:rgba(239,68,68,0.08);border:1.5px solid rgba(239,68,68,0.4);color:var(--text);border-radius:10px;padding:12px 13px;cursor:pointer;font-family:inherit">
-          <span style="font-size:20px;flex-shrink:0">⚠️</span>
-          <span style="flex:1;min-width:0">
-            <span style="display:block;font-size:13.5px;font-weight:800;color:#fca5a5">Hata Türlerini Yönet</span>
-            <span style="display:block;font-size:11px;color:var(--muted);margin-top:1px">Kayıtlarda seçilecek hata türlerini yönet</span>
-          </span>
-          <span id="yonetimHataTuruSayac" style="flex-shrink:0;background:rgba(239,68,68,0.2);color:#fca5a5;font-size:11px;font-weight:800;border-radius:20px;padding:3px 9px">0</span>
-          <span style="flex-shrink:0;color:var(--muted);font-size:15px">›</span>
+        <button type="button" class="yon-item" onclick="hataTuruYonetimAc()">
+          <span class="yon-item-icon">⚠️</span>
+          <span style="flex:1;min-width:0"><span class="yon-item-name">Hata Türleri</span></span>
+          <span id="yonetimHataTuruSayac" class="yon-item-badge">0</span>
+          <span class="yon-item-chev">›</span>
         </button>
       </div>
     </div>
 
-    <!-- Silinenler -->
-    <div class="card" id="silinenlerCard" style="display:none;margin-bottom:12px;border-color:rgba(239,68,68,0.3)">
-      <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';this.querySelector('.sil-chevron').textContent=this.nextElementSibling.style.display==='none'?'▼':'▲'">
-        <div style="display:flex;align-items:center;gap:8px">
-          <span style="font-size:15px;font-weight:800;color:var(--red);letter-spacing:1px">🗑 SİLİNENLER</span>
-          <span id="silinenlerSayi" style="background:rgba(239,68,68,0.15);border:1px solid var(--red);color:#fca5a5;border-radius:20px;padding:2px 8px;font-size:11px;font-weight:700"></span>
+    <!-- QR Kod Oluşturucu (akordeon — kapalı başlar) -->
+    <div class="yon-acc" id="accQr">
+      <div class="yon-acc-head" onclick="yonAccToggle('accQr')">
+        <span class="yon-acc-icon">🔗</span>
+        <span style="flex:1;min-width:0">
+          <span class="yon-acc-title">QR Kod Oluştur</span>
+          <span class="yon-acc-sub">Link, metin, PDF veya görsel için</span>
+        </span>
+        <span class="yon-acc-chev">▾</span>
+      </div>
+      <div class="yon-acc-body">
+        <div style="display:flex;gap:6px;margin-bottom:14px">
+          <button id="qrTabBtnLink" onclick="qrTabDegis('link')" style="flex:1;padding:10px;border:1.5px solid var(--yellow);background:var(--yellow);color:#0f172a;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">🔗 Link / Metin</button>
+          <button id="qrTabBtnDosya" onclick="qrTabDegis('dosya')" style="flex:1;padding:10px;border:1.5px solid var(--border);background:none;color:var(--muted);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">📎 PDF / Görsel</button>
         </div>
-        <span class="sil-chevron" style="color:var(--muted);font-size:12px">▼</span>
+
+        <div id="qrTabLink">
+          <label class="field-label">LİNK VEYA METİN *</label>
+          <input type="text" id="qrLinkInput" placeholder="örn: https://ornek.com" />
+          <button class="btn-primary" onclick="qrKodOlustur()" style="margin-top:12px">📱 QR Kod Oluştur</button>
+        </div>
+
+        <div id="qrTabDosya" style="display:none">
+          <label class="field-label">PDF VEYA GÖRSEL SEÇ *</label>
+          <input type="file" id="qrDosyaInput" accept=".pdf,image/*" onchange="qrDosyaSecildi()" />
+          <div id="qrDosyaOnizleme" style="display:none;margin-top:10px;padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--text)"></div>
+          <button class="btn-primary" onclick="qrDosyaYukleVeOlustur()" style="margin-top:12px">📱 Yükle ve QR Kod Oluştur</button>
+        </div>
+
+        <div id="qrSonucCard" style="display:none;text-align:center;margin-top:16px;padding-top:16px;border-top:1px dashed var(--border)">
+          <div class="card-title" style="margin-bottom:10px">✅ QR Kodun Hazır</div>
+          <div style="background:#fff;border-radius:12px;padding:16px;display:inline-block;margin:8px 0">
+            <img id="qrSonucImg" src="" alt="QR Kod" style="display:block;width:220px;height:220px" />
+          </div>
+          <div id="qrSonucLink" style="font-size:12px;color:var(--muted);word-break:break-all;margin-bottom:12px"></div>
+          <div style="display:flex;gap:8px">
+            <button class="btn-primary" style="flex:1;background:#10b981" onclick="qrKodIndir()">⬇️ İndir</button>
+            <button class="btn-secondary" style="flex:1" onclick="qrKodPaylas()">📤 Paylaş</button>
+            <button class="btn-secondary" style="flex:1;border-color:var(--red);color:var(--red)" onclick="qrKodSil()">🗑 Sil</button>
+          </div>
+        </div>
+
+        <div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--border)">
+          <div class="card-title" style="margin-bottom:10px">📋 Kayıtlı QR Kodlar</div>
+          <div id="qrGecmisBos" class="empty" style="display:none;padding:10px 0">
+            <div class="empty-text" style="font-size:12px">Henüz kayıtlı QR kod yok.</div>
+          </div>
+          <div id="qrGecmisList"></div>
+        </div>
       </div>
-      <div id="silinenlerList" style="display:none;margin-top:10px"></div>
     </div>
 
-    <!-- Veri Yedekleme & Geri Yükleme -->
-    <div class="card" style="margin-top:12px;border-color:rgba(59,130,246,0.3)">
-      <div class="card-title" style="color:var(--blue)">💾 VERİ YÖNETİMİ</div>
+    <!-- Veri Yedekleme & Geri Yükleme (akordeon — kapalı başlar) -->
+    <div class="yon-acc" id="accVeri">
+      <div class="yon-acc-head" onclick="yonAccToggle('accVeri')">
+        <span class="yon-acc-icon">💾</span>
+        <span style="flex:1;min-width:0">
+          <span class="yon-acc-title">Veri Yedekleme</span>
+          <span class="yon-acc-sub">Yedek al, dışa aktar, geri yükle</span>
+        </span>
+        <span class="yon-acc-chev">▾</span>
+      </div>
+      <div class="yon-acc-body">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Tüm projeler, kazı kayıtları ve giderleri yedekler.</div>
 
-      <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Tüm projeler, kazı kayıtları ve giderleri yedekler.</div>
-
-      <button onclick="verileriYedekle()" style="width:100%;background:rgba(59,130,246,0.12);border:1.5px solid var(--blue);color:var(--blue);border-radius:10px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:8px">
-        📥 Supabase Yedeği Al (JSON)
-      </button>
-
-      <button id="yedekPaylasBtn" onclick="yedekPaylas()" style="display:none;width:100%;background:rgba(16,185,129,0.1);border:1.5px solid #10b981;color:#10b981;border-radius:10px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:8px">
-        📧 Paylaş / Mail Gönder
-      </button>
-
-      <div style="display:flex;gap:8px;margin-bottom:8px">
-        <button onclick="verileriExcelYedekle()" style="flex:1;background:rgba(16,185,129,0.1);border:1.5px solid #10b981;color:#10b981;border-radius:10px;padding:12px 8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">
-          📊 Excel
+        <button onclick="verileriYedekle()" style="width:100%;background:rgba(59,130,246,0.12);border:1.5px solid var(--blue);color:var(--blue);border-radius:10px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:8px">
+          📥 Supabase Yedeği Al (JSON)
         </button>
-        <button onclick="verileriPdfYedekle()" style="flex:1;background:rgba(239,68,68,0.1);border:1.5px solid var(--red);color:var(--red);border-radius:10px;padding:12px 8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">
-          📄 PDF
+
+        <button id="yedekPaylasBtn" onclick="yedekPaylas()" style="display:none;width:100%;background:rgba(16,185,129,0.1);border:1.5px solid #10b981;color:#10b981;border-radius:10px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:8px">
+          📧 Paylaş / Mail Gönder
         </button>
-      </div>
 
-      <div style="border-top:1px solid var(--border);margin:8px 0 12px"></div>
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <button onclick="verileriExcelYedekle()" style="flex:1;background:rgba(16,185,129,0.1);border:1.5px solid #10b981;color:#10b981;border-radius:10px;padding:12px 8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">
+            📊 Excel
+          </button>
+          <button onclick="verileriPdfYedekle()" style="flex:1;background:rgba(239,68,68,0.1);border:1.5px solid var(--red);color:var(--red);border-radius:10px;padding:12px 8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">
+            📄 PDF
+          </button>
+        </div>
 
-      <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Daha önce alınan JSON yedeği Supabase'e geri yükler. Mevcut verilerle çakışanlar güncellenir, yeni olanlar eklenir.</div>
+        <div style="border-top:1px solid var(--border);margin:8px 0 12px"></div>
 
-      <button onclick="document.getElementById('importDosya').click()" style="width:100%;background:rgba(245,158,11,0.1);border:1.5px solid var(--yellow);color:var(--yellow);border-radius:10px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">
-        📤 Yedeği Geri Yükle (JSON)
-      </button>
-      <input type="file" id="importDosya" accept=".json" style="display:none" onchange="verileriIceAktar(this)">
-    </div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Daha önce alınan JSON yedeği Supabase'e geri yükler. Mevcut verilerle çakışanlar güncellenir, yeni olanlar eklenir.</div>
 
-    <div class="rp-eyebrow">🔗 QR Kod Oluşturucu</div>
-    <div class="card">
-      <div class="card-title">🔗 QR Kod Oluştur</div>
-      <div style="display:flex;gap:6px;margin-bottom:14px">
-        <button id="qrTabBtnLink" onclick="qrTabDegis('link')" style="flex:1;padding:10px;border:1.5px solid var(--yellow);background:var(--yellow);color:#0f172a;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">🔗 Link / Metin</button>
-        <button id="qrTabBtnDosya" onclick="qrTabDegis('dosya')" style="flex:1;padding:10px;border:1.5px solid var(--border);background:none;color:var(--muted);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">📎 PDF / Görsel</button>
-      </div>
-
-      <div id="qrTabLink">
-        <label class="field-label">LİNK VEYA METİN *</label>
-        <input type="text" id="qrLinkInput" placeholder="örn: https://ornek.com" />
-        <button class="btn-primary" onclick="qrKodOlustur()" style="margin-top:12px">📱 QR Kod Oluştur</button>
-      </div>
-
-      <div id="qrTabDosya" style="display:none">
-        <label class="field-label">PDF VEYA GÖRSEL SEÇ *</label>
-        <input type="file" id="qrDosyaInput" accept=".pdf,image/*" onchange="qrDosyaSecildi()" />
-        <div id="qrDosyaOnizleme" style="display:none;margin-top:10px;padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--text)"></div>
-        <button class="btn-primary" onclick="qrDosyaYukleVeOlustur()" style="margin-top:12px">📱 Yükle ve QR Kod Oluştur</button>
+        <button onclick="document.getElementById('importDosya').click()" style="width:100%;background:rgba(245,158,11,0.1);border:1.5px solid var(--yellow);color:var(--yellow);border-radius:10px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">
+          📤 Yedeği Geri Yükle (JSON)
+        </button>
+        <input type="file" id="importDosya" accept=".json" style="display:none" onchange="verileriIceAktar(this)">
       </div>
     </div>
 
-    <div class="card" id="qrSonucCard" style="display:none;text-align:center">
-      <div class="card-title">✅ QR Kodun Hazır</div>
-      <div style="background:#fff;border-radius:12px;padding:16px;display:inline-block;margin:8px 0">
-        <img id="qrSonucImg" src="" alt="QR Kod" style="display:block;width:220px;height:220px" />
+    <!-- Silinenler (akordeon — kapalı başlar) -->
+    <div class="yon-acc" id="silinenlerCard" style="display:none">
+      <div class="yon-acc-head" onclick="yonAccToggle('silinenlerCard')">
+        <span class="yon-acc-icon">🗑</span>
+        <span style="flex:1;min-width:0">
+          <span class="yon-acc-title" style="color:var(--red)">Silinenler</span>
+          <span class="yon-acc-sub">Silinen projeleri geri getir</span>
+        </span>
+        <span id="silinenlerSayi" style="flex-shrink:0;background:rgba(239,68,68,0.15);border:1px solid var(--red);color:#fca5a5;border-radius:20px;padding:2px 8px;font-size:11px;font-weight:700;margin-right:2px"></span>
+        <span class="yon-acc-chev">▾</span>
       </div>
-      <div id="qrSonucLink" style="font-size:12px;color:var(--muted);word-break:break-all;margin-bottom:12px"></div>
-      <div style="display:flex;gap:8px">
-        <button class="btn-primary" style="flex:1;background:#10b981" onclick="qrKodIndir()">⬇️ İndir</button>
-        <button class="btn-secondary" style="flex:1" onclick="qrKodPaylas()">📤 Paylaş</button>
+      <div class="yon-acc-body">
+        <div id="silinenlerList"></div>
       </div>
     </div>
   </div>
@@ -2275,6 +2362,21 @@ function bitirDetay() {
   }
 }
 
+// Yönetim sayfasındaki sade akordeon bölümlerini aç/kapat
+function yonAccToggle(id) {
+  const acc = document.getElementById(id);
+  if (!acc) return;
+  acc.classList.toggle('open');
+  if (id === 'accQr' && acc.classList.contains('open') && !_qrGecmisYuklendi) qrGecmisYukle();
+}
+
+// Rapor sayfasındaki özet kartlarını (Malzeme Özeti, Hata Türü Özeti, Hatalı/Eksik İşlemler) aç/kapat
+function rpAccToggle(id) {
+  const acc = document.getElementById(id);
+  if (!acc) return;
+  acc.classList.toggle('open');
+}
+
 function showView(name, fromHistory = false) {
   _oncekiSayfa = document.querySelector('.nav-btn.active')?.id?.replace('nav-', '') || 'dashboard';
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
@@ -3111,6 +3213,7 @@ function projeRaporPdf() {
   const gun = new Set(kaziEntries.map(e => e.tarih)).size;
   const ort = gun > 0 ? (toplam / gun).toFixed(1) : '0';
   const hataCount = tumKayitlarPdf.filter(e => e.hatalar?.length > 0 || e.hata?.var).length;
+  const onayToplam = tumKayitlarPdf.reduce((s, e) => s + (e.sahaOnaylari?.length || 0), 0);
   const tarihler = tumKayitlarPdf.map(e => new Date(e.tarih));
   const ilk = new Date(Math.min(...tarihler)).toLocaleDateString('tr-TR');
   const son = new Date(Math.max(...tarihler)).toLocaleDateString('tr-TR');
@@ -3211,6 +3314,7 @@ function projeRaporPdf() {
     <div class="stat-box"><div class="stat-val">${ort} m</div><div class="stat-lbl">Günlük Ort. (çalışılan gün)</div></div>
     <div class="stat-box"><div class="stat-val">${ortTakvim} m</div><div class="stat-lbl">Günlük Ort. (takvim günü)</div></div>
     <div class="stat-box"><div class="stat-val">${hataCount}</div><div class="stat-lbl">Hatalı Gün</div></div>
+    <div class="stat-box"><div class="stat-val">${onayToplam}</div><div class="stat-lbl">Toplam Saha Onayı</div></div>
     ${proj.hedefMetre > 0 ? `<div class="stat-box"><div class="stat-val">${proj.hedefMetre.toLocaleString('tr-TR')} m</div><div class="stat-lbl">Hedef Metraj</div></div>` : ''}
     ${hedefHtml}
   </div>
@@ -3261,6 +3365,7 @@ function projeRaporPaylas() {
   const kaziGunSayisi = new Set(kaziEntries.map(e => e.tarih)).size;
   const ort = kaziGunSayisi > 0 ? (toplam / kaziGunSayisi).toFixed(1) : '0';
   const hataCount = tumKayitlarPaylas.filter(e => e.hatalar?.length > 0 || e.hata?.var).length;
+  const onayToplam = tumKayitlarPaylas.reduce((s, e) => s + (e.sahaOnaylari?.length || 0), 0);
   const tarihlerMs = tumKayitlarPaylas.map(e => new Date(e.tarih).getTime());
   const ilk = new Date(Math.min(...tarihlerMs)).toLocaleDateString('tr-TR');
   const son = new Date(Math.max(...tarihlerMs)).toLocaleDateString('tr-TR');
@@ -3296,7 +3401,7 @@ function projeRaporPaylas() {
       : `      - ${e.hata?.turler?.join(', ') || 'Belirtilmemiş'}${e.hata?.aciklama ? ': ' + e.hata.aciklama : ''}`;
     return `   📅 ${tarih}\n${hatalar}`;
   }).join('\n') : '   • Yok';
-  const metin = `📊 *PROJE RAPORU*\n🏗 ${proj.name}${proj.location ? ' - ' + proj.location : ''}\n\n📅 ${ilk} → ${son}\n⛏ Toplam Kazı: *${toplam.toLocaleString("tr-TR",{maximumFractionDigits:0})} m*\n📈 Günlük Ort. (çalışılan gün): ${ort} m\n📊 Günlük Ort. (takvim günü): ${ortTakvim} m\n📅 Kazı Günü: ${kaziGunSayisi} gün${hedefStr}\n⚠️ Hatalı Gün: ${hataCount}\n\n👷 Ekiplere Göre:\n${ekipStrP}\n\n🕵️ Denetimcilere Göre:\n${denStrP}\n\n🧱 Toplam Malzeme:\n${malzStr}\n\n⚠️ Hata Detayları:\n${hataStr}`;
+  const metin = `📊 *PROJE RAPORU*\n🏗 ${proj.name}${proj.location ? ' - ' + proj.location : ''}\n\n📅 ${ilk} → ${son}\n⛏ Toplam Kazı: *${toplam.toLocaleString("tr-TR",{maximumFractionDigits:0})} m*\n📈 Günlük Ort. (çalışılan gün): ${ort} m\n📊 Günlük Ort. (takvim günü): ${ortTakvim} m\n📅 Kazı Günü: ${kaziGunSayisi} gün${hedefStr}\n✅ Toplam Saha Onayı: ${onayToplam}\n⚠️ Hatalı Gün: ${hataCount}\n\n👷 Ekiplere Göre:\n${ekipStrP}\n\n🕵️ Denetimcilere Göre:\n${denStrP}\n\n🧱 Toplam Malzeme:\n${malzStr}\n\n⚠️ Hata Detayları:\n${hataStr}`;
   paylas(metin, 'Proje Raporu');
 }
 
@@ -3481,6 +3586,96 @@ function _giderRaporGoster() {
 // ─── QR KOD ──────────────────────────────────────────────
 let _qrSonLink = '';
 let _qrSeciliDosya = null;
+let _qrSonKayitId = null;
+let _qrSonTip = null;
+let _qrGecmisYuklendi = false;
+
+// Supabase public URL'sinden storage içindeki dosya yolunu çıkarır (örn: "qr-dosyalar/123_foto.png")
+function _qrDosyaYoluCikar(url) {
+  if (!url) return null;
+  const marker = '/kazi-dosyalar/';
+  const idx = url.indexOf(marker);
+  if (idx === -1) return null;
+  return decodeURIComponent(url.slice(idx + marker.length));
+}
+
+// Bir QR kaydına ait yüklenmiş dosyayı (varsa) Supabase Storage'dan siler
+async function _qrDosyayiDepodanSil(veriUrl) {
+  const yol = _qrDosyaYoluCikar(veriUrl);
+  if (!yol) return;
+  const { error } = await sb.storage.from('kazi-dosyalar').remove([yol]);
+  if (error) console.warn('QR dosyası depodan silinemedi:', error.message);
+}
+
+async function qrGecmisYukle() {
+  const bos = document.getElementById('qrGecmisBos');
+  const liste = document.getElementById('qrGecmisList');
+  if (!liste) return;
+  const { data: kayitlar, error } = await sb.from('qr_kodlar').select('*').order('olusturma_tarihi', { ascending: false });
+  if (error) {
+    liste.innerHTML = '';
+    if (bos) {
+      bos.style.display = 'block';
+      bos.querySelector('.empty-text').textContent = error.message.includes('does not exist')
+        ? '⚠️ "qr_kodlar" tablosu Supabase\'de oluşturulmamış. Lütfen tabloyu oluşturun.'
+        : '⚠️ ' + error.message;
+    }
+    return;
+  }
+  _qrGecmisYuklendi = true;
+  if (!kayitlar || kayitlar.length === 0) {
+    liste.innerHTML = '';
+    if (bos) { bos.style.display = 'block'; bos.querySelector('.empty-text').textContent = 'Henüz kayıtlı QR kod yok.'; }
+    return;
+  }
+  if (bos) bos.style.display = 'none';
+  liste.innerHTML = kayitlar.map(k => {
+    const ikon = k.tip === 'dosya' ? '📎' : '🔗';
+    const tarih = k.olusturma_tarihi ? new Date(k.olusturma_tarihi).toLocaleDateString('tr-TR') : '';
+    return `
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 12px;background:rgba(6,182,212,0.06);border:1px solid rgba(6,182,212,0.2);border-radius:8px;margin-bottom:6px;cursor:pointer" onclick="qrGecmisGoster('${k.id}')">
+      <span style="font-size:12.5px;color:var(--text);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${ikon} ${esc(k.ad || k.veri)}</span>
+      <span style="font-size:10.5px;color:var(--muted);flex-shrink:0">${tarih}</span>
+      <button onclick="event.stopPropagation();qrGecmisSil('${k.id}')" style="background:none;border:none;color:var(--red);font-size:16px;cursor:pointer;padding:2px 6px;flex-shrink:0">×</button>
+    </div>`;
+  }).join('');
+}
+
+function qrGecmisGoster(id) {
+  sb.from('qr_kodlar').select('*').eq('id', id).single().then(({ data: k, error }) => {
+    if (error || !k) { toast('⚠️ QR kod bulunamadı', true); return; }
+    _qrSonLink = k.veri;
+    _qrSonKayitId = k.id;
+    _qrSonTip = k.tip;
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(k.veri)}`;
+    document.getElementById('qrSonucImg').src = qrUrl;
+    document.getElementById('qrSonucLink').textContent = k.ad || k.veri;
+    document.getElementById('qrSonucCard').style.display = 'block';
+    document.getElementById('qrSonucCard').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+}
+
+function qrGecmisSil(id) {
+  silOnayla(
+    'Bu kayıtlı QR kodu silmek istiyor musun? (Dosya yüklendiyse depodan da silinir.)',
+    async () => {
+      // Önce kaydı çek: dosya tipi ise depodaki dosyayı da silmemiz gerekiyor
+      const { data: k } = await sb.from('qr_kodlar').select('*').eq('id', id).single();
+      const { error } = await sb.from('qr_kodlar').delete().eq('id', id);
+      if (error) { toast('⚠️ Silinemedi: ' + error.message, true); return; }
+      if (k && k.tip === 'dosya') await _qrDosyayiDepodanSil(k.veri);
+      if (_qrSonKayitId === id) {
+        _qrSonKayitId = null;
+        _qrSonLink = '';
+        _qrSonTip = null;
+        document.getElementById('qrSonucCard').style.display = 'none';
+      }
+      toast('🗑 QR kod her yerden silindi.');
+      qrGecmisYukle();
+    },
+    '🗑', 'Evet, Sil', 'var(--red)'
+  );
+}
 
 function qrTabDegis(tab) {
   const btnLink = document.getElementById('qrTabBtnLink');
@@ -3528,25 +3723,35 @@ async function qrDosyaYukleVeOlustur() {
   try {
     const path = `qr-dosyalar/${Date.now()}_${_qrSeciliDosya.name}`;
     const { error } = await sb.storage.from('kazi-dosyalar').upload(path, _qrSeciliDosya);
-    hideLoading();
-    if (error) { toast('⚠️ Yükleme başarısız: ' + error.message, true); return; }
+    if (error) { hideLoading(); toast('⚠️ Yükleme başarısız: ' + error.message, true); return; }
     const { data } = sb.storage.from('kazi-dosyalar').getPublicUrl(path);
     const link = data.publicUrl;
     _qrSonLink = link;
+    _qrSonTip = 'dosya';
+
+    const { data: kayit, error: kayitErr } = await sb.from('qr_kodlar').insert({ tip: 'dosya', veri: link, ad: _qrSeciliDosya.name }).select().single();
+    hideLoading();
+    if (kayitErr) {
+      toast('⚠️ QR kaydedilemedi: ' + kayitErr.message + (kayitErr.message.includes('does not exist') ? '\n"qr_kodlar" tablosu Supabase\'de oluşturulmamış olabilir.' : ''), true);
+      _qrSonKayitId = null;
+    } else {
+      _qrSonKayitId = kayit.id;
+    }
 
     const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(link)}`;
     document.getElementById('qrSonucImg').src = qrUrl;
     document.getElementById('qrSonucLink').textContent = _qrSeciliDosya.name;
     document.getElementById('qrSonucCard').style.display = 'block';
     document.getElementById('qrSonucCard').scrollIntoView({ behavior: 'smooth', block: 'center' });
-    toast('✅ Dosya yüklendi, QR kod oluşturuldu!');
+    if (!kayitErr) toast('✅ Dosya yüklendi, QR kod oluşturuldu ve kaydedildi!');
+    qrGecmisYukle();
   } catch (e) {
     hideLoading();
     toast('⚠️ Bir hata oluştu', true);
   }
 }
 
-function qrKodOlustur() {
+async function qrKodOlustur() {
   const input = document.getElementById('qrLinkInput');
   const deger = (input.value || '').trim();
   if (!deger) { toast('⚠️ Lütfen bir link veya metin gir!', true); return; }
@@ -3556,13 +3761,25 @@ function qrKodOlustur() {
     link = 'https://' + deger;
   }
   _qrSonLink = link;
+  _qrSonTip = 'link';
+
+  showLoading('Kaydediliyor...');
+  const { data: kayit, error: kayitErr } = await sb.from('qr_kodlar').insert({ tip: 'link', veri: link, ad: deger }).select().single();
+  hideLoading();
+  if (kayitErr) {
+    toast('⚠️ QR kaydedilemedi: ' + kayitErr.message + (kayitErr.message.includes('does not exist') ? '\n"qr_kodlar" tablosu Supabase\'de oluşturulmamış olabilir.' : ''), true);
+    _qrSonKayitId = null;
+  } else {
+    _qrSonKayitId = kayit.id;
+  }
 
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(link)}`;
   document.getElementById('qrSonucImg').src = qrUrl;
   document.getElementById('qrSonucLink').textContent = link;
   document.getElementById('qrSonucCard').style.display = 'block';
   document.getElementById('qrSonucCard').scrollIntoView({ behavior: 'smooth', block: 'center' });
-  toast('✅ QR kod oluşturuldu!');
+  if (!kayitErr) toast('✅ QR kod oluşturuldu ve kaydedildi!');
+  qrGecmisYukle();
 }
 
 async function qrKodIndir() {
@@ -3588,6 +3805,35 @@ async function qrKodIndir() {
 function qrKodPaylas() {
   if (!_qrSonLink) return;
   paylas(_qrSonLink, 'QR Kod Linki');
+}
+
+function qrKodSil() {
+  silOnayla(
+    'Bu QR kodu silmek istiyor musun? (Kayıt Supabase\'den, dosya yüklendiyse depodan da silinir. Her yerden kalıcı olarak silinir.)',
+    async () => {
+      if (_qrSonKayitId) {
+        const { error } = await sb.from('qr_kodlar').delete().eq('id', _qrSonKayitId);
+        if (error) { toast('⚠️ Kayıt silinemedi: ' + error.message, true); return; }
+      }
+      if (_qrSonTip === 'dosya') await _qrDosyayiDepodanSil(_qrSonLink);
+      _qrSonLink = '';
+      _qrSonKayitId = null;
+      _qrSonTip = null;
+      _qrSeciliDosya = null;
+      document.getElementById('qrSonucCard').style.display = 'none';
+      document.getElementById('qrSonucImg').src = '';
+      document.getElementById('qrSonucLink').textContent = '';
+      const linkInput = document.getElementById('qrLinkInput');
+      if (linkInput) linkInput.value = '';
+      const dosyaInput = document.getElementById('qrDosyaInput');
+      if (dosyaInput) dosyaInput.value = '';
+      const onizleme = document.getElementById('qrDosyaOnizleme');
+      if (onizleme) { onizleme.style.display = 'none'; onizleme.innerHTML = ''; }
+      toast('🗑 QR kod her yerden silindi.');
+      qrGecmisYukle();
+    },
+    '🗑', 'Evet, Sil', 'var(--red)'
+  );
 }
 
 // ─── GRAFİKLER ───────────────────────────────────────────
@@ -6306,11 +6552,16 @@ function renderRapor() {
   const avg = gunSayisi ? (total / gunSayisi) : 0;
   const avgStr = avg > 0 ? avg.toLocaleString('tr-TR', {maximumFractionDigits:1}) + ' m' : '-';
   const hataCount = tumKayitlar.filter(e => e.hatalar?.length > 0 || e.hata?.var).length;
+  const onayToplam = tumKayitlar.reduce((s, e) => s + (e.sahaOnaylari?.length || 0), 0);
   const titleEl = document.getElementById('raporTitle');
 
   document.getElementById('rStatMetre').textContent = total.toLocaleString('tr-TR', {maximumFractionDigits:0}) + ' m';
   document.getElementById('rStatGun').textContent = gunSayisi;
   document.getElementById('rStatOrt').textContent = avgStr;
+  const rStatOnayEl = document.getElementById('rStatOnay');
+  if (rStatOnayEl) rStatOnayEl.textContent = onayToplam;
+  const rStatHataEl = document.getElementById('rStatHata');
+  if (rStatHataEl) rStatHataEl.textContent = hataCount;
 
   const rStatOrtTakvimEl = document.getElementById('rStatOrtTakvim');
   if (rStatOrtTakvimEl) {
@@ -6362,6 +6613,40 @@ function renderRapor() {
     titleEl.innerHTML = `📊 ${esc(proj.name)}${tahminiLabel}`;
   }
   setTimeout(grafikCiz, 100);
+
+  // Hata Türü Özeti — hata ekleme formundaki TÜM kategoriler (Yönetim'de tanımlı olanlar,
+  // yoksa varsayılan liste) burada adet/giderilmemiş sayısıyla raporlanır.
+  const hataTurMap = {};
+  const tumHataTurleri = (data.hataTurleri && data.hataTurleri.length > 0)
+    ? data.hataTurleri.map(t => t.ad)
+    : HATA_TURU_VARSAYILAN;
+  tumHataTurleri.forEach(ad => { hataTurMap[ad] = { adet: 0, giderilmemis: 0 }; });
+  tumKayitlar.forEach(e => {
+    const hatalarListesi = e.hatalar?.length > 0 ? e.hatalar : (e.hata?.var ? [e.hata] : []);
+    hatalarListesi.forEach(h => {
+      (h.turler && h.turler.length > 0 ? h.turler : ['Belirtilmemiş']).forEach(tur => {
+        if (!hataTurMap[tur]) hataTurMap[tur] = { adet: 0, giderilmemis: 0 };
+        hataTurMap[tur].adet++;
+        if (!h.giderildi) hataTurMap[tur].giderilmemis++;
+      });
+    });
+  });
+  const hataTuruOzetCard = document.getElementById('hataTuruOzetCard');
+  if (hataTuruOzetCard) {
+    const hataTuruSirali = Object.entries(hataTurMap).sort((a, b) => b[1].adet - a[1].adet || a[0].localeCompare(b[0], 'tr'));
+    if (hataTuruSirali.length > 0) {
+      hataTuruOzetCard.style.display = 'block';
+      document.getElementById('hataTuruOzetBody').innerHTML = hataTuruSirali.map(([ad, v]) =>
+        `<tr>
+          <td>⚠️ ${esc(ad)}</td>
+          <td style="color:${v.adet > 0 ? '#ef4444' : 'var(--muted)'};font-weight:700">${v.adet}</td>
+          <td style="color:${v.giderilmemis > 0 ? '#f59e0b' : 'var(--muted)'}">${v.giderilmemis > 0 ? v.giderilmemis : '-'}</td>
+        </tr>`
+      ).join('');
+    } else {
+      hataTuruOzetCard.style.display = 'none';
+    }
+  }
 
   const hataCard = document.getElementById('hataOzetCard');
   if (hataCount > 0) {
