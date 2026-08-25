@@ -301,6 +301,42 @@
     .yon-acc-body { display: none; padding: 2px 15px 15px; border-top: 1px solid var(--border); }
     .yon-acc.open .yon-acc-body { display: block; padding-top: 13px; }
 
+    /* RAPOR — özet akordeonları (Malzeme/Hata/Günlük Geçmiş): daha kaliteli görünüm */
+    .rp-acc {
+      border-radius: 14px; border-width: 1px; position: relative;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+      transition: box-shadow .18s ease;
+    }
+    .rp-acc.open { box-shadow: 0 4px 16px rgba(0,0,0,0.28); }
+    .rp-acc .yon-acc-head { padding: 14px 15px 14px 13px; gap: 12px; border-left: 3px solid transparent; border-radius: 14px; transition: background .15s ease; }
+    .rp-acc .yon-acc-head:active { background: rgba(255,255,255,0.035); }
+    .rp-acc .yon-acc-icon {
+      width: 36px; height: 36px; border-radius: 11px; font-size: 17px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 2px 6px rgba(0,0,0,0.15);
+    }
+    .rp-acc .yon-acc-title { font-size: 13.5px; letter-spacing: .1px; }
+    .rp-acc .yon-acc-count {
+      flex-shrink: 0; font-size: 10.5px; font-weight: 800; border-radius: 20px; padding: 3px 9px;
+      background: rgba(148,163,184,0.14); color: var(--sub);
+    }
+    .rp-acc .yon-acc-chev {
+      flex-shrink: 0; width: 25px; height: 25px; border-radius: 50%;
+      background: rgba(148,163,184,0.12); color: var(--sub);
+      display: flex; align-items: center; justify-content: center; font-size: 10.5px;
+      transition: transform .2s ease, background .18s ease, color .18s ease;
+    }
+    .rp-acc.open .yon-acc-chev { transform: rotate(180deg); }
+    .rp-acc.rp-blue .yon-acc-head { border-left-color: rgba(59,130,246,.55); }
+    .rp-acc.rp-blue .yon-acc-icon { background: rgba(59,130,246,0.16); }
+    .rp-acc.rp-blue.open .yon-acc-chev { background: var(--blue); color: #fff; }
+    .rp-acc.rp-red .yon-acc-head { border-left-color: rgba(239,68,68,.55); }
+    .rp-acc.rp-red .yon-acc-icon { background: rgba(239,68,68,0.16); }
+    .rp-acc.rp-red.open .yon-acc-chev { background: var(--red); color: #fff; }
+    .rp-acc.rp-yellow .yon-acc-head { border-left-color: rgba(245,158,11,.6); }
+    .rp-acc.rp-yellow .yon-acc-icon { background: rgba(245,158,11,0.16); }
+    .rp-acc.rp-yellow.open .yon-acc-chev { background: var(--yellow); color: #0f172a; }
+    .rp-acc .yon-acc-body { border-top: 1px dashed var(--border); }
+
     /* Tanımlar listesi — tek tip, sade satırlar */
     .yon-item {
       display: flex; align-items: center; gap: 11px; width: 100%; text-align: left;
@@ -340,17 +376,29 @@
     .rp-summary-name { color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
     .rp-summary-val { color: var(--yellow); font-weight: 800; white-space: nowrap; flex-shrink: 0; }
     .rp-summary-empty { text-align: center; color: var(--muted); font-size: 12px; padding: 10px 0; }
-    .rp-toolbar { display: flex; gap: 8px; margin: 4px 0 8px; }
+    .rp-toolbar { display: flex; gap: 9px; margin: 4px 0 8px; }
     .rp-toolbar-btn {
-      flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
-      background: var(--card); border: 1.5px solid var(--border); border-radius: 10px;
-      padding: 11px 4px; cursor: pointer; font-family: inherit; color: var(--text);
-      font-size: 10.5px; font-weight: 700; transition: border-color .15s, background .15s;
+      flex: 1; position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px;
+      border: none; border-radius: 13px; overflow: hidden;
+      padding: 13px 4px 11px; cursor: pointer; font-family: inherit; color: #fff;
+      font-size: 11px; font-weight: 800; letter-spacing: .2px;
+      transition: transform .14s ease, box-shadow .14s ease, filter .14s ease;
+      -webkit-tap-highlight-color: transparent;
     }
-    .rp-toolbar-btn .ico { font-size: 18px; }
-    .rp-toolbar-btn.excel { color: #16a34a; border-color: rgba(22,163,74,.35); }
-    .rp-toolbar-btn.pdf { color: #ef4444; border-color: rgba(239,68,68,.35); }
-    .rp-toolbar-btn.share { color: #10b981; border-color: rgba(16,185,129,.35); }
+    .rp-toolbar-btn::before {
+      content: ''; position: absolute; inset: 0; border-radius: inherit;
+      background: linear-gradient(180deg, rgba(255,255,255,0.16), rgba(255,255,255,0) 45%);
+      pointer-events: none;
+    }
+    .rp-toolbar-btn:active { transform: translateY(1px) scale(0.97); filter: brightness(0.92); }
+    .rp-toolbar-btn .ico-wrap {
+      width: 32px; height: 32px; border-radius: 10px; display: flex; align-items: center; justify-content: center;
+      background: rgba(255,255,255,0.18); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25);
+    }
+    .rp-toolbar-btn .ico { font-size: 15px; line-height: 1; filter: drop-shadow(0 1px 1px rgba(0,0,0,.15)); }
+    .rp-toolbar-btn.excel { background: linear-gradient(150deg, #22c55e, #15803d); box-shadow: 0 5px 14px rgba(21,128,61,.4), 0 1px 3px rgba(0,0,0,.3); }
+    .rp-toolbar-btn.pdf { background: linear-gradient(150deg, #f87171, #b91c1c); box-shadow: 0 5px 14px rgba(185,28,28,.4), 0 1px 3px rgba(0,0,0,.3); }
+    .rp-toolbar-btn.share { background: linear-gradient(150deg, #34d399, #059669); box-shadow: 0 5px 14px rgba(5,150,105,.4), 0 1px 3px rgba(0,0,0,.3); }
     .rp-filter-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px 14px 4px; margin-bottom: 12px; }
 
     /* FORM */
@@ -904,7 +952,7 @@
       </div>
 
       <div class="rp-eyebrow">🧱 Malzeme &amp; Kalite</div>
-      <div class="yon-acc" id="malzemeOzetCard" style="display:none">
+      <div class="yon-acc rp-acc rp-blue" id="malzemeOzetCard" style="display:none">
         <div class="yon-acc-head" onclick="rpAccToggle('malzemeOzetCard')">
           <span class="yon-acc-icon">🧱</span>
           <span style="flex:1;min-width:0"><span class="yon-acc-title">Malzeme Özeti</span></span>
@@ -917,7 +965,7 @@
           </table>
         </div>
       </div>
-      <div class="yon-acc" id="hataTuruOzetCard" style="display:none">
+      <div class="yon-acc rp-acc rp-red" id="hataTuruOzetCard" style="display:none">
         <div class="yon-acc-head" onclick="rpAccToggle('hataTuruOzetCard')">
           <span class="yon-acc-icon">⚠️</span>
           <span style="flex:1;min-width:0"><span class="yon-acc-title" style="color:#fca5a5">Hata Türü Özeti (Kategori Bazlı)</span></span>
@@ -930,7 +978,7 @@
           </table>
         </div>
       </div>
-      <div class="yon-acc" id="hataOzetCard" style="display:none">
+      <div class="yon-acc rp-acc rp-red" id="hataOzetCard" style="display:none">
         <div class="yon-acc-head" onclick="rpAccToggle('hataOzetCard')">
           <span class="yon-acc-icon">⚠️</span>
           <span style="flex:1;min-width:0"><span class="yon-acc-title" style="color:#fca5a5">Hatalı / Eksik İşlemler</span></span>
@@ -945,17 +993,24 @@
       </div>
 
       <div class="rp-eyebrow">📅 Günlük Geçmiş</div>
-      <div class="card" style="overflow-x:auto">
-        <table class="tbl">
-          <thead><tr><th>Tarih</th><th>Ekip</th><th>Denetimci</th><th>Kazı (m)</th><th>Malzeme</th></tr></thead>
-          <tbody id="raporEntryBody"></tbody>
-        </table>
+      <div class="yon-acc rp-acc rp-yellow" id="gunlukGecmisCard">
+        <div class="yon-acc-head" onclick="rpAccToggle('gunlukGecmisCard')">
+          <span class="yon-acc-icon">📅</span>
+          <span style="flex:1;min-width:0"><span class="yon-acc-title">Günlük Geçmiş</span></span>
+          <span class="yon-acc-chev">▾</span>
+        </div>
+        <div class="yon-acc-body" style="overflow-x:auto">
+          <table class="tbl">
+            <thead><tr><th>Tarih</th><th>Ekip</th><th>Denetimci</th><th>Kazı (m)</th><th>Malzeme</th></tr></thead>
+            <tbody id="raporEntryBody"></tbody>
+          </table>
+        </div>
       </div>
 
       <div class="rp-toolbar">
-        <button class="rp-toolbar-btn excel" onclick="exportExcel()"><span class="ico">📥</span>Excel</button>
-        <button class="rp-toolbar-btn pdf" onclick="projeRaporPdf()"><span class="ico">📄</span>PDF</button>
-        <button class="rp-toolbar-btn share" onclick="projeRaporPaylas()"><span class="ico">📤</span>Paylaş</button>
+        <button class="rp-toolbar-btn excel" onclick="exportExcel()"><span class="ico-wrap"><span class="ico">📥</span></span>Excel</button>
+        <button class="rp-toolbar-btn pdf" onclick="projeRaporPdf()"><span class="ico-wrap"><span class="ico">📄</span></span>PDF</button>
+        <button class="rp-toolbar-btn share" onclick="projeRaporPaylas()"><span class="ico-wrap"><span class="ico">📤</span></span>Paylaş</button>
       </div>
 
       <!-- GRAFİKLER -->
@@ -1067,8 +1122,8 @@
       </div>
 
       <div class="rp-toolbar">
-        <button class="rp-toolbar-btn share" onclick="aylikRaporPaylas()"><span class="ico">📤</span>Paylaş</button>
-        <button class="rp-toolbar-btn pdf" onclick="aylikRaporPdf()"><span class="ico">📄</span>PDF</button>
+        <button class="rp-toolbar-btn share" onclick="aylikRaporPaylas()"><span class="ico-wrap"><span class="ico">📤</span></span>Paylaş</button>
+        <button class="rp-toolbar-btn pdf" onclick="aylikRaporPdf()"><span class="ico-wrap"><span class="ico">📄</span></span>PDF</button>
       </div>
     </div>
   </div>
